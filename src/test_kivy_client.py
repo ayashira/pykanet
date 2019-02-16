@@ -58,7 +58,9 @@ class TwistedClientApp(App):
 
     def setup_gui(self):
         self.textbox = TextInput(size_hint_y=.1, multiline=False)
+        self.textbox.text_validate_unfocus = False
         self.textbox.bind(on_text_validate=self.send_message)
+        self.bind(on_start=self.guistart_custom_init)
         self.label = Label(text='connecting...\n')
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.label)
@@ -81,6 +83,8 @@ class TwistedClientApp(App):
     def print_message(self, msg):
         self.label.text += "{}\n".format(msg)
 
+    def guistart_custom_init(self, instance):
+        self.textbox.focus = True
 
 if __name__ == '__main__':
     TwistedClientApp().run()

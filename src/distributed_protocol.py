@@ -13,10 +13,13 @@ class Distributed_protocol(protocol.Protocol):
     
     #called when some data is received
     def dataReceived(self, data):
+        #test of echo
+        self.transport.write(data)
+        
         print("Received data:", data)
         
         #for this test, close the connection immediately
-        self.transport.loseConnection()
+        #self.transport.loseConnection()
     
     #called when the connection is lost
     def connectionLost(self, reason):
