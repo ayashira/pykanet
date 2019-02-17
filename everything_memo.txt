@@ -1,0 +1,35 @@
+This file is a memo of everything.
+Note for everyone : please feel free to add information/comments to this file.
+
+=========== 2019/2/17 ============
+
+A first test of kivy+twisted client is implemented.
+== Usage ==
+1) Run first the server with the following command:
+ python test_server.py
+2) Launch the client:
+ python test_kivy_client.py
+ 
+== Functionalities ==
+Text entered in the client textInput is sent to the server,
+the server then sends this text back to the client.
+When some data is received by the client, it is displayed in the interface.
+
+== Dependencies ==
+Tested in Windows anaconda after installing the following dependencies:
+pip install twisted kivy kivy.deps.glew kivy.deps.sdl2
+
+== Fonts and Japanese text ==
+
+Kivy default font supports a very limited set of utf8 characters
+-> a Noto font added to the project for that
+   File is a bit heavy (18M) but this is not a problem for now
+
+Known problem:
+Kivy textInput does not display temporary Japanese words when entering some Japanese text
+Maybe support of Japanese will be difficult for now (but this is not an urgent problem)
+
+== Code ==
+* test_client.py is now useless. Will be removed soon.
+* The code of this first client/server test is a bit messy
+
