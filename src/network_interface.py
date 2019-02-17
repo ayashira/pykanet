@@ -1,12 +1,20 @@
 # This file is a first test of network interface
 
 server_port = 8883
-server_address = "localhost"
+
+#test on localhost
+#server_address = "localhost"
+
+#this is the official first server address
+server_address = "31.192.230.58"
 
 from twisted.internet import reactor, protocol
 
 class EchoClient(protocol.Protocol):
     def connectionMade(self):
+        #disable Nagle's algorithm
+        self.transport.setTcpNoDelay(True)
+        
         self.factory.network_interface.on_connection(self.transport)
 
     def dataReceived(self, data):

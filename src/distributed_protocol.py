@@ -8,6 +8,9 @@ class Distributed_protocol(protocol.Protocol):
     
     #called when a new connection is created
     def connectionMade(self):
+        #disable Nagle's algorithm
+        self.transport.setTcpNoDelay(True)
+
         #send a message
         self.transport.write(b"hello, world!")
     
