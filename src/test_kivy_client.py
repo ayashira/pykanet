@@ -15,26 +15,53 @@ server_address = "localhost"
 
 class EchoClient(protocol.Protocol):
     def connectionMade(self):
-        self.factory.app.on_connection(self.transport)
+        self.factory.network_interface.on_connection(self.transport)
 
     def dataReceived(self, data):
-        self.factory.app.print_message(data.decode('utf-8'))
+        self.factory.network_interface.dataReceived(data)
 
 
 class EchoClientFactory(protocol.ClientFactory):
     protocol = EchoClient
 
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, network_interface):
+        self.network_interface = network_interface
 
     def startedConnecting(self, connector):
-        self.app.print_message('Started to connect.')
+        print('Started to connect.')
 
     def clientConnectionLost(self, connector, reason):
-        self.app.print_message('Lost connection.')
+        print('Lost connection.')
 
     def clientConnectionFailed(self, connector, reason):
-        self.app.print_message('Connection failed.')
+        print('Connection failed.')
+
+
+class NetworkInterface():
+    connection = None
+    data_received_callback = None
+    
+    def __init__(self, data_received_callback):
+        self.connect_to_server()
+        self.data_received_callback = data_received_callback
+    
+    def network_write(self, data):
+        if self.connection:
+            self.connection.write(data)
+        
+    def network_read(self):
+        pass
+
+    # =========== private functions ========
+    def connect_to_server(self):
+        reactor.connectTCP(server_address, server_port, EchoClientFactory(self))
+    
+    def on_connection(self, connection):
+        print("Connected successfully!")
+        self.connection = connection
+
+    def dataReceived(self, data):
+        self.data_received_callback(data)
 
 
 from kivy.app import App
@@ -50,10 +77,11 @@ class TwistedClientApp(App):
     connection = None
     textbox = None
     label = None
+    network_interface = None
 
     def build(self):
         root = self.setup_gui()
-        self.connect_to_server()
+        self.network_interface = NetworkInterface(data_received_callback = self.receive_message)
         return root
 
     def setup_gui(self):
@@ -61,25 +89,22 @@ class TwistedClientApp(App):
         self.textbox.text_validate_unfocus = False
         self.textbox.bind(on_text_validate=self.send_message)
         self.bind(on_start=self.guistart_custom_init)
-        self.label = Label(text='connecting...\n')
+        self.label = Label(text='')
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.label)
         layout.add_widget(self.textbox)
         return layout
 
-    def connect_to_server(self):
-        reactor.connectTCP(server_address, server_port, EchoClientFactory(self))
-
-    def on_connection(self, connection):
-        self.print_message("Connected successfully!")
-        self.connection = connection
-
     def send_message(self, *args):
         msg = self.textbox.text
-        if msg and self.connection:
-            self.connection.write(msg.encode('utf-8'))
+        
+        if msg and self.network_interface:
+            self.network_interface.network_write(msg.encode('utf-8'))
             self.textbox.text = ""
-
+    
+    def receive_message(self, data):
+        self.print_message(data.decode('utf-8'))
+    
     def print_message(self, msg):
         self.label.text += "{}\n".format(msg)
 
