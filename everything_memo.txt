@@ -5,13 +5,10 @@ Note for everyone : please feel free to add information/comments to this file.
 
 A first test of kivy+twisted client is implemented.
 == Usage ==
-1) Run first the server with the following command:
- python test_server.py
-2) Launch the client:
- python test_kivy_client.py
+python test_kivy_client.py
  
 == Functionalities ==
-Text entered in the client textInput is sent to the server,
+Text entered in the client textInput is sent to the first official server,
 the server then sends this text back to the client.
 When some data is received by the client, it is displayed in the interface.
 
@@ -28,6 +25,15 @@ Kivy default font supports a very limited set of utf8 characters
 Known problem:
 Kivy textInput does not display temporary Japanese words when entering some Japanese text
 Maybe support of Japanese will be difficult for now (but this is not an urgent problem)
+
+== Test on local machine ==
+
+To run a local test:
+1) first set server_address to localhost in network_interface. Option needed in __main__
+2) launch the local server with:
+  python test_server.py
+3) launch the client
+  python test_kivy_client.py
 
 == Code ==
 * test_client.py is now useless. Will be removed soon.
