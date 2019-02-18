@@ -39,3 +39,20 @@ To run a local test:
 * test_client.py is now useless. Will be removed soon.
 * The code of this first client/server test is a bit messy
 
+=========== 2019/2/18 ============
+
+First version of a real chat !
+* multiple clients can connect and messages are sent to all other connected clients
+* history is kept on the server and sent to all newly connected clients (but history is lost on server restart)
+* this chat is the official communication channel of the project :-)
+
+TODO:
+* (easy) add timestamps to the chat (distributed_procol)
+* (easy) save chat history in a file (distributed_procol)
+* (easy) load chat history from file when server is launched (test_server.py)
+* server-side "chat logic" should be separated from the distributed protocol itself
+* add a first version of usernames on client side: maybe just a separate textinput to enter the username without any password for now
+* start using Twisted AMP protocol (much more powerful for the next steps) instead of current "raw" protocol
+* add the username to the communication. Note : we need to switch to Twisted AMP protocol first to do that easily.
+* we need a way to update the distant server easily
+  (maybe a simple cron job that pull git changes automatically and restart the server)
