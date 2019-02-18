@@ -15,6 +15,8 @@ class EchoClient(protocol.Protocol):
         #disable Nagle's algorithm
         self.transport.setTcpNoDelay(True)
         
+        self.transport.setTcpKeepAlive(True)
+        
         self.factory.network_interface.on_connection(self.transport)
 
     def dataReceived(self, data):

@@ -10,6 +10,8 @@ class Distributed_protocol(protocol.Protocol):
     def connectionMade(self):
         #disable Nagle's algorithm
         self.transport.setTcpNoDelay(True)
+        
+        self.transport.setTcpKeepAlive(True)
 
         #send a message to existing clients
         greetings = str("A new guest is here \^_^/ : ") + self.transport.getPeer().host
