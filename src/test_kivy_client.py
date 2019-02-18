@@ -38,7 +38,7 @@ class NetworkClientApp(App):
         self.textbox.text_validate_unfocus = False
         self.textbox.bind(on_text_validate=self.send_message)
         self.bind(on_start=self.guistart_custom_init)
-        self.label = Label(text='', font_name=utf8_font_path)
+        self.label = TextInput(text='', font_name=utf8_font_path, multiline=True, readonly=True)
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.label)
         layout.add_widget(self.textbox)
