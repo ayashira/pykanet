@@ -14,7 +14,10 @@ class Distributed_protocol(protocol.Protocol):
         self.transport.setTcpNoDelay(True)
         
         self.transport.setTcpKeepAlive(True)
-
+        
+        #buffer to receive data
+        self.receive_buffer = None
+        
         #send a message to existing clients
         greetings = str("A new guest is here \^_^/ : ") + self.transport.getPeer().host
         message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", greetings)
@@ -40,13 +43,33 @@ class Distributed_protocol(protocol.Protocol):
     
     #called when some data is received
     def dataReceived(self, data):
+        #add all received data to the buffer
+        if self.receive_buffer is None:
+            self.receive_buffer = data
+        else:
+            self.receive_buffer += data
+        
+        #wait until we receive the first 4 bytes (total message length)
+        if len(self.receive_buffer) < 4:
+            return
+        
+        #don't forget the 4 initial bytes
+        message_length = 4 + int.from_bytes(self.receive_buffer[:4], byteorder='big')
+        
+        #wait until we receive the complete message
+        if len(self.receive_buffer) < message_length:
+            return
+        
+        #next_message is received, extract it and remove it from the buffer
+        next_message_data = self.receive_buffer[:message_length]
+        self.receive_buffer = self.receive_buffer[message_length:]
+        
         message = Network_Message()
-        message.from_bytes(data)
+        message.from_bytes(next_message_data)
         
         #ignore keep-alive messages
         if message.network_command == "KEEP_ALIVE":
             return
-        
         
         #send the message to all connected clients, add the client name in front
         message.message_content = self.transport.getPeer().host + " : " + message.message_content
@@ -54,7 +77,7 @@ class Distributed_protocol(protocol.Protocol):
         for client in self.factory.clients:
             client.transport.write(message.to_bytes())
         
-        print("Received data:", data)
+        print("Received data:", next_message_data)
         
         #add the new message to the chat history
         self.factory.content += message.message_content + "\n"
