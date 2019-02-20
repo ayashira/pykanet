@@ -3,12 +3,13 @@
 server_port = 8883
 
 #test on localhost
-#server_address = "localhost"
+server_address = "localhost"
 
 #this is the official first server address
-server_address = "31.192.230.58"
+#server_address = "31.192.230.58"
 
 from twisted.internet import reactor, protocol
+from twisted.internet import task
 
 from network_message import Network_Message
 
@@ -20,12 +21,20 @@ class EchoClient(protocol.Protocol):
         self.transport.setTcpKeepAlive(True)
         
         self.factory.network_interface.on_connection(self.transport)
-
+        
+        #application-level keep alive messages
+        loop_task = task.LoopingCall(self.sendKeepAlive)
+        loop_task.start(4.0) # call every 4 seconds
+        
     def dataReceived(self, data):
         print(data)
         message = Network_Message()
         message.from_bytes(data)
         self.factory.network_interface.dataReceived(message)
+        
+    def sendKeepAlive(self):
+        message = Network_Message("dummy_user", "dummy_address", "KEEP_ALIVE", "")
+        self.transport.write(message.to_bytes())
 
 
 class EchoClientFactory(protocol.ClientFactory):

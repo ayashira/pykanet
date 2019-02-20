@@ -43,6 +43,11 @@ class Distributed_protocol(protocol.Protocol):
         message = Network_Message()
         message.from_bytes(data)
         
+        #ignore keep-alive messages
+        if message.network_command == "KEEP_ALIVE":
+            return
+        
+        
         #send the message to all connected clients, add the client name in front
         message.message_content = self.transport.getPeer().host + " : " + message.message_content
         
