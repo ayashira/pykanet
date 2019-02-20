@@ -46,13 +46,20 @@ First version of a real chat !
 * history is kept on the server and sent to all newly connected clients (but history is lost on server restart)
 * this chat is the official communication channel of the project :-)
 
-TODO:
-* (easy) add timestamps to the chat (distributed_procol)
-* (easy) save chat history in a file (distributed_procol)
-* (easy) load chat history from file when server is launched (test_server.py)
+=========== 2019/2/20 ============
+* communication by messages instead of unformatted strings
+* message-length now correctly handled in server-side protocol
+
+========== TODO ==================
+* add timestamps to the chat (distributed_procol)
+* save chat history in a file (distributed_procol)
+* load chat history from file when server is launched (test_server.py)
 * server-side "chat logic" should be separated from the distributed protocol itself
 * add a first version of usernames on client side: maybe just a separate textinput to enter the username without any password for now
 * start using Twisted AMP protocol (much more powerful for the next steps) instead of current "raw" protocol
+  ->DONE by defining our own message format
 * add the username to the communication. Note : we need to switch to Twisted AMP protocol first to do that easily.
+  -> messages now always contain a username, but not used yet
 * we need a way to update the distant server easily
   (maybe a simple cron job that pull git changes automatically and restart the server)
+* message-length not correctly handled yet on client-side.
