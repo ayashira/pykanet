@@ -46,13 +46,15 @@ class NetworkClientApp(App):
 
     def send_message(self, *args):
         msg = self.textbox.text
+        message = Network_Message("dummy_user", "/chat/main", "APPEND", msg)
         
         if msg and self.network_interface:
-            self.network_interface.network_write(msg.encode('utf-8'))
+            #self.network_interface.network_write(msg.encode('utf-8'))
+            self.network_interface.network_send(message)
             self.textbox.text = ""
     
-    def receive_message(self, data):
-        self.print_message(data.decode('utf-8'))
+    def receive_message(self, message):
+        self.print_message(message.message_content)
     
     def print_message(self, msg):
         self.label.text += "{}\n".format(msg)

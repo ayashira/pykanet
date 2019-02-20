@@ -10,6 +10,8 @@ server_address = "31.192.230.58"
 
 from twisted.internet import reactor, protocol
 
+from network_message import Network_Message
+
 class EchoClient(protocol.Protocol):
     def connectionMade(self):
         #disable Nagle's algorithm
@@ -20,7 +22,10 @@ class EchoClient(protocol.Protocol):
         self.factory.network_interface.on_connection(self.transport)
 
     def dataReceived(self, data):
-        self.factory.network_interface.dataReceived(data)
+        print(data)
+        message = Network_Message()
+        message.from_bytes(data)
+        self.factory.network_interface.dataReceived(message)
 
 
 class EchoClientFactory(protocol.ClientFactory):
@@ -47,12 +52,10 @@ class NetworkInterface():
         self.connect_to_server()
         self.data_received_callback = data_received_callback
     
-    def network_write(self, data):
+    #send a message (type: Network_Message) to the network
+    def network_send(self, message):
         if self.connection:
-            self.connection.write(data)
-        
-    def network_read(self):
-        pass
+            self.connection.write(message.to_bytes())
 
     # =========== private functions ========
     def connect_to_server(self):
@@ -62,5 +65,5 @@ class NetworkInterface():
         print("Connected successfully!")
         self.connection = connection
 
-    def dataReceived(self, data):
-        self.data_received_callback(data)
+    def dataReceived(self, message):
+        self.data_received_callback(message)

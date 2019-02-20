@@ -4,6 +4,8 @@ from __future__ import print_function
 
 from twisted.internet import protocol
 
+from network_message import Network_Message
+
 class Distributed_protocol(protocol.Protocol):
     
     #called when a new connection is created
@@ -15,8 +17,9 @@ class Distributed_protocol(protocol.Protocol):
 
         #send a message to existing clients
         greetings = str("A new guest is here \^_^/ : ") + self.transport.getPeer().host
-        for client in self.factory.clients:     
-            client.transport.write(greetings.encode('utf-8'))
+        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", greetings)
+        for client in self.factory.clients:
+            client.transport.write(message.to_bytes())
         
         #send a message to the new client
         new_client_greetings = self.factory.content
@@ -29,23 +32,27 @@ class Distributed_protocol(protocol.Protocol):
         
         new_client_greetings += str("\nYou are guest : ") + self.transport.getPeer().host
         
+        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", new_client_greetings)
+        
         self.factory.clients.append(self)
-        self.transport.write(new_client_greetings.encode('utf-8'))
+        print(message.to_bytes())
+        self.transport.write(message.to_bytes())
     
     #called when some data is received
     def dataReceived(self, data):
+        message = Network_Message()
+        message.from_bytes(data)
+        
         #send the message to all connected clients, add the client name in front
-        message_to_send = self.transport.getPeer().host + " : " + data.decode('utf-8')
+        message.message_content = self.transport.getPeer().host + " : " + message.message_content
+        
         for client in self.factory.clients:
-            client.transport.write(message_to_send.encode('utf-8'))
+            client.transport.write(message.to_bytes())
         
         print("Received data:", data)
         
         #add the new message to the chat history
-        self.factory.content += message_to_send + "\n"
-        
-        #for this test, close the connection immediately
-        #self.transport.loseConnection()
+        self.factory.content += message.message_content + "\n"
     
     #called when the connection is lost
     def connectionLost(self, reason):
@@ -53,6 +60,8 @@ class Distributed_protocol(protocol.Protocol):
         self.factory.clients.remove(self)
         
         #message to other clients
-        message_to_send = str("Chat left by ") + self.transport.getPeer().host
+        notification_to_send = str("Chat left by ") + self.transport.getPeer().host
+        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", notification_to_send)
+        
         for client in self.factory.clients:
-            client.transport.write(message_to_send.encode('utf-8'))
+            client.transport.write(message.to_bytes())
