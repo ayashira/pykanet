@@ -24,7 +24,7 @@ class EchoClient(protocol.Protocol):
         
         #application-level keep alive messages
         loop_task = task.LoopingCall(self.sendKeepAlive)
-        loop_task.start(4.0) # call every 4 seconds
+        loop_task.start(1.0) # call every 1 second
         
     def dataReceived(self, data):
         print(data)
