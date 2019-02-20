@@ -3,10 +3,10 @@
 server_port = 8883
 
 #test on localhost
-server_address = "localhost"
+#server_address = "localhost"
 
 #this is the official first server address
-#server_address = "31.192.230.58"
+server_address = "31.192.230.58"
 
 from twisted.internet import reactor, protocol
 from twisted.internet import task
