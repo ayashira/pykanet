@@ -36,7 +36,7 @@ class Network_Message():
         complete_message += (len(message_content_utf8)).to_bytes(4, byteorder='big')
         complete_message += message_content_utf8
         
-        complete_message = len(complete_message).to_bytes(4, byteorder='big') + complete_message
+        complete_message = (len(complete_message)).to_bytes(4, byteorder='big') + complete_message
         
         return complete_message
         
