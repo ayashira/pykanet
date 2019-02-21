@@ -25,6 +25,9 @@ Kivy default font supports a very limited set of utf8 characters
 Known problem:
 Kivy textInput does not display temporary Japanese words when entering some Japanese text
 Maybe support of Japanese will be difficult for now (but this is not an urgent problem)
+-> 2019/2/21 : japanese input support is possible with a patch of kivy
+   https://qiita.com/dario_okazaki/items/8c6953166b336e83e417
+   This patch is already included in kivy master branch, so this problem will be solved with the next release of kivy
 
 == Test on local machine ==
 
@@ -57,7 +60,7 @@ First version of a real chat !
 * server-side "chat logic" should be separated from the distributed protocol itself
 * add a first version of usernames on client side: maybe just a separate textinput to enter the username without any password for now
 * start using Twisted AMP protocol (much more powerful for the next steps) instead of current "raw" protocol
-  ->DONE by defining our own message format
+  ->DONE, not by using AMP, but by defining our own message passing protocol 
 * add the username to the communication. Note : we need to switch to Twisted AMP protocol first to do that easily.
   -> messages now always contain a username, but not used yet
 * we need a way to update the distant server easily
