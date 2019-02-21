@@ -7,6 +7,9 @@
 
 #TODO : exception handling
 class Network_Message():
+    message_prefix_size = 4
+    subpart_prefix_size = (1, 2, 1, 4)
+    
     #username : utf8 string, username of message sender
     #network_path : utf8 string, target address on the network where the message is sent
     #network_command : utf8 string, requested action at the target address
@@ -20,23 +23,13 @@ class Network_Message():
     #we convert each element of the message to bytes, and prefix them with the number of bytes after conversion
     #the complete message is also prefixed with the complete message length
     def to_bytes(self):
-        username_utf8 = self.username.encode('utf-8')
-        complete_message = (len(username_utf8)).to_bytes(1, byteorder='big')
-        complete_message += username_utf8
+        complete_message = b''
+        for i, subpart in enumerate( (self.username, self.network_path, self.network_command, self.message_content) ):
+            subpart_utf8 = subpart.encode('utf-8')
+            complete_message += (len(subpart_utf8)).to_bytes(Network_Message.subpart_prefix_size[i], byteorder='big')
+            complete_message += subpart_utf8
         
-        network_path_utf8 = self.network_path.encode('utf-8')
-        complete_message += (len(network_path_utf8)).to_bytes(2, byteorder='big')
-        complete_message += network_path_utf8
-        
-        network_command_utf8 = self.network_command.encode('utf-8')
-        complete_message += (len(network_command_utf8)).to_bytes(1, byteorder='big')
-        complete_message += network_command_utf8
-        
-        message_content_utf8 = self.message_content.encode('utf-8')
-        complete_message += (len(message_content_utf8)).to_bytes(4, byteorder='big')
-        complete_message += message_content_utf8
-        
-        complete_message = (len(complete_message)).to_bytes(4, byteorder='big') + complete_message
+        complete_message = (len(complete_message)).to_bytes(Network_Message.message_prefix_size, byteorder='big') + complete_message
         
         return complete_message
         
