@@ -20,7 +20,7 @@ class Network_Message():
         self.network_command = network_command
         self.message_content = message_content
     
-    #we convert each element of the message to bytes, and prefix them with the number of bytes after conversion
+    #we convert each subpart of the message to bytes, and prefix each of them with their length in bytes
     #the complete message is also prefixed with the complete message length
     def to_bytes(self):
         complete_message = b''
@@ -32,24 +32,19 @@ class Network_Message():
         complete_message = (len(complete_message)).to_bytes(Network_Message.message_prefix_size, byteorder='big') + complete_message
         
         return complete_message
-        
+    
+    #read each subpart of the message from a byte encoding
     def from_bytes(self, complete_message):
-        start_idx = 4
-        username_length = int.from_bytes(complete_message[start_idx:start_idx+1], byteorder='big')
-        self.username = complete_message[start_idx+1:start_idx+1+username_length].decode('utf-8')
-        start_idx += 1 + username_length
+        start_idx = message_prefix_size
+        subpart_list = []
+        nb_subparts = len(subpart_prefix_size)
+        for i in range(nb_subparts):
+            subpart_length = int.from_bytes(complete_message[start_idx:start_idx+Network_Message.subpart_prefix_size[i]], byteorder='big')
+            start_idx += Network_Message.subpart_prefix_size[i]
+            subpart_list.append( complete_message[start_idx:start_idx+subpart_length].decode('utf-8') )
+            start_idx += subpart_length
         
-        network_path_length = int.from_bytes(complete_message[start_idx:start_idx+2], byteorder='big')
-        self.network_path = complete_message[start_idx+2:start_idx+2+network_path_length].decode('utf-8') 
-        start_idx += 2 + network_path_length
-        
-        network_command_length = int.from_bytes(complete_message[start_idx:start_idx+1], byteorder='big')
-        self.network_command = complete_message[start_idx+1:start_idx+1+network_command_length].decode('utf-8')
-        start_idx += 1 + network_command_length
-        
-        network_content_length = int.from_bytes(complete_message[start_idx:start_idx+4], byteorder='big')
-        self.message_content = complete_message[start_idx+4:start_idx+4+network_content_length].decode('utf-8')
-        start_idx += 4 + network_content_length
+        self.username, self.network_path, self.network_command, self.message_content = subpart_list
 
 #perform unit tests if the module was not imported
 #TODO : more unit tests, especially for exception handling of "bad" messages
