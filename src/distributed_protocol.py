@@ -6,6 +6,10 @@ from twisted.internet import protocol
 
 from network_message import Network_Message
 
+from chat_service import *
+
+#this class implements the message passing protocol
+#one instance of this class is created for each new connection received by the server
 class Distributed_protocol(protocol.Protocol):
     
     #called when a new connection is created
@@ -15,39 +19,17 @@ class Distributed_protocol(protocol.Protocol):
         
         self.transport.setTcpKeepAlive(True)
         
-        #buffer to receive data
-        self.receive_buffer = None
+        #bytearray buffer to receive data, initialized as an empty array
+        self.receive_buffer = bytearray(b'')
         
-        #send a message to existing clients
-        greetings = str("A new guest is here \^_^/ : ") + self.transport.getPeer().host
-        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", greetings)
-        for client in self.factory.clients:
-            client.transport.write(message.to_bytes())
-        
-        #send a message to the new client
-        new_client_greetings = self.factory.content
-        if len(self.factory.clients) > 0:
-            new_client_greetings += str("=====\nCurrently connected guests: ")
-            for client in self.factory.clients:
-                new_client_greetings += client.transport.getPeer().host + " "
-        else:
-            new_client_greetings += str("=====\nNo other guest currently connected.")
-        
-        new_client_greetings += str("\nYou are guest : ") + self.transport.getPeer().host
-        
-        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", new_client_greetings)
-        
-        self.factory.clients.append(self)
-        print(message.to_bytes())
-        self.transport.write(message.to_bytes())
-    
-    #called when some data is received
+        #add the new client to the chat node
+        self.factory.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
+            
+    #called when some data is received on the connection
+    #tranform the raw stream of data into messages, and send the messages to the correct service
     def dataReceived(self, data):
         #add all received data to the buffer
-        if self.receive_buffer is None:
-            self.receive_buffer = data
-        else:
-            self.receive_buffer += data
+        self.receive_buffer += data
         
         #wait until we receive the first 4 bytes (total message length)
         if len(self.receive_buffer) < 4:
@@ -70,26 +52,11 @@ class Distributed_protocol(protocol.Protocol):
         #ignore keep-alive messages
         if message.network_command == "KEEP_ALIVE":
             return
-        
-        #send the message to all connected clients, add the client name in front
-        message.message_content = self.transport.getPeer().host + " : " + message.message_content
-        
-        for client in self.factory.clients:
-            client.transport.write(message.to_bytes())
-        
-        print("Received data:", next_message_data)
-        
-        #add the new message to the chat history
-        self.factory.content += message.message_content + "\n"
+            
+        #send other messages to the ChatNode
+        self.factory.services_dict["chat_service"].receive_message(self, message)
     
     #called when the connection is lost
     def connectionLost(self, reason):
         print("connection lost")
-        self.factory.clients.remove(self)
-        
-        #message to other clients
-        notification_to_send = str("Chat left by ") + self.transport.getPeer().host
-        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", notification_to_send)
-        
-        for client in self.factory.clients:
-            client.transport.write(message.to_bytes())
+        self.factory.services_dict["chat_service"].remove_client(self)

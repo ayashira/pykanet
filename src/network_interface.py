@@ -27,7 +27,7 @@ class EchoClient(protocol.Protocol):
         loop_task.start(1.0) # call every 1 second
         
     def dataReceived(self, data):
-        print(data)
+        #print(data)
         message = Network_Message()
         message.from_bytes(data)
         self.factory.network_interface.dataReceived(message)
