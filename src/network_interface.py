@@ -13,6 +13,7 @@ from twisted.internet import task
 
 from network_message import Network_Message
 
+#TODO : this class will be merged with Distributed_Protocol
 class EchoClient(protocol.Protocol):
     def connectionMade(self):
         #disable Nagle's algorithm
@@ -25,7 +26,8 @@ class EchoClient(protocol.Protocol):
         #application-level keep alive messages
         loop_task = task.LoopingCall(self.sendKeepAlive)
         loop_task.start(1.0) # call every 1 second
-        
+    
+    #TODO:currently not correct. Should be the same as Distributed_Protocol.dataReceived()
     def dataReceived(self, data):
         #print(data)
         message = Network_Message()

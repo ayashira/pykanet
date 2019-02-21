@@ -58,6 +58,7 @@ First version of a real chat !
 * save chat history in a file (distributed_procol)
 * load chat history from file when server is launched (test_server.py)
 * server-side "chat logic" should be separated from the distributed protocol itself
+  -> 2019/2/21: DONE
 * add a first version of usernames on client side: maybe just a separate textinput to enter the username without any password for now
 * start using Twisted AMP protocol (much more powerful for the next steps) instead of current "raw" protocol
   ->DONE, not by using AMP, but by defining our own message passing protocol 
