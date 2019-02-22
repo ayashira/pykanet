@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from twisted.internet import protocol
+from twisted.internet import protocol, task
 
 from network_message import Network_Message
 
@@ -12,7 +12,7 @@ from chat_service import *
 #one instance of this class is created for each new connection received by the server
 class Distributed_protocol(protocol.Protocol):
     
-    #called when a new connection is created
+    #called by Twisted when the connection is created
     def connectionMade(self):
         #disable Nagle's algorithm
         self.transport.setTcpNoDelay(True)
@@ -24,8 +24,12 @@ class Distributed_protocol(protocol.Protocol):
         
         #add the new client to the chat node
         self.factory.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
-            
-    #called when some data is received on the connection
+    
+    #send a Network_Message to the other end of the connection 
+    def send_message(self, message):
+        self.transport.write(message.to_bytes())
+    
+    #called by Twisted when some data is received on the connection
     #tranform the raw stream of data into messages, and send the messages to the correct service
     def dataReceived(self, data):
         #add all received data to the buffer
@@ -56,7 +60,19 @@ class Distributed_protocol(protocol.Protocol):
         #send other messages to the ChatNode
         self.factory.services_dict["chat_service"].receive_message(self, message)
     
-    #called when the connection is lost
+    #activate application-level keep alive messages
+    #it needs to be activated for connections to a service that keeps running for a long time
+    #typical usage case is a chat service
+    def activate_keep_alive(self):
+        loop_task = task.LoopingCall(self.send_keep_alive)
+        loop_task.start(1.0) # call every 1 second
+    
+    #send a keep-alive message
+    def send_keep_alive(self):
+        message = Network_Message("dummy_user", "dummy_address", "KEEP_ALIVE", "")
+        self.send_message(message)
+    
+    #called by Twisted when the connection is lost
     def connectionLost(self, reason):
         print("connection lost")
         self.factory.services_dict["chat_service"].remove_client(self)
