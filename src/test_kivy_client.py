@@ -3,6 +3,26 @@
 
 from __future__ import unicode_literals
 
+import sys
+import argparse
+
+#function to parse command line arguments
+def parse_arguments():
+    #--use_localhost can be used to force the connection to localhost instead of the real distant server
+    #this is useful mainly for tests
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-lh', '--use_localhost', action='store_true')
+    
+    #parse only the known arguments, and leave the others for kivy parser
+    args, unknown = parser.parse_known_args()
+    sys.argv[1:] = unknown
+    
+    return args
+
+#this is not a good practice to parse arguments here instead of __main__
+#this is a workaround to strange kivy design that parses arguments directly and silently inside import
+custom_args = parse_arguments()
+
 from kivy.support import install_twisted_reactor
 
 install_twisted_reactor()
@@ -63,4 +83,8 @@ class NetworkClientApp(App):
         self.textbox.focus = True
 
 if __name__ == '__main__':
+    #note: command-line arguments are parsed at top of the file, before kivy import
+    if custom_args.use_localhost:
+        NetworkInterface.set_server_to_localhost()
+    
     NetworkClientApp().run()

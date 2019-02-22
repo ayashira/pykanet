@@ -1,13 +1,5 @@
 # This file is a first test of network interface
 
-server_port = 8883
-
-#test on localhost
-#server_address = "localhost"
-
-#this is the official first server address
-server_address = "31.192.230.58"
-
 from twisted.internet import reactor, protocol
 from twisted.internet import task
 
@@ -56,8 +48,17 @@ class EchoClientFactory(protocol.ClientFactory):
 
 
 class NetworkInterface():
+    #ip address and port of the first official server
+    server_address = "31.192.230.58"
+    server_port = 8883
+    
     connection = None
     data_received_callback = None
+    
+    #set localhost as the network address
+    #useful for tests on a local machine
+    def set_server_to_localhost():
+        NetworkInterface.server_address = "localhost"
     
     def __init__(self, data_received_callback):
         self.connect_to_server()
@@ -70,7 +71,7 @@ class NetworkInterface():
 
     # =========== private functions ========
     def connect_to_server(self):
-        reactor.connectTCP(server_address, server_port, EchoClientFactory(self))
+        reactor.connectTCP(NetworkInterface.server_address, NetworkInterface.server_port, EchoClientFactory(self))
     
     def on_connection(self, connection):
         print("Connected successfully!")
