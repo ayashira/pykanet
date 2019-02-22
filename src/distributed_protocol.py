@@ -12,6 +12,9 @@ from chat_service import *
 #one instance of this class is created for each new connection received by the server
 class Distributed_protocol(protocol.Protocol):
     
+    #currently running services
+    services_dict = {}
+    
     #called by Twisted when the connection is created
     def connectionMade(self):
         #disable Nagle's algorithm
@@ -23,7 +26,7 @@ class Distributed_protocol(protocol.Protocol):
         self.receive_buffer = bytearray(b'')
         
         #add the new client to the chat node
-        self.factory.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
+        Distributed_protocol.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
     
     #send a Network_Message to the other end of the connection 
     def send_message(self, message):
@@ -58,7 +61,7 @@ class Distributed_protocol(protocol.Protocol):
             return
             
         #send other messages to the ChatNode
-        self.factory.services_dict["chat_service"].receive_message(self, message)
+        Distributed_protocol.services_dict["chat_service"].receive_message(self, message)
     
     #activate application-level keep alive messages
     #it needs to be activated for connections to a service that keeps running for a long time
@@ -75,4 +78,4 @@ class Distributed_protocol(protocol.Protocol):
     #called by Twisted when the connection is lost
     def connectionLost(self, reason):
         print("connection lost")
-        self.factory.services_dict["chat_service"].remove_client(self)
+        Distributed_protocol.services_dict["chat_service"].remove_client(self)
