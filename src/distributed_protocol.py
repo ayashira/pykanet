@@ -42,34 +42,38 @@ class Distributed_protocol(protocol.Protocol):
         #add all received data to the buffer
         self.receive_buffer += data
         
-        #wait until we receive the first 4 bytes (total message length)
-        if len(self.receive_buffer) < 4:
-            return
-        
-        #don't forget the 4 initial bytes
-        message_length = 4 + int.from_bytes(self.receive_buffer[:4], byteorder='big')
-        
-        #wait until we receive the complete message
-        if len(self.receive_buffer) < message_length:
-            return
-        
-        #next_message is received, extract it and remove it from the buffer
-        next_message_data = self.receive_buffer[:message_length]
-        self.receive_buffer = self.receive_buffer[message_length:]
-        
-        message = Network_Message()
-        message.from_bytes(next_message_data)
-        
-        #ignore keep-alive messages
-        if message.network_command == "KEEP_ALIVE":
-            return
+        #we need an infinite loop here to process all the already received messages as soon as possible
+        #the loop stops when there is no more "complete messages" in the buffer
+        #note for later : infinite loop here could be a problem if the buffer contains really a lot of messages
+        while True:
+            #exit the loop if there is no more message, or if the first 4 bytes (total message length) are not received
+            if len(self.receive_buffer) < 4:
+                return
             
-        if self.factory.is_server:
-            #send other messages to the ChatNode
-            Distributed_protocol.services_dict["chat_service"].receive_message(self, message)
-        else:
-            #case of client end of the connection
-            self.factory.network_interface.dataReceived(message)
+            #don't forget the 4 initial bytes
+            message_length = 4 + int.from_bytes(self.receive_buffer[:4], byteorder='big')
+            
+            #exit the loop if a complete message is not received yet
+            if len(self.receive_buffer) < message_length:
+                return
+            
+            #next_message is received, extract it and remove it from the buffer
+            next_message_data = self.receive_buffer[:message_length]
+            self.receive_buffer = self.receive_buffer[message_length:]
+            
+            message = Network_Message()
+            message.from_bytes(next_message_data)
+            
+            #ignore keep-alive messages
+            if message.network_command == "KEEP_ALIVE":
+                continue
+            
+            if self.factory.is_server:
+                #send other messages to the ChatNode
+                Distributed_protocol.services_dict["chat_service"].receive_message(self, message)
+            else:
+                #case of client end of the connection
+                self.factory.network_interface.dataReceived(message)
         
     #activate application-level keep alive messages
     #it needs to be activated for connections to a service that keeps running for a long time
