@@ -4,48 +4,7 @@ from twisted.internet import reactor, protocol
 from twisted.internet import task
 
 from network_message import Network_Message
-
-#TODO : this class will be merged with Distributed_Protocol
-class EchoClient(protocol.Protocol):
-    def connectionMade(self):
-        #disable Nagle's algorithm
-        self.transport.setTcpNoDelay(True)
-        
-        self.transport.setTcpKeepAlive(True)
-        
-        self.factory.network_interface.on_connection(self.transport)
-        
-        #application-level keep alive messages
-        loop_task = task.LoopingCall(self.sendKeepAlive)
-        loop_task.start(1.0) # call every 1 second
-    
-    #TODO:currently not correct. Should be the same as Distributed_Protocol.dataReceived()
-    def dataReceived(self, data):
-        #print(data)
-        message = Network_Message()
-        message.from_bytes(data)
-        self.factory.network_interface.dataReceived(message)
-        
-    def sendKeepAlive(self):
-        message = Network_Message("dummy_user", "dummy_address", "KEEP_ALIVE", "")
-        self.transport.write(message.to_bytes())
-
-
-class EchoClientFactory(protocol.ClientFactory):
-    protocol = EchoClient
-
-    def __init__(self, network_interface):
-        self.network_interface = network_interface
-
-    def startedConnecting(self, connector):
-        print('Started to connect.')
-
-    def clientConnectionLost(self, connector, reason):
-        print('Lost connection.')
-
-    def clientConnectionFailed(self, connector, reason):
-        print('Connection failed.')
-
+from distributed_protocol import Distributed_protocol
 
 class NetworkInterface():
     #ip address and port of the first official server
@@ -71,7 +30,11 @@ class NetworkInterface():
 
     # =========== private functions ========
     def connect_to_server(self):
-        reactor.connectTCP(NetworkInterface.server_address, NetworkInterface.server_port, EchoClientFactory(self))
+        factory = protocol.ClientFactory()
+        factory.protocol = Distributed_protocol
+        factory.is_server = False
+        factory.network_interface = self
+        reactor.connectTCP(NetworkInterface.server_address, NetworkInterface.server_port, factory)
     
     def on_connection(self, connection):
         print("Connected successfully!")

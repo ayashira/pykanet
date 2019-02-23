@@ -8,6 +8,7 @@ port_to_listen = 8883
 def main():
     factory = protocol.ServerFactory()
     factory.protocol = Distributed_protocol
+    factory.is_server = True
     
     reactor.listenTCP(port_to_listen,factory)
     reactor.run()

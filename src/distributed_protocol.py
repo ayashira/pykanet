@@ -25,8 +25,12 @@ class Distributed_protocol(protocol.Protocol):
         #bytearray buffer to receive data, initialized as an empty array
         self.receive_buffer = bytearray(b'')
         
-        #add the new client to the chat node
-        Distributed_protocol.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
+        if self.factory.is_server:
+            #add the new client to the chat node
+            Distributed_protocol.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
+        else:
+            self.factory.network_interface.on_connection(self.transport)
+            self.activate_keep_alive()
     
     #send a Network_Message to the other end of the connection 
     def send_message(self, message):
@@ -60,9 +64,13 @@ class Distributed_protocol(protocol.Protocol):
         if message.network_command == "KEEP_ALIVE":
             return
             
-        #send other messages to the ChatNode
-        Distributed_protocol.services_dict["chat_service"].receive_message(self, message)
-    
+        if self.factory.is_server:
+            #send other messages to the ChatNode
+            Distributed_protocol.services_dict["chat_service"].receive_message(self, message)
+        else:
+            #case of client end of the connection
+            self.factory.network_interface.dataReceived(message)
+        
     #activate application-level keep alive messages
     #it needs to be activated for connections to a service that keeps running for a long time
     #typical usage case is a chat service
@@ -77,5 +85,6 @@ class Distributed_protocol(protocol.Protocol):
     
     #called by Twisted when the connection is lost
     def connectionLost(self, reason):
-        print("connection lost")
-        Distributed_protocol.services_dict["chat_service"].remove_client(self)
+        if self.factory.is_server:
+            print("connection lost")
+            Distributed_protocol.services_dict["chat_service"].remove_client(self)
