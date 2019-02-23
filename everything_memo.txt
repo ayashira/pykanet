@@ -31,13 +31,14 @@ Maybe support of Japanese will be difficult for now (but this is not an urgent p
 
 == Test on local machine ==
 
-To run a local test:
-1) first set server_address to localhost in network_interface. Option needed in __main__
-2) launch the local server with:
-  python test_server.py
-3) launch the client
-  python test_kivy_client.py
+2019/2/22 : client can now be launched with option -lh or --use_localhost to indicate that this is a local test
 
+To run a local test:
+1) launch the local server with:
+  python test_server.py
+3) launch the client with localhost option
+  python test_kivy_client.py --use_localhost
+  
 == Code ==
 * test_client.py is now useless. Will be removed soon.
 * The code of this first client/server test is a bit messy
@@ -53,6 +54,17 @@ First version of a real chat !
 * communication by messages instead of unformatted strings
 * message-length now correctly handled in server-side protocol
 
+=========== 2019/2/21 ============
+* code refactoring : chat-logic code separated in a Chat_Service class
+
+=========== 2019/2/23 ============
+* code refactoring : Distributed_protocol used on both server and client side
+* message-length now correctly handled on both server and client side
+* important bug found and corrected when processing messages
+  when 2 messages were received in the same "data packet", only the first message was processed immediately
+  This was causing gradually some delay in processing messages
+  -> after correction, chat is now much more reactive
+
 ========== TODO ==================
 * add timestamps to the chat (distributed_procol)
 * save chat history in a file (distributed_procol)
@@ -67,3 +79,4 @@ First version of a real chat !
 * we need a way to update the distant server easily
   (maybe a simple cron job that pull git changes automatically and restart the server)
 * message-length not correctly handled yet on client-side.
+  -> 2019/2/23 : DONE, by merging EchoClient into Distributed_protocol
