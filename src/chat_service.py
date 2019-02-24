@@ -2,6 +2,7 @@
 
 from network_message import Network_Message
 import hashlib
+import datetime
 
 class Chat_Service():
     
@@ -48,7 +49,7 @@ class Chat_Service():
             return
         
         #forward the message to all connected clients, add the client name (currently ip address) in front
-        message.message_content = sender_client.get_host_name() + " : " + message.message_content
+        message.message_content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.get_host_name() + " : " + message.message_content
         
         for client in self.clients:
             client.send_message(message)
