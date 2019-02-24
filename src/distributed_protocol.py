@@ -87,6 +87,10 @@ class Distributed_protocol(protocol.Protocol):
         message = Network_Message("dummy_user", "dummy_address", "KEEP_ALIVE", "")
         self.send_message(message)
     
+    #get the ip address
+    def get_host_name(self):
+        return self.transport.getPeer().host
+    
     #called by Twisted when the connection is lost
     def connectionLost(self, reason):
         if self.factory.is_server:

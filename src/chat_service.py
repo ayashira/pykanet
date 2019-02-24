@@ -11,7 +11,7 @@ class Chat_Service():
     #called when a new client connection is opened
     def add_client(self, new_client):
         #send a message to existing clients
-        greetings = str("A new guest is here \^_^/ : ") + new_client.transport.getPeer().host
+        greetings = str("A new guest is here \^_^/ : ") + new_client.get_host_name()
         message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", greetings)
         for client in self.clients:
             client.send_message(message)
@@ -21,11 +21,11 @@ class Chat_Service():
         if len(self.clients) > 0:
             new_client_greetings += str("=====\nCurrently connected guests: ")
             for client in self.clients:
-                new_client_greetings += client.transport.getPeer().host + " "
+                new_client_greetings += client.get_host_name() + " "
         else:
             new_client_greetings += str("=====\nNo other guest currently connected.")
         
-        new_client_greetings += str("\nYou are guest : ") + new_client.transport.getPeer().host
+        new_client_greetings += str("\nYou are guest : ") + new_client.get_host_name()
         
         message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", new_client_greetings)
         
@@ -36,7 +36,7 @@ class Chat_Service():
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
         #forward the message to all connected clients, add the client name (currently ip address) in front
-        message.message_content = sender_client.transport.getPeer().host + " : " + message.message_content
+        message.message_content = sender_client.get_host_name() + " : " + message.message_content
         
         for client in self.clients:
             client.send_message(message)
@@ -49,7 +49,7 @@ class Chat_Service():
         self.clients.remove(lost_client)
         
         #message to other clients
-        notification_to_send = str("Chat left by ") + lost_client.transport.getPeer().host
+        notification_to_send = str("Chat left by ") + lost_client.get_host_name()
         message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", notification_to_send)
         
         for client in self.clients:
