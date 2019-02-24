@@ -20,15 +20,16 @@ class Server_Services():
         pass
 
     def receive_message(self, client, message):
-        if client.message_receiver_callback:
-            client.message_receiver_callback(client, message)
-        else:
+        if not client.message_receiver_callback:
             #message_receiver not defined yet
             #define it depending on the address in the first message
             if message.network_path.startswith("/chat/"):
-                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service()).receive_message
-                client.connection_lost_callback = self.services_dict.setdefault(message.network_path, Chat_Service()).connection_lost
-                client.message_receiver_callback(client, message)
+                #if the service for this address is not existing yet, it will be created by setdefault
+                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service(message.network_path)).receive_message
+                client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
+        
+        #forward the message to the receiver defined for the client
+        client.message_receiver_callback(client, message)
         
     def connection_lost(self, client):
         client.connection_lost_callback(client)

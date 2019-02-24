@@ -1,18 +1,24 @@
 # Server node implementing a chat
 
 from network_message import Network_Message
+import hashlib
 
 class Chat_Service():
     
-    def __init__(self):
+    def __init__(self, network_path):
+        #list of connected clients
         self.clients = []
-        self.content = ""
-    
+        
+        #initialize the content with the saved file (if existing) corresponding to the network address
+        self.content = self.file_read(network_path)
+        
+        self.network_path = network_path
+        
     #called when a new client connection is opened
     def add_client(self, new_client):
         #send a message to existing clients
         greetings = str("A new guest is here \^_^/ : ") + new_client.get_host_name()
-        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", greetings)
+        message = Network_Message("dummy_user", self.network_path, "NOTIFICATION", greetings)
         for client in self.clients:
             client.send_message(message)
         
@@ -27,7 +33,7 @@ class Chat_Service():
         
         new_client_greetings += str("\nYou are guest : ") + new_client.get_host_name()
         
-        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", new_client_greetings)
+        message = Network_Message("dummy_user", self.network_path, "NOTIFICATION", new_client_greetings)
         
         self.clients.append(new_client)
         #print(message.to_bytes())
@@ -49,6 +55,10 @@ class Chat_Service():
         
         #add the new message to the chat history
         self.content += message.message_content + "\n"
+        
+        #save the content to disk
+        #note : for efficiency, we should probably note save after "each" message
+        self.file_append(self.network_path, message.message_content + "\n")
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):
@@ -60,7 +70,33 @@ class Chat_Service():
         
         #message to other clients
         notification_to_send = str("Chat left by ") + lost_client.get_host_name()
-        message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", notification_to_send)
+        message = Network_Message("dummy_user", self.network_path, "NOTIFICATION", notification_to_send)
         
         for client in self.clients:
             client.send_message(message)
+    
+    #TODO : the following 3 functions should be put in a separate class
+    def file_read(self, network_path):
+        filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+        try:
+            with open(filename) as file:
+                return file.read()
+        except:
+            #could not read the file (probably file not existing yet)
+            return ""
+    
+    def file_write(self, network_path, new_content):
+        filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+        try:
+            with open(filename, "w") as file:
+                file.write(new_content)
+        except:
+            print("Warning: could not open file ", filename, "to save data of ", network_path)
+
+    def file_append(self, network_path, added_content):
+        filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+        try:
+            with open(filename, "a") as file:
+                file.write(added_content)
+        except:
+            print("Warning: could not open file ", filename, "to save data of ", network_path)
