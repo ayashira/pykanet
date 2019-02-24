@@ -66,7 +66,7 @@ class NetworkClientApp(App):
     
     def connection_made(self):
         #connection is established, connect to the target address
-        message = Network_Message("dummy_user", "/chat/main", "CONNECT", "")
+        message = Network_Message("dummy_user", "/chat/main", "ENTER", "")
         self.network_interface.network_send(message)
     
     def send_message(self, *args):

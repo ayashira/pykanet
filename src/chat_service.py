@@ -35,7 +35,9 @@ class Chat_Service():
     
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
-        if message.network_command == "CONNECT":
+        if message.network_command == "ENTER":
+            #a new client asked to enter the room
+            #TODO:we should check that he is not already here
             self.add_client(sender_client)
             return
         
