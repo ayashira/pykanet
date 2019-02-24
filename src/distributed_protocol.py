@@ -1,43 +1,7 @@
-# this is a first test of protocol based on the Twisted library
-
-from __future__ import print_function
 
 from twisted.internet import protocol, task
 
 from network_message import Network_Message
-
-from chat_service import *
-
-#main class launching the server services when a connection is made at a given network address
-#only one instance of this class is created for one server node (in the server factory)
-#this class is the "glue" between connections and services 
-class Server_Services():
-    
-    def __init__(self):
-        #dictionary of currently running services dict("address", service)
-        #a service is "some code" currently executed, corresponding to a given network address
-        self.services_dict = {}
-    
-    def connection_made(self, client):
-        #currently, we do nothing special when a connection is established
-        #we wait the first message in order to know what is the target network_path and associated service
-        pass
-
-    def receive_message(self, client, message):
-        if client.message_receiver_callback:
-            client.message_receiver_callback(client, message)
-        else:
-            print("arrived here")
-            #message_receiver not defined yet
-            #define it depending on the address in the first message
-            if message.network_path.startswith("/chat/"):
-                print("chat created")
-                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service()).receive_message
-                client.connection_lost_callback = self.services_dict.setdefault(message.network_path, Chat_Service()).connection_lost
-                client.message_receiver_callback(client, message)
-        
-    def connection_lost(self, client):
-        client.connection_lost_callback(client)
 
 #this class implements the message passing protocol
 #one instance of this class is created for each new connection received by the server
@@ -53,6 +17,7 @@ class Distributed_protocol(protocol.Protocol):
         self.receive_buffer = bytearray(b'')
         
         #callbacks to call when messages are received or the connection is lost
+        #these callbacks are initialized by server_services class in the case of the server-end of a connection
         self.message_receiver_callback = None
         self.connection_lost_callback = None        
         

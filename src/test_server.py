@@ -1,7 +1,9 @@
 # this is a first test of server using Twisted library
 
-from distributed_protocol import *
 from twisted.internet import reactor
+
+from distributed_protocol import *
+from server_services import *
 
 port_to_listen = 8883
 
