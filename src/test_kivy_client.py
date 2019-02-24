@@ -50,7 +50,7 @@ class NetworkClientApp(App):
 
     def build(self):
         root = self.setup_gui()
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message)
+        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
         return root
 
     def setup_gui(self):
@@ -63,13 +63,17 @@ class NetworkClientApp(App):
         layout.add_widget(self.label)
         layout.add_widget(self.textbox)
         return layout
-
+    
+    def connection_made(self):
+        #connection is established, connect to the target address
+        message = Network_Message("dummy_user", "/chat/main", "CONNECT", "")
+        self.network_interface.network_send(message)
+    
     def send_message(self, *args):
         msg = self.textbox.text
-        message = Network_Message("dummy_user", "/chat/main", "APPEND", msg)
         
         if msg and self.network_interface:
-            #self.network_interface.network_write(msg.encode('utf-8'))
+            message = Network_Message("dummy_user", "/chat/main", "APPEND", msg)
             self.network_interface.network_send(message)
             self.textbox.text = ""
     

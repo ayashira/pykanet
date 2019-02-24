@@ -30,11 +30,15 @@ class Chat_Service():
         message = Network_Message("dummy_user", "/chat/main", "NOTIFICATION", new_client_greetings)
         
         self.clients.append(new_client)
-        print(message.to_bytes())
+        #print(message.to_bytes())
         new_client.send_message(message)
     
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
+        if message.network_command == "CONNECT":
+            self.add_client(sender_client)
+            return
+        
         #forward the message to all connected clients, add the client name (currently ip address) in front
         message.message_content = sender_client.get_host_name() + " : " + message.message_content
         
@@ -45,6 +49,10 @@ class Chat_Service():
         self.content += message.message_content + "\n"
     
     #called when a client connection is lost
+    def connection_lost(self, lost_client):
+        self.remove_client(lost_client)
+        
+    #remove a client from the list of connected clients
     def remove_client(self, lost_client):
         self.clients.remove(lost_client)
         

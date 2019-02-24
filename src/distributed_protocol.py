@@ -8,13 +8,40 @@ from network_message import Network_Message
 
 from chat_service import *
 
+#main class launching the server services when a connection is made at a given network address
+#only one instance of this class is created for one server node (in the server factory)
+#this class is the "glue" between connections and services 
+class Server_Services():
+    
+    def __init__(self):
+        #dictionary of currently running services dict("address", service)
+        #a service is "some code" currently executed, corresponding to a given network address
+        self.services_dict = {}
+    
+    def connection_made(self, client):
+        #currently, we do nothing special when a connection is established
+        #we wait the first message in order to know what is the target network_path and associated service
+        pass
+
+    def receive_message(self, client, message):
+        if client.message_receiver_callback:
+            client.message_receiver_callback(client, message)
+        else:
+            print("arrived here")
+            #message_receiver not defined yet
+            #define it depending on the address in the first message
+            if message.network_path.startswith("/chat/"):
+                print("chat created")
+                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service()).receive_message
+                client.connection_lost_callback = self.services_dict.setdefault(message.network_path, Chat_Service()).connection_lost
+                client.message_receiver_callback(client, message)
+        
+    def connection_lost(self, client):
+        client.connection_lost_callback(client)
+
 #this class implements the message passing protocol
 #one instance of this class is created for each new connection received by the server
 class Distributed_protocol(protocol.Protocol):
-    
-    #currently running services
-    services_dict = {}
-    
     #called by Twisted when the connection is created
     def connectionMade(self):
         #disable Nagle's algorithm
@@ -25,9 +52,12 @@ class Distributed_protocol(protocol.Protocol):
         #bytearray buffer to receive data, initialized as an empty array
         self.receive_buffer = bytearray(b'')
         
+        #callbacks to call when messages are received or the connection is lost
+        self.message_receiver_callback = None
+        self.connection_lost_callback = None        
+        
         if self.factory.is_server:
-            #add the new client to the chat node
-            Distributed_protocol.services_dict.setdefault("chat_service", Chat_Service()).add_client(self)
+            self.factory.server_services.connection_made(self)
         else:
             self.factory.network_interface.on_connection(self.transport)
             self.activate_keep_alive()
@@ -37,7 +67,7 @@ class Distributed_protocol(protocol.Protocol):
         self.transport.write(message.to_bytes())
     
     #called by Twisted when some data is received on the connection
-    #tranform the raw stream of data into messages, and send the messages to the correct service
+    #transform the raw stream of data into messages, and send the messages to the correct service
     def dataReceived(self, data):
         #add all received data to the buffer
         self.receive_buffer += data
@@ -69,8 +99,7 @@ class Distributed_protocol(protocol.Protocol):
                 continue
             
             if self.factory.is_server:
-                #send other messages to the ChatNode
-                Distributed_protocol.services_dict["chat_service"].receive_message(self, message)
+                self.factory.server_services.receive_message(self, message)
             else:
                 #case of client end of the connection
                 self.factory.network_interface.dataReceived(message)
@@ -95,4 +124,4 @@ class Distributed_protocol(protocol.Protocol):
     def connectionLost(self, reason):
         if self.factory.is_server:
             print("connection lost")
-            Distributed_protocol.services_dict["chat_service"].remove_client(self)
+            self.factory.server_services.connection_lost(self)

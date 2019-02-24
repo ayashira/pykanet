@@ -9,6 +9,7 @@ def main():
     factory = protocol.ServerFactory()
     factory.protocol = Distributed_protocol
     factory.is_server = True
+    factory.server_services = Server_Services()
     
     reactor.listenTCP(port_to_listen,factory)
     reactor.run()
