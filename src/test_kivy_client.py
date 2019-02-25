@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import sys
 import argparse
+import os
 
 #function to parse command line arguments
 def parse_arguments():
@@ -12,6 +13,7 @@ def parse_arguments():
     #this is useful mainly for tests
     parser = argparse.ArgumentParser()
     parser.add_argument('-lh', '--use_localhost', action='store_true')
+    parser.add_argument('-og', '--opengl_config', action='store_true')
     
     #parse only the known arguments, and leave the others for kivy parser
     args, unknown = parser.parse_known_args()
@@ -22,6 +24,15 @@ def parse_arguments():
 #this is not a good practice to parse arguments here instead of __main__
 #this is a workaround to strange kivy design that parses arguments directly and silently inside import
 custom_args = parse_arguments()
+
+#if opengl_custom, the following flags can be customized here
+#maybe it helps to launch Kivy on some old machines (not sure)
+if custom_args.opengl_config:
+    print("Using customized environment flags")
+    os.environ['KIVY_GLES_LIMITS'] = '1'
+    os.environ['USE_OPENGL_MOCK'] = '0'
+    os.environ['USE_OPENGL_ES2'] = '0'
+    os.environ['USE_SDL2'] = '0'
 
 from kivy.support import install_twisted_reactor
 
