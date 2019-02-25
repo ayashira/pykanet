@@ -28,15 +28,22 @@ class Network_Message():
     #we convert each subpart of the message to bytes, and prefix each of them with their length in bytes
     #the complete message is also prefixed with the complete message length
     def to_bytes(self):
-        complete_message = b''
+        complete_message = bytearray(b'')
+        
+        #reserve the space for the message total length
+        complete_message += int(0).to_bytes(Network_Message.message_prefix_size, byteorder='big')
+        
+        #message encoding version
         complete_message += int(Network_Message.MESSAGE_VERSION).to_bytes(2, byteorder='big')
         
+        #each subpart prefixed by its length
         for i, subpart in enumerate( (self.username, self.network_path, self.network_command, self.message_content) ):
             subpart_utf8 = subpart.encode('utf-8')
             complete_message += (len(subpart_utf8)).to_bytes(Network_Message.subpart_prefix_size[i], byteorder='big')
             complete_message += subpart_utf8
         
-        complete_message = (len(complete_message)).to_bytes(Network_Message.message_prefix_size, byteorder='big') + complete_message
+        #initialize the total message length at the beginning of the message
+        complete_message[:Network_Message.message_prefix_size] = (len(complete_message)).to_bytes(Network_Message.message_prefix_size, byteorder='big')
         
         return complete_message
     
@@ -94,3 +101,5 @@ if __name__ == '__main__':
     check_identity("user1", "/user/user1/userpage", "", "A new message from user1")
     check_identity("user1", "/user/user1/userpage", "ADD", "")
     check_identity("", "", "", "")
+    check_identity("a", "b", "c", "d")
+    check_identity("\n", "\n", "\n", "\n")

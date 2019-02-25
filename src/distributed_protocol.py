@@ -45,12 +45,11 @@ class Distributed_protocol(protocol.Protocol):
         #the loop stops when there is no more "complete messages" in the buffer
         #note for later : infinite loop here could be a problem if the buffer contains really a lot of messages
         while True:
-            #exit the loop if there is no more message, or if the first 4 bytes (total message length) are not received
-            if len(self.receive_buffer) < 4:
+            #exit the loop if there is no more message, or if the bytes for the total message length are not received
+            if len(self.receive_buffer) < Network_Message.message_prefix_size:
                 return
             
-            #don't forget the 4 initial bytes
-            message_length = 4 + int.from_bytes(self.receive_buffer[:4], byteorder='big')
+            message_length = int.from_bytes(self.receive_buffer[:Network_Message.message_prefix_size], byteorder='big')
             
             #exit the loop if a complete message is not received yet
             if len(self.receive_buffer) < message_length:
