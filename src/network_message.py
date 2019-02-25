@@ -1,12 +1,17 @@
 #this class represents a general structure for messages between nodes on the network
 #All messages contain the following information:
-#  sending username, network address destination, requested action at destination, message content
+#  message encoding version
+#  sending username
+#  network address destination
+#  requested action at destination
+#  message content
 #some information will be added later : message hash, signature of the message by the user
 #A message is converted to an array of bytes when sent on the tcp connection with to_bytes()
 #The array of bytes is converted back to a Message class when received with from_bytes()
 
 #TODO : exception handling
 class Network_Message():
+    MESSAGE_VERSION = 0
     message_prefix_size = 4
     subpart_prefix_size = (1, 2, 1, 4)
     
@@ -24,6 +29,8 @@ class Network_Message():
     #the complete message is also prefixed with the complete message length
     def to_bytes(self):
         complete_message = b''
+        complete_message += int(Network_Message.MESSAGE_VERSION).to_bytes(2, byteorder='big')
+        
         for i, subpart in enumerate( (self.username, self.network_path, self.network_command, self.message_content) ):
             subpart_utf8 = subpart.encode('utf-8')
             complete_message += (len(subpart_utf8)).to_bytes(Network_Message.subpart_prefix_size[i], byteorder='big')
@@ -36,6 +43,9 @@ class Network_Message():
     #read each subpart of the message from a byte encoding
     def from_bytes(self, complete_message):
         start_idx = Network_Message.message_prefix_size
+        version = int.from_bytes(complete_message[start_idx:start_idx+2], byteorder='big')
+        start_idx += 2
+        
         subpart_list = []
         nb_subparts = len(Network_Message.subpart_prefix_size)
         for i in range(nb_subparts):
