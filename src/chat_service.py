@@ -24,7 +24,7 @@ class Chat_Service():
     #add a new client to the list of connected clients
     def add_client(self, new_client):
         #send a message to existing clients
-        greetings = str("A new guest is here \^_^/ : ") + new_client.get_host_name()
+        greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  A new guest is here \^_^/ : ") + new_client.get_host_name()
         message = Network_Message("dummy_user", self.network_path, "NOTIFICATION", greetings)
         for client in self.clients:
             client.send_message(message)
@@ -35,13 +35,13 @@ class Chat_Service():
         new_client.send_message(message)
         
         #send a notification to the new client with the list of currently connected users
-        new_client_greetings = ""
+        new_client_greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
         if len(self.clients) > 0:
-            new_client_greetings += str("Currently connected guests: ")
+            new_client_greetings += str("  Currently connected guests: ")
             for client in self.clients:
                 new_client_greetings += client.get_host_name() + " "
         else:
-            new_client_greetings += str("No other guest currently connected.")
+            new_client_greetings += str("  No other guest currently connected.")
         
         new_client_greetings += str("\nYou are guest : ") + new_client.get_host_name()
         
@@ -88,7 +88,7 @@ class Chat_Service():
             return
         
         #message to other clients
-        notification_to_send = str("Chat left by ") + lost_client.get_host_name()
+        notification_to_send = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  Chat left by ") + lost_client.get_host_name()
         message = Network_Message("dummy_user", self.network_path, "NOTIFICATION", notification_to_send)
         
         for client in self.clients:
