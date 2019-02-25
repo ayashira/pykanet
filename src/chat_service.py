@@ -29,22 +29,26 @@ class Chat_Service():
         for client in self.clients:
             client.send_message(message)
         
-        #send a message to the new client
+        #send the current content to the new client
         new_client_greetings = self.content
+        message = Network_Message("dummy_user", self.network_path, "APPEND", new_client_greetings)
+        new_client.send_message(message)
+        
+        #send a notification to the new client with the list of currently connected users
+        new_client_greetings = ""
         if len(self.clients) > 0:
-            new_client_greetings += str("=====\nCurrently connected guests: ")
+            new_client_greetings += str("Currently connected guests: ")
             for client in self.clients:
                 new_client_greetings += client.get_host_name() + " "
         else:
-            new_client_greetings += str("=====\nNo other guest currently connected.")
+            new_client_greetings += str("No other guest currently connected.")
         
         new_client_greetings += str("\nYou are guest : ") + new_client.get_host_name()
         
         message = Network_Message("dummy_user", self.network_path, "NOTIFICATION", new_client_greetings)
+        new_client.send_message(message)
         
         self.clients.append(new_client)
-        #print(message.to_bytes())
-        new_client.send_message(message)
     
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
