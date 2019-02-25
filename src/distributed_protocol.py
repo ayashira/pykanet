@@ -97,8 +97,10 @@ class Distributed_protocol(protocol.Protocol):
     def last_message_delay(self):
         return time.monotonic() - self.last_message_time
     
+    def lose_connection(self):
+        self.transport.loseConnection()
+    
     #called by Twisted when the connection is lost
     def connectionLost(self, reason):
         if self.factory.is_server:
-            print("connection lost")
             self.factory.server_services.connection_lost(self)

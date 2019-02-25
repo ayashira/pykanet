@@ -17,7 +17,7 @@ class Chat_Service():
         self.network_path = network_path
         
         #check regularly that all clients are still active
-        task_interval_sec = 30.0
+        task_interval_sec = 20.0
         loop_task = task.LoopingCall(self.remove_inactive_clients)
         loop_task.start(task_interval_sec)
         
@@ -73,8 +73,8 @@ class Chat_Service():
     
     def remove_inactive_clients(self):
         for client in self.clients:
-            if client.last_message_delay() > 20.0:
-                self.remove_client(client)
+            if client.last_message_delay() > 10.0:
+                client.lose_connection()
     
     #remove a client from the list of connected clients
     def remove_client(self, lost_client):
