@@ -2,14 +2,14 @@
 
 from twisted.internet import reactor
 
-from distributed_protocol import *
+from message_passing_protocol import *
 from server_services import *
 
 port_to_listen = 8883
 
 def main():
     factory = protocol.ServerFactory()
-    factory.protocol = Distributed_protocol
+    factory.protocol = Message_Passing_Protocol
     factory.is_server = True
     factory.server_services = Server_Services()
     
