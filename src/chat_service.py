@@ -2,7 +2,7 @@
 
 from twisted.internet import task
 from network_message import Network_Message
-import hashlib
+from file_manager import *
 import datetime
 
 class Chat_Service():
@@ -12,7 +12,7 @@ class Chat_Service():
         self.clients = []
         
         #initialize the content with the saved file (if existing) corresponding to the network address
-        self.content = self.file_read(network_path)
+        self.content = File_Manager.file_read(network_path)
         
         self.network_path = network_path
         
@@ -64,8 +64,7 @@ class Chat_Service():
         self.content += message.message_content + "\n"
         
         #save the content to disk
-        #note : for efficiency, we should probably note save after "each" message
-        self.file_append(self.network_path, message.message_content + "\n")
+        File_Manager.file_append(self.network_path, message.message_content + "\n")
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):
@@ -90,29 +89,3 @@ class Chat_Service():
         
         for client in self.clients:
             client.send_message(message)
-    
-    #TODO : the following 3 functions should be put in a separate class
-    def file_read(self, network_path):
-        filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
-        try:
-            with open(filename) as file:
-                return file.read()
-        except:
-            #could not read the file (probably file not existing yet)
-            return ""
-    
-    def file_write(self, network_path, new_content):
-        filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
-        try:
-            with open(filename, "w") as file:
-                file.write(new_content)
-        except:
-            print("Warning: could not open file ", filename, "to save data of ", network_path)
-
-    def file_append(self, network_path, added_content):
-        filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
-        try:
-            with open(filename, "a") as file:
-                file.write(added_content)
-        except:
-            print("Warning: could not open file ", filename, "to save data of ", network_path)
