@@ -2,6 +2,7 @@
 from twisted.internet import protocol, task
 
 from network_message import Network_Message
+import time
 
 #this class implements the message passing protocol
 #one instance of this class is created for each new connection received by the server
@@ -20,6 +21,9 @@ class Distributed_protocol(protocol.Protocol):
         #these callbacks are initialized by server_services class in the case of the server-end of a connection
         self.message_receiver_callback = None
         self.connection_lost_callback = None        
+        
+        #time of last message
+        self.last_message_time = time.monotonic()
         
         if self.factory.is_server:
             self.factory.server_services.connection_made(self)
@@ -59,6 +63,9 @@ class Distributed_protocol(protocol.Protocol):
             message = Network_Message()
             message.from_bytes(next_message_data)
             
+            #update the time of the last received message
+            self.last_message_time = time.monotonic()
+            
             #ignore keep-alive messages
             if message.network_command == "KEEP_ALIVE":
                 continue
@@ -73,8 +80,9 @@ class Distributed_protocol(protocol.Protocol):
     #it needs to be activated for connections to a service that keeps running for a long time
     #typical usage case is a chat service
     def activate_keep_alive(self):
+        task_interval_sec = 1.0
         loop_task = task.LoopingCall(self.send_keep_alive)
-        loop_task.start(1.0) # call every 1 second
+        loop_task.start(task_interval_sec)
     
     #send a keep-alive message
     def send_keep_alive(self):
@@ -84,6 +92,10 @@ class Distributed_protocol(protocol.Protocol):
     #get the ip address
     def get_host_name(self):
         return self.transport.getPeer().host
+    
+    #return the delay in seconds since the last message
+    def last_message_delay(self):
+        return time.monotonic() - self.last_message_time
     
     #called by Twisted when the connection is lost
     def connectionLost(self, reason):

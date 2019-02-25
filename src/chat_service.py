@@ -1,5 +1,6 @@
 # Server node implementing a chat
 
+from twisted.internet import task
 from network_message import Network_Message
 import hashlib
 import datetime
@@ -15,7 +16,12 @@ class Chat_Service():
         
         self.network_path = network_path
         
-    #called when a new client connection is opened
+        #check regularly that all clients are still active
+        task_interval_sec = 30.0
+        loop_task = task.LoopingCall(self.remove_inactive_clients)
+        loop_task.start(task_interval_sec)
+        
+    #add a new client to the list of connected clients
     def add_client(self, new_client):
         #send a message to existing clients
         greetings = str("A new guest is here \^_^/ : ") + new_client.get_host_name()
@@ -64,10 +70,19 @@ class Chat_Service():
     #called when a client connection is lost
     def connection_lost(self, lost_client):
         self.remove_client(lost_client)
-        
+    
+    def remove_inactive_clients(self):
+        for client in self.clients:
+            if client.last_message_delay() > 20.0:
+                self.remove_client(client)
+    
     #remove a client from the list of connected clients
     def remove_client(self, lost_client):
-        self.clients.remove(lost_client)
+        try:
+            self.clients.remove(lost_client)
+        except:
+            #client already removed
+            return
         
         #message to other clients
         notification_to_send = str("Chat left by ") + lost_client.get_host_name()
