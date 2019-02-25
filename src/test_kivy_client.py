@@ -44,11 +44,36 @@ from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.scrollview import ScrollView
+from kivy.properties import StringProperty, ListProperty
+from kivy.lang import Builder
 
 #Kivy does not include fonts supporting japanese
 #A font file must be provided manually
 #NOTO font downloaded from here: https://www.google.com/get/noto/help/cjk/
 utf8_font_path = "NotoSansCJK-Regular.ttc"
+
+Builder.load_string('''
+<ScrollableLabel>:
+    scroll_y:0
+    Label:
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+        text: root.text
+        bcolor: 1, 1, 1, 1
+        markup:True
+        canvas.before:
+            Color:
+                rgba: self.bcolor
+            Rectangle:
+                pos: self.pos
+                size: self.size
+''')
+
+class ScrollableLabel(ScrollView):
+    text = StringProperty('')
+    bcolor = ListProperty([0,0,0,1])
 
 # A simple kivy App, with a textbox to enter messages, and
 # a large label to display all the messages received from
@@ -69,7 +94,7 @@ class NetworkClientApp(App):
         self.textbox.text_validate_unfocus = False
         self.textbox.bind(on_text_validate=self.send_message)
         self.bind(on_start=self.guistart_custom_init)
-        self.label = TextInput(text='', font_name=utf8_font_path, multiline=True, readonly=True)
+        self.label = ScrollableLabel(text='', bcolor = [0,0,0,1])
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.label)
         layout.add_widget(self.textbox)
@@ -89,7 +114,14 @@ class NetworkClientApp(App):
             self.textbox.text = ""
     
     def receive_message(self, message):
-        self.print_message(message.message_content)
+        if message.network_command == "NOTIFICATION":
+            #red for notifications
+            text_color_str = "ff0000"
+        else:
+            #black for message content
+            text_color_str = "000000"
+        
+        self.print_message("[color=" + text_color_str + "]" + message.message_content + "[/color]")
     
     def print_message(self, msg):
         self.label.text += "{}\n".format(msg)
