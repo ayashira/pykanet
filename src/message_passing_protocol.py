@@ -46,10 +46,10 @@ class Message_Passing_Protocol(protocol.Protocol):
         #note for later : infinite loop here could be a problem if the buffer contains really a lot of messages
         while True:
             #exit the loop if there is no more message, or if the bytes for the total message length are not received
-            if len(self.receive_buffer) < Network_Message.message_prefix_size:
+            if len(self.receive_buffer) < Network_Message.MESSAGE_PREFIX_SIZE:
                 return
             
-            message_length = int.from_bytes(self.receive_buffer[:Network_Message.message_prefix_size], byteorder='big')
+            message_length = int.from_bytes(self.receive_buffer[:Network_Message.MESSAGE_PREFIX_SIZE], byteorder='big')
             
             #exit the loop if a complete message is not received yet
             if len(self.receive_buffer) < message_length:

@@ -11,9 +11,11 @@
 
 #TODO : exception handling
 class Network_Message():
+    #constants defining the version and the number of bytes used for prefixing the length
+    #the number of bytes used for the length put a limit of 2^(nb bytes) on each subpart
     MESSAGE_VERSION = 0
-    message_prefix_size = 4
-    subpart_prefix_size = (1, 2, 1, 4)
+    MESSAGE_PREFIX_SIZE = 4
+    SUBPART_PREFIX_SIZE = (1, 2, 1, 4)
     
     #username : utf8 string, username of message sender
     #network_path : utf8 string, target address on the network where the message is sent
@@ -31,7 +33,7 @@ class Network_Message():
         complete_message = bytearray(b'')
         
         #reserve the space for the message total length
-        complete_message += int(0).to_bytes(Network_Message.message_prefix_size, byteorder='big')
+        complete_message += int(0).to_bytes(Network_Message.MESSAGE_PREFIX_SIZE, byteorder='big')
         
         #message encoding version
         complete_message += int(Network_Message.MESSAGE_VERSION).to_bytes(2, byteorder='big')
@@ -39,25 +41,25 @@ class Network_Message():
         #each subpart prefixed by its length
         for i, subpart in enumerate( (self.username, self.network_path, self.network_command, self.message_content) ):
             subpart_utf8 = subpart.encode('utf-8')
-            complete_message += (len(subpart_utf8)).to_bytes(Network_Message.subpart_prefix_size[i], byteorder='big')
+            complete_message += (len(subpart_utf8)).to_bytes(Network_Message.SUBPART_PREFIX_SIZE[i], byteorder='big')
             complete_message += subpart_utf8
         
         #initialize the total message length at the beginning of the message
-        complete_message[:Network_Message.message_prefix_size] = (len(complete_message)).to_bytes(Network_Message.message_prefix_size, byteorder='big')
+        complete_message[:Network_Message.MESSAGE_PREFIX_SIZE] = (len(complete_message)).to_bytes(Network_Message.MESSAGE_PREFIX_SIZE, byteorder='big')
         
         return complete_message
     
     #read each subpart of the message from a byte encoding
     def from_bytes(self, complete_message):
-        start_idx = Network_Message.message_prefix_size
+        start_idx = Network_Message.MESSAGE_PREFIX_SIZE
         version = int.from_bytes(complete_message[start_idx:start_idx+2], byteorder='big')
         start_idx += 2
         
         subpart_list = []
-        nb_subparts = len(Network_Message.subpart_prefix_size)
+        nb_subparts = len(Network_Message.SUBPART_PREFIX_SIZE)
         for i in range(nb_subparts):
-            subpart_length = int.from_bytes(complete_message[start_idx:start_idx+Network_Message.subpart_prefix_size[i]], byteorder='big')
-            start_idx += Network_Message.subpart_prefix_size[i]
+            subpart_length = int.from_bytes(complete_message[start_idx:start_idx+Network_Message.SUBPART_PREFIX_SIZE[i]], byteorder='big')
+            start_idx += Network_Message.SUBPART_PREFIX_SIZE[i]
             subpart_list.append( complete_message[start_idx:start_idx+subpart_length].decode('utf-8') )
             start_idx += subpart_length
         
