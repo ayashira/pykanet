@@ -67,11 +67,17 @@ Builder.load_string('''
         padding: 20
 
         Label:
-            text: "Main Menu"
+            text: "Main Menu. This screen will become the app 'desktop'."
         Button:
-            text: "Chat"
+            text: "Main Chat"
             on_release:
-                root.manager.current = "chatscreen"
+                root.manager.current = "devchatscreen"
+                
+        Button:
+            text: "Test Chat : do what you want here, this is for tests :)"
+            on_release:
+                root.manager.current = "testchatscreen"
+
 ''')
 
 class StartScreen(Screen):
@@ -89,8 +95,15 @@ Builder.load_string('''
 
     ChatClient:
         id: screen_two
-        name: "chatscreen"
+        name: "devchatscreen"
         manager: screen_manager
+        chat_address: "/chat/dev_main"
+
+    ChatClient:
+        id: screen_three
+        name: "testchatscreen"
+        manager: screen_manager
+        chat_address: "/chat/dev_test"
 ''')
 
 class Manager(ScreenManager):

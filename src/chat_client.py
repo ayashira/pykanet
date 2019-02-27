@@ -4,7 +4,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 
 from kivy.uix.screenmanager import Screen, NoTransition
-from kivy.properties import ObjectProperty
+from kivy.properties import StringProperty
 from kivy.lang import Builder
 
 from scrollable_label import ScrollableLabel
@@ -14,7 +14,7 @@ Builder.load_string('''
     BoxLayout:
         orientation: "vertical"
         size: root.size
-
+        
         ScrollableLabel:
             id:label
             text: ""
@@ -25,7 +25,10 @@ Builder.load_string('''
 ''')
     
 class ChatClient(Screen):
-
+    
+    #kivy string property indicating the network address of the chat
+    chat_address = StringProperty()
+    
     #called by Kivy when the screen is entered (displayed)
     def on_enter(self):
         #self.ids["textbox"].font_name=utf8_font_path
@@ -36,14 +39,14 @@ class ChatClient(Screen):
     
     def connection_made(self):
         #connection is established, connect to the target address
-        message = Network_Message("dummy_user", "/chat/dev_main", "ENTER", "")
+        message = Network_Message("dummy_user", self.chat_address, "ENTER", "")
         self.network_interface.network_send(message)
     
     def send_message(self, *args):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
-            message = Network_Message("dummy_user", "/chat/dev_main", "APPEND", msg)
+            message = Network_Message("dummy_user", self.chat_address, "APPEND", msg)
             self.network_interface.network_send(message)
             self.ids["textbox"].text = ""
     
