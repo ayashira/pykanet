@@ -41,39 +41,15 @@ install_twisted_reactor()
 from network_interface import *
 
 from kivy.app import App
-from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.properties import StringProperty, ListProperty
-from kivy.lang import Builder
+
+from scrollable_label import ScrollableLabel
 
 #Kivy does not include fonts supporting japanese
 #A font file must be provided manually
 #NOTO font downloaded from here: https://www.google.com/get/noto/help/cjk/
 utf8_font_path = "NotoSansCJK-Regular.ttc"
-
-Builder.load_string('''
-<ScrollableLabel>:
-    scroll_y:0
-    Label:
-        size_hint_y: None
-        height: max(self.texture_size[1], root.size[1])
-        text_size: self.width, None
-        text: root.text
-        bcolor: 1, 1, 1, 1
-        markup:True
-        canvas.before:
-            Color:
-                rgba: self.bcolor
-            Rectangle:
-                pos: self.pos
-                size: self.size
-''')
-
-class ScrollableLabel(ScrollView):
-    text = StringProperty('')
-    bcolor = ListProperty([0,0,0,1])
 
 # A simple kivy App, with a textbox to enter messages, and
 # a large label to display all the messages received from
