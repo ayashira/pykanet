@@ -41,6 +41,7 @@ install_twisted_reactor()
 from network_interface import *
 
 from kivy.app import App
+from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 
@@ -48,7 +49,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.lang import Builder
 
-from scrollable_label import ScrollableLabel
+from chat_client import ChatClient
 
 #Kivy does not include fonts supporting japanese
 #A font file must be provided manually
@@ -57,7 +58,7 @@ utf8_font_path = "NotoSansCJK-Regular.ttc"
 
 
 Builder.load_string('''
-<ScreenOne>:
+<StartScreen>:
 
     BoxLayout:
         orientation: "vertical"
@@ -70,80 +71,30 @@ Builder.load_string('''
         Button:
             text: "Chat"
             on_release:
-                root.manager.current = "screen2"
+                root.manager.current = "chatscreen"
+''')
 
-<ScreenTwo>:
-    BoxLayout:
-        orientation: "vertical"
-        size: root.size
+class StartScreen(Screen):
+    pass
 
-        ScrollableLabel:
-            id:label
-            text: ""
-        TextInput:
-            id:textbox
-            size_hint_y: .1
-            multiline: False
-
+    
+Builder.load_string('''
 <Manager>:
     id: screen_manager
 
-    ScreenOne:
+    StartScreen:
         id: screen_one
-        name: "screen1"
+        name: "startscreen"
         manager: screen_manager
 
-    ScreenTwo:
+    ChatClient:
         id: screen_two
-        name: "screen2"
+        name: "chatscreen"
         manager: screen_manager
 ''')
 
-class ScreenOne(Screen):
-    pass
-    
-class ScreenTwo(Screen):
-    connection = None
-    network_interface = None
-    
-    #called by Kivy when the screen is entered (displayed)
-    def on_enter(self):
-        self.ids["textbox"].font_name=utf8_font_path
-        self.ids["textbox"].focus = True
-        self.ids["textbox"].text_validate_unfocus = False
-        self.ids["textbox"].bind(on_text_validate=self.send_message)
-        print("Entered")
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
-    
-    def connection_made(self):
-        #connection is established, connect to the target address
-        message = Network_Message("dummy_user", "/chat/dev_main", "ENTER", "")
-        self.network_interface.network_send(message)
-    
-    def send_message(self, *args):
-        msg = self.ids["textbox"].text
-        
-        if msg and self.network_interface:
-            message = Network_Message("dummy_user", "/chat/dev_main", "APPEND", msg)
-            self.network_interface.network_send(message)
-            self.ids["textbox"].text = ""
-    
-    def receive_message(self, message):
-        if message.network_command == "NOTIFICATION":
-            #red for notifications
-            text_color_str = "ff0000"
-        else:
-            #black for message content
-            text_color_str = "000000"
-        
-        self.print_message("[color=" + text_color_str + "]" + message.message_content + "[/color]")
-    
-    def print_message(self, msg):
-        self.ids["label"].text += "{}\n".format(msg)
-
 class Manager(ScreenManager):
     pass
-
 
 # Main App with a screen manager
 class NetworkClientApp(App):
