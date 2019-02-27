@@ -65,18 +65,45 @@ First version of a real chat !
   This was causing gradually some delay in processing messages
   -> after correction, chat is now much more reactive
 
-========== TODO ==================
+=========== 2019/2/27 ============
+* Important code refactoring : chat client logic in a separate file.
+  Interface is defined with kv language, network-logic itself with usual python code
+* KV language is powerful but not easy to use/understand
+  A starting point here:
+  https://kivy.org/doc/stable/guide/lang.html  
+* Kivy "basic" building blocks are very "basic", so it is not so easy to combine them.
+  For example:
+   - TextInput does not support markup language to add colors
+   - Label support markup language, but has no background, is not scrollable, and text cannot be selected
+     -> for now, background and scrollable issues could be solved by defining our own ScrollableLabel classs
+* There is now a main screen, with two chat buttons, one for the main chat and one for the test chat.
+  The two chats are mainly for demonstrating that the server can handle multiple different chat addresses.
+  And also, test chat can be used freely for any test.
+  Note : There is no way to go back to the main screen for now :)
+
+* Code architecture is now almost "ready" for contribution even without understanding all the code
+  Server code can be added on the model of chat_service.py
+  Corresponding client code can be added on the model of chat_client.py 
+  
+  -> It will be soon possible to discuss of a list of wanted features :)
+  
+========== Old TODO (DONE) ==================
 * add timestamps to the chat (distributed_procol)
+  -> DONE
 * save chat history in a file (distributed_procol)
+  -> DONE
 * load chat history from file when server is launched (test_server.py)
+  -> DONE
 * server-side "chat logic" should be separated from the distributed protocol itself
   -> 2019/2/21: DONE
-* add a first version of usernames on client side: maybe just a separate textinput to enter the username without any password for now
 * start using Twisted AMP protocol (much more powerful for the next steps) instead of current "raw" protocol
   ->DONE, not by using AMP, but by defining our own message passing protocol 
+* message-length not correctly handled yet on client-side.
+  -> 2019/2/23 : DONE, by merging EchoClient into Distributed_protocol
+
+========== TODO ==================
+* add a first version of usernames on client side: maybe just a separate textinput to enter the username without any password for now
 * add the username to the communication. Note : we need to switch to Twisted AMP protocol first to do that easily.
   -> messages now always contain a username, but not used yet
 * we need a way to update the distant server easily
   (maybe a simple cron job that pull git changes automatically and restart the server)
-* message-length not correctly handled yet on client-side.
-  -> 2019/2/23 : DONE, by merging EchoClient into Distributed_protocol
