@@ -59,7 +59,7 @@ Builder.load_string('''
     Label:
         size_hint_y: None
         height: self.texture_size[1]
-        text_size: self.width, None
+        text_size: self.width, root.size[1]
         text: root.text
         bcolor: 1, 1, 1, 1
         markup:True
