@@ -11,16 +11,16 @@ Builder.load_string('''
         height: max(self.texture_size[1], root.size[1])
         text_size: self.width, None
         text: root.text
-        bcolor: 1, 1, 1, 1
         markup:True
         canvas.before:
             Color:
-                rgba: self.bcolor
+                rgba: root.bcolor
             Rectangle:
                 pos: self.pos
                 size: self.size
 ''')
 
+#default text to None, default background to white
 class ScrollableLabel(ScrollView):
     text = StringProperty('')
-    bcolor = ListProperty([0,0,0,1])
+    bcolor = ListProperty([1,1,1,1])
