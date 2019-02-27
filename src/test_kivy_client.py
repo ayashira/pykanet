@@ -44,6 +44,10 @@ from kivy.app import App
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 
+from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
+from kivy.properties import ObjectProperty, NumericProperty
+from kivy.lang import Builder
+
 from scrollable_label import ScrollableLabel
 
 #Kivy does not include fonts supporting japanese
@@ -51,30 +55,65 @@ from scrollable_label import ScrollableLabel
 #NOTO font downloaded from here: https://www.google.com/get/noto/help/cjk/
 utf8_font_path = "NotoSansCJK-Regular.ttc"
 
-# A simple kivy App, with a textbox to enter messages, and
-# a large label to display all the messages received from
-# the server
-class NetworkClientApp(App):
+
+Builder.load_string('''
+<ScreenOne>:
+
+    BoxLayout:
+        orientation: "vertical"
+        size: root.size
+        spacing: 20
+        padding: 20
+
+        Label:
+            text: "Main Menu"
+        Button:
+            text: "Chat"
+            on_release:
+                root.manager.current = "screen2"
+
+<ScreenTwo>:
+    BoxLayout:
+        orientation: "vertical"
+        size: root.size
+
+        ScrollableLabel:
+            id:label
+            text: ""
+        TextInput:
+            id:textbox
+            size_hint_y: .1
+            multiline: False
+
+<Manager>:
+    id: screen_manager
+
+    ScreenOne:
+        id: screen_one
+        name: "screen1"
+        manager: screen_manager
+
+    ScreenTwo:
+        id: screen_two
+        name: "screen2"
+        manager: screen_manager
+''')
+
+class ScreenOne(Screen):
+    pass
+    
+class ScreenTwo(Screen):
     connection = None
-    textbox = None
-    label = None
     network_interface = None
-
-    def build(self):
-        root = self.setup_gui()
+    
+    #called by Kivy when the screen is entered (displayed)
+    def on_enter(self):
+        self.ids["textbox"].font_name=utf8_font_path
+        self.ids["textbox"].focus = True
+        self.ids["textbox"].text_validate_unfocus = False
+        self.ids["textbox"].bind(on_text_validate=self.send_message)
+        print("Entered")
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
-        return root
-
-    def setup_gui(self):
-        self.textbox = TextInput(size_hint_y=.1, multiline=False, font_name=utf8_font_path)
-        self.textbox.text_validate_unfocus = False
-        self.textbox.bind(on_text_validate=self.send_message)
-        self.bind(on_start=self.guistart_custom_init)
-        self.label = ScrollableLabel(text='', bcolor = [1,1,1,1])
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(self.label)
-        layout.add_widget(self.textbox)
-        return layout
     
     def connection_made(self):
         #connection is established, connect to the target address
@@ -82,12 +121,12 @@ class NetworkClientApp(App):
         self.network_interface.network_send(message)
     
     def send_message(self, *args):
-        msg = self.textbox.text
+        msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
             message = Network_Message("dummy_user", "/chat/dev_main", "APPEND", msg)
             self.network_interface.network_send(message)
-            self.textbox.text = ""
+            self.ids["textbox"].text = ""
     
     def receive_message(self, message):
         if message.network_command == "NOTIFICATION":
@@ -100,10 +139,18 @@ class NetworkClientApp(App):
         self.print_message("[color=" + text_color_str + "]" + message.message_content + "[/color]")
     
     def print_message(self, msg):
-        self.label.text += "{}\n".format(msg)
+        self.ids["label"].text += "{}\n".format(msg)
 
-    def guistart_custom_init(self, instance):
-        self.textbox.focus = True
+class Manager(ScreenManager):
+    pass
+
+
+# Main App with a screen manager
+class NetworkClientApp(App):
+
+    def build(self):
+        m = Manager(transition=NoTransition())
+        return m
 
 if __name__ == '__main__':
     #note: command-line arguments are parsed at top of the file, before kivy import
