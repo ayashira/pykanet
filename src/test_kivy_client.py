@@ -58,8 +58,8 @@ Builder.load_string('''
     scroll_y:0
     Label:
         size_hint_y: None
-        height: self.texture_size[1]
-        text_size: self.width, root.size[1]
+        height: max(self.texture_size[1], root.size[1])
+        text_size: self.width, None
         text: root.text
         bcolor: 1, 1, 1, 1
         markup:True
