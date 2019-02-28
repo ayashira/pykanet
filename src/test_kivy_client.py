@@ -34,11 +34,13 @@ if custom_args.opengl_config:
     os.environ['USE_OPENGL_ES2'] = '0'
     os.environ['USE_SDL2'] = '0'
 
+#disable mouse emulation of multitouch
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
+
+#start the kivy-compatible twisted reactor
 from kivy.support import install_twisted_reactor
-
 install_twisted_reactor()
-
-from network_interface import *
 
 from kivy.app import App
 from kivy.uix.label import Label
