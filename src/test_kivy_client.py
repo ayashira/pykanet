@@ -53,6 +53,9 @@ from kivy.lang import Builder
 
 from chat_client import ChatClient
 
+#currently needed to set localhost
+from network_interface import *
+
 #Kivy does not include fonts supporting japanese
 #A font file must be provided manually
 #NOTO font downloaded from here: https://www.google.com/get/noto/help/cjk/
