@@ -1,6 +1,5 @@
 from network_interface import *
 
-from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 
 from kivy.uix.screenmanager import Screen, NoTransition
@@ -8,6 +7,7 @@ from kivy.properties import StringProperty
 from kivy.lang import Builder
 
 from scrollable_label import ScrollableLabel
+from shift_enter_textinput import ShiftEnterTextInput
 
 Builder.load_string('''
 <ChatClient>:
@@ -18,10 +18,9 @@ Builder.load_string('''
         ScrollableLabel:
             id:label
             text: ""
-        TextInput:
+        ShiftEnterTextInput:
             id:textbox
             size_hint_y: .1
-            multiline: False
 ''')
     
 class ChatClient(Screen):
