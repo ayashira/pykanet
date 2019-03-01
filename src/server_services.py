@@ -27,9 +27,17 @@ class Server_Services():
                 #if the service for this address is not existing yet, it will be created by setdefault
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
-        
+            else:
+                #trying to access to a service not defined yet
+                client.lose_connection()
+                return
+            
         #forward the message to the receiver defined for the client
         client.message_receiver_callback(client, message)
         
     def connection_lost(self, client):
-        client.connection_lost_callback(client)
+        try:
+            client.connection_lost_callback(client)
+        except:
+            #connection lost callback not existing (happens when the client tried to connect to a non-existing service)
+            pass
