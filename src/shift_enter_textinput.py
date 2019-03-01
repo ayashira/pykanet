@@ -4,11 +4,17 @@ from kivy.uix.textinput import TextInput
 # Enter key to validate text (triggers on_text_validate event)
 # Shift+Enter key to insert a new line
 class ShiftEnterTextInput(TextInput):
+    
+    #add an event triggered when any key is pressed
+    __events__ = TextInput.__events__ + ('on_key_pressed',)
+
     def __init__(self, **kwargs):
         super(ShiftEnterTextInput, self).__init__(**kwargs)
         self.multiline = True
-
+        
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        self.dispatch('on_key_pressed')
+        
         #'enter' key
         if keycode[0]==13:
             if 'shift' in modifiers:
@@ -27,3 +33,6 @@ class ShiftEnterTextInput(TextInput):
                 pass
         
         return super(ShiftEnterTextInput, self).keyboard_on_key_down(window, keycode, text, modifiers)
+
+    def on_key_pressed(self):
+        pass

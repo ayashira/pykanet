@@ -58,6 +58,12 @@ class Chat_Service():
             self.add_client(sender_client)
             return
         
+        if message.network_command == "IS_TYPING":
+            message.message_content = sender_client.get_host_name()
+            for client in self.clients:
+                client.send_message(message)
+            return
+        
         #forward the message to all connected clients, add the client name (currently ip address) in front
         message.message_content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.get_host_name() + " : " + message.message_content
         

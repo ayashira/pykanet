@@ -34,6 +34,14 @@ class ChatClient(Screen):
         self.ids["textbox"].focus = True
         self.ids["textbox"].text_validate_unfocus = False
         self.ids["textbox"].bind(on_text_validate=self.send_message)
+        self.ids["textbox"].bind(on_key_pressed=self.key_pressed_event)
+        
+        #indicates if the user is typing or not
+        self.isTyping = False
+        
+        #current typing status of all clients
+        self.current_typing_msg = ""
+        
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def connection_made(self):
@@ -45,11 +53,18 @@ class ChatClient(Screen):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
+            self.isTyping = False
             message = Network_Message("dummy_user", self.chat_address, "APPEND", msg)
             self.network_interface.network_send(message)
             self.ids["textbox"].text = ""
     
     def receive_message(self, message):
+        if message.network_command == "IS_TYPING":
+            #text_color_str = "0000ff"
+            self.add_typing_message(message.message_content)
+            #print_message("[color=" + text_color_str + "]" + message.message_content + " is typing... [/color]")
+            return
+        
         if message.network_command == "NOTIFICATION":
             #red for notifications
             text_color_str = "ff0000"
@@ -60,4 +75,28 @@ class ChatClient(Screen):
         self.print_message("[color=" + text_color_str + "]" + message.message_content + "[/color]")
     
     def print_message(self, msg):
+        self.remove_typing_message()
         self.ids["label"].text += "{}\n".format(msg)
+    
+    #============= typing status ===========================
+    #typing status is done by storing the current state of typing status
+    #when the status changes, we remove the current status from the label, and display the new one (if any)
+    def add_typing_message(self, msg):
+        text_color_str = "0000ff"
+        self.current_typing_msg = "[color=" + text_color_str + "]    " + msg + " typing... [/color]\n"
+        self.ids["label"].text += self.current_typing_msg
+    
+    def remove_typing_message(self):
+        status_len = len(self.current_typing_msg)
+        if status_len > 0:
+            #remove the status_len last characters of the label
+            self.ids["label"].text = self.ids["label"].text[:-status_len]
+            self.current_typing_msg = ""
+    
+    #called when a key is pressed in the input
+    def key_pressed_event(self, *args):
+        #if the user was not already typing, send a TYPING message to the server
+        if not self.isTyping:
+            self.isTyping = True
+            message = Network_Message("dummy_user", self.chat_address, "IS_TYPING", "")
+            self.network_interface.network_send(message)
