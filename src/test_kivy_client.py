@@ -121,7 +121,7 @@ Builder.load_string('''
         id: screen_three
         name: "tictactoescreen"
         manager: screen_manager
-        chat_address: "/game/tic_tac_toe"
+        target_address: "/game/tic_tac_toe"
 ''')
 
 class Manager(ScreenManager):

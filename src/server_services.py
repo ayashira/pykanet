@@ -3,6 +3,7 @@
 from network_message import Network_Message
 
 from chat_service import *
+from tictactoe_service import *
 
 #main class launching the server services when a connection is made at a given network address
 #only one instance of this class is created for one server node (in the server factory)
@@ -26,6 +27,9 @@ class Server_Services():
             if message.network_path.startswith("/chat/"):
                 #if the service for this address is not existing yet, it will be created by setdefault
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service(message.network_path)).receive_message
+                client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
+            elif message.network_path.startswith("/game/tic_tac_toe"):
+                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, TicTacToe_Service(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
             else:
                 #trying to access to a service not defined yet
