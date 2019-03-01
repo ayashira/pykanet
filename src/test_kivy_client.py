@@ -52,6 +52,7 @@ from kivy.properties import ObjectProperty, NumericProperty
 from kivy.lang import Builder
 
 from chat_client import ChatClient
+from tictactoe_client import TicTacToeClient
 
 #currently needed to set localhost
 from network_interface import *
@@ -82,6 +83,12 @@ Builder.load_string('''
             text: "Test Chat : do what you want here, this is for tests :)"
             on_release:
                 root.manager.current = "testchatscreen"
+                
+        Button:
+            text: "Tic Tac Toe !"
+            on_release:
+                root.manager.current = "tictactoescreen"
+        
 
 ''')
 
@@ -109,6 +116,12 @@ Builder.load_string('''
         name: "testchatscreen"
         manager: screen_manager
         chat_address: "/chat/dev_test"
+        
+    TicTacToeClient:
+        id: screen_three
+        name: "tictactoescreen"
+        manager: screen_manager
+        chat_address: "/game/tic_tac_toe"
 ''')
 
 class Manager(ScreenManager):
