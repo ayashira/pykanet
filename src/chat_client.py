@@ -60,9 +60,7 @@ class ChatClient(Screen):
     
     def receive_message(self, message):
         if message.network_command == "IS_TYPING":
-            #text_color_str = "0000ff"
             self.add_typing_message(message.message_content)
-            #print_message("[color=" + text_color_str + "]" + message.message_content + " is typing... [/color]")
             return
         
         if message.network_command == "NOTIFICATION":
@@ -72,11 +70,12 @@ class ChatClient(Screen):
             #black for message content
             text_color_str = "000000"
         
-        self.print_message("[color=" + text_color_str + "]" + message.message_content + "[/color]")
+        self.print_message("[color=" + text_color_str + "]" + message.message_content + "\n[/color]")
     
     def print_message(self, msg):
         self.remove_typing_message()
-        self.ids["label"].text += "{}\n".format(msg)
+        formatted_links_msg = self.ids["label"].format_links(msg)
+        self.ids["label"].text += formatted_links_msg
     
     #============= typing status ===========================
     #typing status is done by storing the current state of typing status
