@@ -12,6 +12,7 @@ class TicTacToe_Service():
     def __init__(self, network_path):
         #game state
         self.game_started = False
+        self.game_ended = False
         self.current_player_id = 0
         
         #list of connected clients
@@ -71,7 +72,11 @@ class TicTacToe_Service():
                     message = Network_Message("dummy_user", self.network_path, command, "")
                     for client in self.clients:
                         client.send_message(message)
+                        
+                        #end the connection
+                        client.lose_connection()
                     
+                    self.game_ended = True
                     return
                 
                 #request next move
@@ -125,3 +130,7 @@ class TicTacToe_Service():
         except:
             #client already removed
             return
+    
+    #restart of service is needed when the game is finished
+    def service_restart_needed(self):
+        return self.game_ended

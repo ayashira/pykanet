@@ -29,6 +29,10 @@ class Server_Services():
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
             elif message.network_path.startswith("/game/tic_tac_toe"):
+                #restart the service if needed
+                if self.services_dict.setdefault(message.network_path, TicTacToe_Service(message.network_path)).service_restart_needed():
+                    self.services_dict[message.network_path] = TicTacToe_Service(message.network_path)
+                
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, TicTacToe_Service(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
             else:
