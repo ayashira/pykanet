@@ -142,7 +142,12 @@ class TicTacToe_Service():
         except:
             #client already removed
             return
-    
+        
+        #end the game if both clients are disconnected
+        #TODO : case of only one client disconnection during a game
+        if len(self.clients) == 0:
+            self.game_ended = True
+        
     #restart of service is needed when the game is finished
     def service_restart_needed(self):
         return self.game_ended
