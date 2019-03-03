@@ -79,6 +79,18 @@ class TicTacToe_Service():
                     self.game_ended = True
                     return
                 
+                #check if it is a draw
+                if self.game_board.is_draw():
+                    message = Network_Message("dummy_user", self.network_path, "DRAW", "")
+                    for client in self.clients:
+                        client.send_message(message)
+                        
+                        #end the connection
+                        client.lose_connection()
+                    
+                    self.game_ended = True
+                    return
+                
                 #request next move
                 #reverse current and opp players, and send messages requesting a move or requesting to wait
                 self.opp_player_id = self.current_player_id

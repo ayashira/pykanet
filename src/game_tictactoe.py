@@ -38,3 +38,15 @@ class TicTacToe():
             if self.board[a[0]][a[1]]==player and self.board[b[0]][b[1]]==player and self.board[c[0]][c[1]]==player:
                 return True
         return False
+    
+    #draw if all cells are occupied and no player wins
+    def is_draw(self):
+        for x in range(3):
+            for y in range(3):
+                if self.board[x][y] == 0:
+                    return False
+        
+        if self.has_won(player=1) or self.has_won(player=2):
+            return False
+            
+        return True

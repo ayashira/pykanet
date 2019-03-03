@@ -70,13 +70,12 @@ class TicTacToeClient(Screen):
             move = int(message.message_content)
             self.game_board.play(move, player=2)
             self.button_list[move].text = "X"
-        elif message.network_command == "PLAYER1_WIN" or message.network_command == "PLAYER2_WIN":
+        elif message.network_command == "PLAYER1_WIN" or message.network_command == "PLAYER2_WIN" or message.network_command == "DRAW":
             popup = Popup(title='Game finished',
                           content=Label(text=message.network_command),
                           size_hint=(None, None), size=(200, 200))
             popup.open()
-            return
-        
+    
     def cell_clicked(self, button):
         #print(button.id)
         if self.play_turn:
