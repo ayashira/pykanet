@@ -118,7 +118,7 @@ Builder.load_string('''
         chat_address: "/chat/dev_test"
         
     TicTacToeClient:
-        id: screen_three
+        id: screen_four
         name: "tictactoescreen"
         manager: screen_manager
         target_address: "/game/tic_tac_toe"

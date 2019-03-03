@@ -5,6 +5,8 @@ from network_message import Network_Message
 from file_manager import *
 import datetime
 
+from game_tictactoe import TicTacToe
+
 class TicTacToe_Service():
     
     def __init__(self, network_path):
@@ -24,10 +26,13 @@ class TicTacToe_Service():
         task_interval_sec = 20.0
         loop_task = task.LoopingCall(self.remove_inactive_clients)
         loop_task.start(task_interval_sec)
-
+        
+        #game state
+        self.game_board = TicTacToe()
+        
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
-        print(message.to_bytes())
+        #print(message.to_bytes())
         if message.network_command == "ENTER":
             #a new client asked to enter the room
             #we allow only two clients for now, the first and the second player
@@ -40,9 +45,40 @@ class TicTacToe_Service():
         if message.network_command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
                 #TODO play move
+                move = int(message.message_content)
+                if not self.game_board.is_valid_play(move, player = self.current_player_id + 1):
+                    #move not valid, don't do anything. TODO : request a move again
+                    return
                 
-                #next move
+                #move is valid, play it, and indicate the value to both players
+                self.game_board.play(move, player = self.current_player_id + 1)
+                if self.current_player_id == 0:
+                    command = "PLAYER1_MOVE"
+                else:
+                    command = "PLAYER2_MOVE"
+                
+                message = Network_Message("dummy_user", self.network_path, command, str(move))
+                for client in self.clients:
+                    client.send_message(message)
+                
+                #check if the player won
+                if self.game_board.has_won(player = self.current_player_id + 1):
+                    if self.current_player_id == 0:
+                        command = "PLAYER1_WIN"
+                    else:
+                        command = "PLAYER2_WIN"
+                    
+                    message = Network_Message("dummy_user", self.network_path, command, "")
+                    for client in self.clients:
+                        client.send_message(message)
+                    
+                    return
+                
+                #request next move
+                #reverse current and opp players, and send messages requesting a move or requesting to wait
+                self.opp_player_id = self.current_player_id
                 self.current_player_id = (self.current_player_id + 1) % 2
+                
                 message = Network_Message("dummy_user", self.network_path, "REQUEST_MOVE", "")
                 self.clients[self.current_player_id].send_message(message)
                 message = Network_Message("dummy_user", self.network_path, "WAIT_OPP_MOVE", "")
@@ -67,10 +103,11 @@ class TicTacToe_Service():
             self.game_started = True
             
             self.current_player_id = 0
+            self.opp_player_id = 1
             message = Network_Message("dummy_user", self.network_path, "REQUEST_MOVE", "")
             self.clients[self.current_player_id].send_message(message)
             message = Network_Message("dummy_user", self.network_path, "WAIT_OPP_MOVE", "")
-            self.clients[(1 + self.current_player_id) % 2].send_message(message)
+            self.clients[self.opp_player_id].send_message(message)
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):

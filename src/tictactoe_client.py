@@ -1,14 +1,18 @@
 from network_interface import *
 
+from kivy.uix.screenmanager import Screen
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 
-from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-from scrollable_label import ScrollableLabel
-from shift_enter_textinput import ShiftEnterTextInput
+#from scrollable_label import ScrollableLabel
+#from shift_enter_textinput import ShiftEnterTextInput
+
+from game_tictactoe import TicTacToe
 
 Builder.load_string('''
 <TicTacToeClient>:
@@ -29,17 +33,25 @@ class TicTacToeClient(Screen):
     def on_enter(self):
         self.create_grid(self.ids["board_grid"].rows, self.ids["board_grid"].cols)
         
+        self.game_board = TicTacToe()
+        
         #game state
         self.play_turn = False
         
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def create_grid(self, rows, cols):
+        #list of buttons used to access buttons from an index
+        self.button_list = []
+        
         for i in range(rows):
             for j in range(cols):
+                #note : button id defined here cannot be used to access buttons with their .ids
+                #       it is used to identify which button called cell_clicked
                 button = Button(text='', width=80, height=80, size_hint=(None, None), id=str(i*rows+j))
                 button.bind(on_press=self.cell_clicked)
                 self.ids["board_grid"].add_widget(button)
+                self.button_list.append(button)
     
     def connection_made(self):
         #connection is established, connect to the target address
@@ -47,14 +59,31 @@ class TicTacToeClient(Screen):
         self.network_interface.network_send(message)
         
     def receive_message(self, message):
-        print(message.to_bytes())
+        #print(message.to_bytes())
         if message.network_command == "REQUEST_MOVE":
             self.play_turn = True
+        elif message.network_command == "PLAYER1_MOVE":
+            move = int(message.message_content)
+            self.game_board.play(move, player=1)
+            self.button_list[move].text = "O"
+        elif message.network_command == "PLAYER2_MOVE":
+            move = int(message.message_content)
+            self.game_board.play(move, player=2)
+            self.button_list[move].text = "X"
+        elif message.network_command == "PLAYER1_WIN" or message.network_command == "PLAYER2_WIN":
+            popup = Popup(title='Game finished',
+                          content=Label(text=message.network_command),
+                          size_hint=(None, None), size=(200, 200))
+            popup.open()
+            return
         
-    
     def cell_clicked(self, button):
         #print(button.id)
         if self.play_turn:
+            move = int(button.id)
+            if not self.game_board.is_valid_play(move, player=2):
+                return
+            
             self.play_turn = False
             message = Network_Message("dummy_user", self.target_address, "MOVE", button.id)
             self.network_interface.network_send(message)
