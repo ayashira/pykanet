@@ -16,9 +16,17 @@ from apps.turnbasedgame_list import TurnBasedGameList
 
 Builder.load_string('''
 <TurnBasedGameClient>:
-    GridLayout:
-        id: board_grid
+    BoxLayout:
+        orientation: "vertical"
         size: root.size
+    
+        GridLayout:
+            id: board_grid
+            size: root.size
+            
+        Label:
+            id: state_label
+            height: 90
 ''')
 
 
@@ -32,6 +40,7 @@ class TurnBasedGameClient(Screen):
         self.target_game = TurnBasedGameList.get_game_from_name(self.target_address)
         
         self.create_grid()
+        self.ids["state_label"].text = "Waiting opponent"
         
         #game state
         self.play_turn = False
@@ -57,7 +66,7 @@ class TurnBasedGameClient(Screen):
                 button.bind(on_press=self.cell_clicked)
                 self.ids["board_grid"].add_widget(button)
                 self.button_list.append(button)
-    
+        
     def connection_made(self):
         #connection is established, connect to the target address
         message = Network_Message("dummy_user", self.target_address, "ENTER", "")
@@ -67,6 +76,9 @@ class TurnBasedGameClient(Screen):
         #print(message.to_bytes())
         if message.network_command == "REQUEST_MOVE":
             self.play_turn = True
+            self.ids["state_label"].text = "Your turn"
+        elif message.network_command == "WAIT_OPP_MOVE":
+            self.ids["state_label"].text = "Opponent turn"
         elif message.network_command == "PLAYER1_MOVE":
             move = int(message.message_content)
             self.target_game.play(move, player=1)
@@ -76,6 +88,7 @@ class TurnBasedGameClient(Screen):
             self.target_game.play(move, player=2)
             self.update_display()
         elif message.network_command == "PLAYER1_WIN" or message.network_command == "PLAYER2_WIN" or message.network_command == "DRAW":
+            self.ids["state_label"].text = "Game finished"
             popup = Popup(title='Game finished',
                           content=Label(text=message.network_command),
                           size_hint=(None, None), size=(200, 200))
