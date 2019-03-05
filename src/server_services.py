@@ -5,8 +5,6 @@ from network_message import Network_Message
 from chat_service import *
 from turnbasedgame_service import *
 
-from game_tictactoe import TicTacToe
-
 #main class launching the server services when a connection is made at a given network address
 #only one instance of this class is created for one server node (in the server factory)
 #this class is the "glue" between connections and services 
@@ -33,7 +31,6 @@ class Server_Services():
             elif message.network_path.startswith("/game/tic_tac_toe"):
                 if not message.network_path in self.services_dict.keys() or self.services_dict[message.network_path].service_restart_needed():
                     self.services_dict[message.network_path] = TurnBasedGame_Service(message.network_path)
-                    self.services_dict[message.network_path].set_target_game(TicTacToe())
                 
                 client.message_receiver_callback = self.services_dict[message.network_path].receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost

@@ -5,6 +5,8 @@ from network_message import Network_Message
 from file_manager import *
 import datetime
 
+from turnbasedgame_list import TurnBasedGame_List
+
 class TurnBasedGame_Service():
     
     def __init__(self, network_path):
@@ -26,11 +28,8 @@ class TurnBasedGame_Service():
         loop_task = task.LoopingCall(self.remove_inactive_clients)
         loop_task.start(task_interval_sec)
         
-        #target game, must be set with set_target_game()
-        self.target_game = None
-    
-    def set_target_game(self, game):
-        self.target_game = game
+        #set the target game, depending on the game name
+        self.target_game = TurnBasedGame_List.get_game_from_name(network_path)
     
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
