@@ -2,8 +2,8 @@
 
 from network_message import Network_Message
 
-from apps.chat_server import *
-from apps.turnbasedgame_service import *
+from apps.chat_server import ChatServer
+from apps.turnbasedgame_server import TurnBasedGameServer
 
 #main class launching the server services when a connection is made at a given network address
 #only one instance of this class is created for one server node (in the server factory)
@@ -26,11 +26,11 @@ class Server_Services():
             #define it depending on the address in the first message
             if message.network_path.startswith("/chat/"):
                 #if the service for this address is not existing yet, it will be created by setdefault
-                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service(message.network_path)).receive_message
+                client.message_receiver_callback = self.services_dict.setdefault(message.network_path, ChatServer(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
             elif message.network_path.startswith("/game/"):
                 if not message.network_path in self.services_dict.keys() or self.services_dict[message.network_path].service_restart_needed():
-                    self.services_dict[message.network_path] = TurnBasedGame_Service(message.network_path)
+                    self.services_dict[message.network_path] = TurnBasedGameServer(message.network_path)
                 
                 client.message_receiver_callback = self.services_dict[message.network_path].receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost

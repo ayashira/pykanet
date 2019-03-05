@@ -5,9 +5,9 @@ from network_message import Network_Message
 from file_manager import *
 import datetime
 
-from turnbasedgame_list import TurnBasedGame_List
+from apps.turnbasedgame_list import TurnBasedGameList
 
-class TurnBasedGame_Service():
+class TurnBasedGameServer():
     
     def __init__(self, network_path):
         #game state
@@ -29,7 +29,7 @@ class TurnBasedGame_Service():
         loop_task.start(task_interval_sec)
         
         #set the target game, depending on the game name
-        self.target_game = TurnBasedGame_List.get_game_from_name(network_path)
+        self.target_game = TurnBasedGameList.get_game_from_name(network_path)
     
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):

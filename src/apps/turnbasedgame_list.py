@@ -4,7 +4,7 @@ from games.tictactoe import TicTacToe
 from games.connectfour import ConnectFour
 from games.reversi import Reversi
 
-class TurnBasedGame_List():
+class TurnBasedGameList():
     
     def get_game_from_name(game_name):
         if game_name.endswith("tic_tac_toe"):

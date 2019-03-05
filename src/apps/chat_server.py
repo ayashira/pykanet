@@ -5,7 +5,7 @@ from network_message import Network_Message
 from file_manager import *
 import datetime
 
-class Chat_Service():
+class ChatServer():
     
     def __init__(self, network_path):
         #list of connected clients

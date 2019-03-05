@@ -12,7 +12,7 @@ from kivy.lang import Builder
 #from scrollable_label import ScrollableLabel
 #from shift_enter_textinput import ShiftEnterTextInput
 
-from turnbasedgame_list import TurnBasedGame_List
+from apps.turnbasedgame_list import TurnBasedGameList
 
 Builder.load_string('''
 <TurnBasedGameClient>:
@@ -29,7 +29,7 @@ class TurnBasedGameClient(Screen):
     
     #called by Kivy when the screen is entered (displayed)
     def on_enter(self):
-        self.target_game = TurnBasedGame_List.get_game_from_name(self.target_address)
+        self.target_game = TurnBasedGameList.get_game_from_name(self.target_address)
         
         self.create_grid()
         
