@@ -9,7 +9,7 @@ class ShiftEnterTextInput(TextInput):
     __events__ = TextInput.__events__ + ('on_key_pressed',)
 
     def __init__(self, **kwargs):
-        super(ShiftEnterTextInput, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.multiline = True
         
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
