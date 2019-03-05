@@ -52,7 +52,7 @@ from kivy.properties import ObjectProperty, NumericProperty
 from kivy.lang import Builder
 
 from chat_client import ChatClient
-from tictactoe_client import TicTacToeClient
+from tictactoe_client import TurnBasedGameClient
 
 #currently needed to set localhost
 from network_interface import *
@@ -117,7 +117,7 @@ Builder.load_string('''
         manager: screen_manager
         chat_address: "/chat/dev_test"
         
-    TicTacToeClient:
+    TurnBasedGameClient:
         id: screen_four
         name: "tictactoescreen"
         manager: screen_manager

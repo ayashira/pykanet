@@ -12,10 +12,10 @@ from kivy.lang import Builder
 #from scrollable_label import ScrollableLabel
 #from shift_enter_textinput import ShiftEnterTextInput
 
-from game_tictactoe import TicTacToe
+from turnbasedgame_list import TurnBasedGame_List
 
 Builder.load_string('''
-<TicTacToeClient>:
+<TurnBasedGameClient>:
     GridLayout:
         id: board_grid
         size: root.size
@@ -24,7 +24,7 @@ Builder.load_string('''
 ''')
 
 
-class TicTacToeClient(Screen):
+class TurnBasedGameClient(Screen):
     
     #kivy string property indicating the target network address
     target_address = StringProperty()
@@ -33,7 +33,7 @@ class TicTacToeClient(Screen):
     def on_enter(self):
         self.create_grid(self.ids["board_grid"].rows, self.ids["board_grid"].cols)
         
-        self.game_board = TicTacToe()
+        self.game_board = TurnBasedGame_List.get_game_from_name(self.target_address)
         
         #game state
         self.play_turn = False
