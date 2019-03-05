@@ -1,13 +1,11 @@
-# Server node implementing a chat
+# Server node implementing a turned-based game
 
 from twisted.internet import task
 from network_message import Network_Message
 from file_manager import *
 import datetime
 
-from game_tictactoe import TicTacToe
-
-class TicTacToe_Service():
+class TurnBasedGame_Service():
     
     def __init__(self, network_path):
         #game state
@@ -28,9 +26,12 @@ class TicTacToe_Service():
         loop_task = task.LoopingCall(self.remove_inactive_clients)
         loop_task.start(task_interval_sec)
         
-        #game state
-        self.game_board = TicTacToe()
-        
+        #target game, must be set with set_target_game()
+        self.target_game = None
+    
+    def set_target_game(self, game):
+        self.target_game = game
+    
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
         #print(message.to_bytes())
@@ -47,12 +48,12 @@ class TicTacToe_Service():
             if sender_client == self.clients[self.current_player_id]:
                 #TODO play move
                 move = int(message.message_content)
-                if not self.game_board.is_valid_play(move, player = self.current_player_id + 1):
+                if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     #move not valid, don't do anything. TODO : request a move again
                     return
                 
                 #move is valid, play it, and indicate the value to both players
-                self.game_board.play(move, player = self.current_player_id + 1)
+                self.target_game.play(move, player = self.current_player_id + 1)
                 if self.current_player_id == 0:
                     command = "PLAYER1_MOVE"
                 else:
@@ -63,7 +64,7 @@ class TicTacToe_Service():
                     client.send_message(message)
                 
                 #check if the player won
-                if self.game_board.has_won(player = self.current_player_id + 1):
+                if self.target_game.has_won(player = self.current_player_id + 1):
                     if self.current_player_id == 0:
                         command = "PLAYER1_WIN"
                     else:
@@ -80,7 +81,7 @@ class TicTacToe_Service():
                     return
                 
                 #check if it is a draw
-                if self.game_board.is_draw():
+                if self.target_game.is_draw():
                     message = Network_Message("dummy_user", self.network_path, "DRAW", "")
                     for client in self.clients:
                         client.send_message(message)
