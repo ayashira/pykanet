@@ -6,8 +6,8 @@ from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-from scrollable_label import ScrollableLabel
-from shift_enter_textinput import ShiftEnterTextInput
+from widgets.scrollable_label import ScrollableLabel
+from widgets.shift_enter_textinput import ShiftEnterTextInput
 
 Builder.load_string('''
 <ChatClient>:
