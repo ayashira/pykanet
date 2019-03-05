@@ -1,8 +1,8 @@
 #All turn-based games should be added here to link "game names" and classes
 
-from game_tictactoe import TicTacToe
-from game_connectfour import ConnectFour
-from game_reversi import Reversi
+from games.tictactoe import TicTacToe
+from games.connectfour import ConnectFour
+from games.reversi import Reversi
 
 class TurnBasedGame_List():
     
