@@ -51,8 +51,8 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.lang import Builder
 
-from chat_client import ChatClient
-from turnbasedgame_client import TurnBasedGameClient
+from apps.chat_client import ChatClient
+from apps.turnbasedgame_client import TurnBasedGameClient
 
 #currently needed to set localhost
 from network_interface import *

@@ -2,8 +2,8 @@
 
 from network_message import Network_Message
 
-from chat_service import *
-from turnbasedgame_service import *
+from apps.chat_server import *
+from apps.turnbasedgame_service import *
 
 #main class launching the server services when a connection is made at a given network address
 #only one instance of this class is created for one server node (in the server factory)
