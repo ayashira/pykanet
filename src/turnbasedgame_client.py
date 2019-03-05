@@ -29,7 +29,7 @@ class TurnBasedGameClient(Screen):
     
     #called by Kivy when the screen is entered (displayed)
     def on_enter(self):
-        self.game_board = TurnBasedGame_List.get_game_from_name(self.target_address)
+        self.target_game = TurnBasedGame_List.get_game_from_name(self.target_address)
         
         self.create_grid()
         
@@ -39,9 +39,9 @@ class TurnBasedGameClient(Screen):
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def create_grid(self):
-        rows = self.game_board.rows()
-        cols = self.game_board.cols()
-        cell_width, cell_height = self.game_board.cell_size()
+        rows = self.target_game.rows()
+        cols = self.target_game.cols()
+        cell_width, cell_height = self.target_game.cell_size()
         
         self.ids["board_grid"].rows = rows
         self.ids["board_grid"].cols = cols
@@ -69,12 +69,12 @@ class TurnBasedGameClient(Screen):
             self.play_turn = True
         elif message.network_command == "PLAYER1_MOVE":
             move = int(message.message_content)
-            self.game_board.play(move, player=1)
-            self.button_list[move].text = "O"
+            self.target_game.play(move, player=1)
+            self.update_display()
         elif message.network_command == "PLAYER2_MOVE":
             move = int(message.message_content)
-            self.game_board.play(move, player=2)
-            self.button_list[move].text = "X"
+            self.target_game.play(move, player=2)
+            self.update_display()
         elif message.network_command == "PLAYER1_WIN" or message.network_command == "PLAYER2_WIN" or message.network_command == "DRAW":
             popup = Popup(title='Game finished',
                           content=Label(text=message.network_command),
@@ -85,9 +85,16 @@ class TurnBasedGameClient(Screen):
         #print(button.id)
         if self.play_turn:
             move = int(button.id)
-            if not self.game_board.is_valid_play(move, player=2):
+            if not self.target_game.is_valid_play(move, player=2):
                 return
             
             self.play_turn = False
             message = Network_Message("dummy_user", self.target_address, "MOVE", button.id)
             self.network_interface.network_send(message)
+    
+    def update_display(self):
+        #update all the buttons (at least for now and for usual board games, this is not too heavy)
+        rows = self.target_game.rows()
+        for i in range(rows):
+            for j in range(self.target_game.cols()):
+                self.button_list[i*rows+j].text = self.target_game.get_label(i, j)

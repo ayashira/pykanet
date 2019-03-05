@@ -1,7 +1,7 @@
 
 class TicTacToe():
     
-    #coordinates of the cell for each possible line
+    #coordinates of the cells for each possible line
     lines = [ [(0,0), (0,1), (0,2)],
           [(1,0), (1,1), (1,2)],
           [(2,0), (2,1), (2,2)],
@@ -22,9 +22,19 @@ class TicTacToe():
     def cols(self):
         return 3
     
-    #width and height of a cell when displaying the game
+    #for display : width and height of a cell when displaying the game
     def cell_size(self):
         return 80, 80
+    
+    #for display: label for cell at coordinates (x, y)
+    def get_label(self, x, y):
+        s = self.board[x][y]
+        if s == 0:
+            return ""
+        elif s == 1:
+            return "O"
+        elif s == 2:
+            return "X"
     
     #a move by a player is valid if the cell is empty
     def is_valid_play(self, move, player):
