@@ -89,7 +89,15 @@ Builder.load_string('''
             on_release:
                 root.manager.current = "tictactoescreen"
         
-
+        Button:
+            text: "Connect Four"
+            on_release:
+                root.manager.current = "connectfourscreen"
+                
+        Button:
+            text: "Reversi"
+            on_release:
+                root.manager.current = "reversiscreen"
 ''')
 
 class StartScreen(Screen):
@@ -101,27 +109,33 @@ Builder.load_string('''
     id: screen_manager
 
     StartScreen:
-        id: screen_one
         name: "startscreen"
         manager: screen_manager
 
     ChatClient:
-        id: screen_two
         name: "devchatscreen"
         manager: screen_manager
         chat_address: "/chat/dev_main"
 
     ChatClient:
-        id: screen_three
         name: "testchatscreen"
         manager: screen_manager
         chat_address: "/chat/dev_test"
         
     TurnBasedGameClient:
-        id: screen_four
         name: "tictactoescreen"
         manager: screen_manager
         target_address: "/game/tic_tac_toe"
+
+    TurnBasedGameClient:
+        name: "connectfourscreen"
+        manager: screen_manager
+        target_address: "/game/connect_four"
+
+    TurnBasedGameClient:
+        name: "reversiscreen"
+        manager: screen_manager
+        target_address: "/game/reversi"
 ''')
 
 class Manager(ScreenManager):

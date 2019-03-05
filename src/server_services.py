@@ -28,7 +28,7 @@ class Server_Services():
                 #if the service for this address is not existing yet, it will be created by setdefault
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, Chat_Service(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
-            elif message.network_path.startswith("/game/tic_tac_toe"):
+            elif message.network_path.startswith("/game/"):
                 if not message.network_path in self.services_dict.keys() or self.services_dict[message.network_path].service_restart_needed():
                     self.services_dict[message.network_path] = TurnBasedGame_Service(message.network_path)
                 
