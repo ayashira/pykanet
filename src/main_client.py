@@ -52,7 +52,7 @@ from kivy.properties import ObjectProperty, NumericProperty
 from kivy.lang import Builder
 
 from chat_client import ChatClient
-from tictactoe_client import TurnBasedGameClient
+from turnbasedgame_client import TurnBasedGameClient
 
 #currently needed to set localhost
 from network_interface import *
