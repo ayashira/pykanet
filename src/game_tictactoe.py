@@ -16,6 +16,16 @@ class TicTacToe():
         #3x3 board, 0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
         self.board = [[0 for y in range(3)] for x in range(3)]
     
+    def rows(self):
+        return 3
+        
+    def cols(self):
+        return 3
+    
+    #width and height of a cell when displaying the game
+    def cell_size(self):
+        return 80, 80
+    
     #a move by a player is valid if the cell is empty
     def is_valid_play(self, move, player):
         x = move // 3

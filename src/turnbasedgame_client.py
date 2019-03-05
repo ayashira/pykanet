@@ -19,8 +19,6 @@ Builder.load_string('''
     GridLayout:
         id: board_grid
         size: root.size
-        rows: 3
-        cols: 3
 ''')
 
 
@@ -31,16 +29,23 @@ class TurnBasedGameClient(Screen):
     
     #called by Kivy when the screen is entered (displayed)
     def on_enter(self):
-        self.create_grid(self.ids["board_grid"].rows, self.ids["board_grid"].cols)
-        
         self.game_board = TurnBasedGame_List.get_game_from_name(self.target_address)
+        
+        self.create_grid()
         
         #game state
         self.play_turn = False
         
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
-    def create_grid(self, rows, cols):
+    def create_grid(self):
+        rows = self.game_board.rows()
+        cols = self.game_board.cols()
+        cell_width, cell_height = self.game_board.cell_size()
+        
+        self.ids["board_grid"].rows = rows
+        self.ids["board_grid"].cols = cols
+        
         #list of buttons used to access buttons from an index
         self.button_list = []
         
@@ -48,7 +53,7 @@ class TurnBasedGameClient(Screen):
             for j in range(cols):
                 #note : button id defined here cannot be used to access buttons with their .ids
                 #       it is used to identify which button called cell_clicked
-                button = Button(text='', width=80, height=80, size_hint=(None, None), id=str(i*rows+j))
+                button = Button(text='', width=cell_width, height=cell_height, size_hint=(None, None), id=str(i*rows+j))
                 button.bind(on_press=self.cell_clicked)
                 self.ids["board_grid"].add_widget(button)
                 self.button_list.append(button)
