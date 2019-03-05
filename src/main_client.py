@@ -1,6 +1,3 @@
-# this is a first test of kivy client
-# from kivy example : https://github.com/kivy/kivy/blob/master/examples/frameworks/twisted/echo_client_app.py
-
 from __future__ import unicode_literals
 
 import sys
@@ -43,16 +40,8 @@ from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
 from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.boxlayout import BoxLayout
-
-from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
-from kivy.properties import ObjectProperty, NumericProperty
-from kivy.lang import Builder
-
-from apps.chat_client import ChatClient
-from apps.turnbasedgame_client import TurnBasedGameClient
+from kivy.uix.screenmanager import NoTransition
+from apps.desktop_client import DesktopClient
 
 #currently needed to set localhost
 from network_interface import *
@@ -62,95 +51,15 @@ from network_interface import *
 #NOTO font downloaded from here: https://www.google.com/get/noto/help/cjk/
 utf8_font_path = "NotoSansCJK-Regular.ttc"
 
-
-Builder.load_string('''
-<StartScreen>:
-
-    BoxLayout:
-        orientation: "vertical"
-        size: root.size
-        spacing: 20
-        padding: 20
-
-        Label:
-            text: "Main Menu. This screen will become the app 'desktop'."
-        Button:
-            text: "Main Chat"
-            on_release:
-                root.manager.current = "devchatscreen"
-                
-        Button:
-            text: "Test Chat : do what you want here, this is for tests :)"
-            on_release:
-                root.manager.current = "testchatscreen"
-                
-        Button:
-            text: "Tic Tac Toe !"
-            on_release:
-                root.manager.current = "tictactoescreen"
-        
-        Button:
-            text: "Connect Four"
-            on_release:
-                root.manager.current = "connectfourscreen"
-                
-        Button:
-            text: "Reversi"
-            on_release:
-                root.manager.current = "reversiscreen"
-''')
-
-class StartScreen(Screen):
-    pass
-
-    
-Builder.load_string('''
-<Manager>:
-    id: screen_manager
-
-    StartScreen:
-        name: "startscreen"
-        manager: screen_manager
-
-    ChatClient:
-        name: "devchatscreen"
-        manager: screen_manager
-        chat_address: "/chat/dev_main"
-
-    ChatClient:
-        name: "testchatscreen"
-        manager: screen_manager
-        chat_address: "/chat/dev_test"
-        
-    TurnBasedGameClient:
-        name: "tictactoescreen"
-        manager: screen_manager
-        target_address: "/game/tic_tac_toe"
-
-    TurnBasedGameClient:
-        name: "connectfourscreen"
-        manager: screen_manager
-        target_address: "/game/connect_four"
-
-    TurnBasedGameClient:
-        name: "reversiscreen"
-        manager: screen_manager
-        target_address: "/game/reversi"
-''')
-
-class Manager(ScreenManager):
-    pass
-
 # Main App with a screen manager
-class NetworkClientApp(App):
+class MainClient(App):
 
     def build(self):
-        m = Manager(transition=NoTransition())
-        return m
+        return DesktopClient(transition=NoTransition())
 
 if __name__ == '__main__':
-    #note: command-line arguments are parsed at top of the file, before kivy import
+    #note: command-line arguments are parsed at top of file, before kivy import
     if custom_args.use_localhost:
         NetworkInterface.set_server_to_localhost()
     
-    NetworkClientApp().run()
+    MainClient().run()
