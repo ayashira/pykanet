@@ -3,7 +3,7 @@
 from network_message import Network_Message
 
 from chat_service import *
-from tictactoe_service import *
+from turnbasedgame_service import *
 
 from game_tictactoe import TicTacToe
 
