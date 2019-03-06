@@ -14,7 +14,7 @@ class TicTacToe():
     
     def __init__(self):
         #3x3 board, 0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
-        self.board = [[0 for y in range(3)] for x in range(3)]
+        self.board = [[0 for y in range(self.rows())] for x in range(self.cols())]
     
     def rows(self):
         return 3
