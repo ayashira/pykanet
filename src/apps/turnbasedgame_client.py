@@ -115,8 +115,7 @@ class TurnBasedGameClient(Screen):
         #print(button.id)
         if self.play_turn:
             move = int(button.id)
-            #TODO: there should be an id in the class to know which player we are, and it should be used here as player parameter 
-            if not self.target_game.is_valid_play(move, player=2):
+            if not self.target_game.is_valid_play(move, player=self.player_id):
                 return
             
             self.play_turn = False
