@@ -8,7 +8,6 @@ from kivy.lang import Builder
 from kivy.properties import BooleanProperty
 
 from widgets.scrollable_label import ScrollableLabel
-from widgets.shift_enter_textinput import ShiftEnterTextInput
 
 Builder.load_string('''
 <WikiClient>:
@@ -58,7 +57,8 @@ Builder.load_string('''
             Screen:
                 id: edit_screen
                 name: "edit_screen"
-                ShiftEnterTextInput:
+                TextInput:
+                    multiline: True
                     id:textbox
 ''')
 
@@ -73,7 +73,6 @@ class WikiClient(Screen):
     def on_enter(self):
         #self.ids["textbox"].font_name=utf8_font_path
         self.ids["textbox"].text_validate_unfocus = False
-        self.ids["textbox"].bind(on_text_validate=self.send_message)
         
         self.ids["screen_manager"].transition = NoTransition()
         
@@ -119,7 +118,13 @@ class WikiClient(Screen):
         self.ids["textbox"].text = self.current_content
     
     def save_edit(self):
-        pass
-        
+        msg = self.ids["textbox"].text
+        message = Network_Message("dummy_user", self.target_address, "WRITE", msg)
+        self.network_interface.network_send(message)
+    
+        #remove the current content of the label to show that we are waiting the server response
+        self.ids["label"].text = ""
+    
     def cancel_edit(self):
+        #TODO : confirmation popup
         pass
