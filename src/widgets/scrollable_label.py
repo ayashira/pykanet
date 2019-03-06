@@ -29,6 +29,10 @@ Builder.load_string('''
 
 #default text to None, default background to white
 class ScrollableLabel(ScrollView):
+    
+    #add an event triggered when a link other than http link is clicked
+    __events__ = ScrollView.__events__ + ('on_link_clicked',)
+    
     text = StringProperty('')
     bcolor = ListProperty([1,1,1,1])
     
@@ -44,6 +48,7 @@ class ScrollableLabel(ScrollView):
         #use a regular expression to add kivy color and ref markup around web addresses
         text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
         
+        #kivy color and ref markup for [[ ]] links
         text_str = re.sub(r'\[\[(\S*)\]\]', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
         
         return text_str
@@ -52,3 +57,8 @@ class ScrollableLabel(ScrollView):
         if link.startswith("http"):
             import webbrowser
             webbrowser.open(link)
+        else:
+            self.dispatch('on_link_clicked', link)
+
+    def on_link_clicked(self, link):
+        pass

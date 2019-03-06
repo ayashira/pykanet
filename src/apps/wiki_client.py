@@ -54,6 +54,9 @@ Builder.load_string('''
                 ScrollableLabel:
                     id:label
                     text: ""
+                    on_link_clicked:
+                        root.target_address = "/wiki/" + args[1]
+                        root.read_address(root.target_address)
             Screen:
                 id: edit_screen
                 name: "edit_screen"
