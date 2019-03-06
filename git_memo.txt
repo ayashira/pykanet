@@ -1,0 +1,31 @@
+Memo of the main git commands
+
+* Clone the main branch of repository :
+* It will create a new folder xproject with all repository files
+git clone https://github.com/ZiP013/xproject.git
+
+All following commands are intended to be done inside the xproject folder
+
+* Update the local repository
+git pull
+
+* See the log history (of local repository, it includes local changes)  
+git log
+
+* See the current local changes not committed yet
+git diff
+
+* Commit locally some changes (network is not needed)
+* This is a three-step process:
+* 1.add the target files 2.(optional step) check what files will be included 3.commit with some comment
+git add files (typically, git add *.py in src folder)
+git diff --staged (this step is optional, it allows to see the diff of what will be included in the commit)
+git commit -m "explanation"
+
+* push all local commits to the main repository (network connection needed)
+git push
+
+* set the local user.name for this project (needed once before the first push)
+* important note : user.name will be used as git "author" in the git log, it can be different from github account
+git config user.name "chosen_username"
+
