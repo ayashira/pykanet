@@ -31,7 +31,7 @@ class TurnBasedGameServer():
         #set the target game, depending on the game name
         self.target_game = TurnBasedGameList.get_game_from_name(network_path)
     
-    #called when a message is received by any of the connected clients
+    #called when a message is received from any of the connected clients
     def receive_message(self, sender_client, message):
         #print(message.to_bytes())
         if message.network_command == "ENTER":
@@ -121,8 +121,13 @@ class TurnBasedGameServer():
             
             self.current_player_id = 0
             self.opp_player_id = 1
+            message = Network_Message("dummy_user", self.network_path, "SET_PLAYER_ID", "1")
+            self.clients[self.current_player_id].send_message(message)
             message = Network_Message("dummy_user", self.network_path, "REQUEST_MOVE", "")
             self.clients[self.current_player_id].send_message(message)
+            
+            message = Network_Message("dummy_user", self.network_path, "SET_PLAYER_ID", "2")
+            self.clients[self.opp_player_id].send_message(message)
             message = Network_Message("dummy_user", self.network_path, "WAIT_OPP_MOVE", "")
             self.clients[self.opp_player_id].send_message(message)
     
