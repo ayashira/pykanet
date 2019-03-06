@@ -6,6 +6,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.lang import Builder
 
 from apps.chat_client import ChatClient
+from apps.wiki_client import WikiClient
 from apps.turnbasedgame_client import TurnBasedGameClient
 
 Builder.load_string('''
@@ -28,7 +29,12 @@ Builder.load_string('''
             text: "Test Chat : do what you want here, this is for tests :)"
             on_release:
                 root.manager.current = "testchatscreen"
-                
+        
+        Button:
+            text: "Wiki"
+            on_release:
+                root.manager.current = "wikiscreen"
+        
         Button:
             text: "Tic Tac Toe !"
             on_release:
@@ -66,7 +72,12 @@ Builder.load_string('''
         name: "testchatscreen"
         manager: screen_manager
         chat_address: "/chat/dev_test"
-        
+
+    WikiClient:
+        name: "wikiscreen"
+        manager: screen_manager
+        target_address: "/wiki/home"
+    
     TurnBasedGameClient:
         name: "tictactoescreen"
         manager: screen_manager

@@ -3,6 +3,7 @@
 from network_message import Network_Message
 
 from apps.chat_server import ChatServer
+from apps.wiki_server import WikiServer
 from apps.turnbasedgame_server import TurnBasedGameServer
 
 #main class launching the server services when a connection is made at a given network address
@@ -28,6 +29,14 @@ class Server_Services():
                 #if the service for this address is not existing yet, it will be created by setdefault
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, ChatServer(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
+            elif message.network_path.startswith("/wiki/"):
+                #for "wiki" nodes, we use only one wiki server for all wiki addresses
+                wiki_root_address = "/wiki/"
+                if not wiki_root_address in self.services_dict.keys():
+                    self.services_dict[wiki_root_address] = WikiServer(wiki_root_address)
+                
+                client.message_receiver_callback = self.services_dict[wiki_root_address].receive_message
+                client.connection_lost_callback = self.services_dict[wiki_root_address].connection_lost
             elif message.network_path.startswith("/game/"):
                 if not message.network_path in self.services_dict.keys() or self.services_dict[message.network_path].service_restart_needed():
                     self.services_dict[message.network_path] = TurnBasedGameServer(message.network_path)
