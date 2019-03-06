@@ -18,9 +18,7 @@ Builder.load_string('''
         text_size: self.width, None
         text: root.text
         markup:True
-        on_ref_press:
-            import webbrowser
-            webbrowser.open(args[1])
+        on_ref_press: root.link_clicked(args[1])
         canvas.before:
             Color:
                 rgba: root.bcolor
@@ -40,3 +38,17 @@ class ScrollableLabel(ScrollView):
         #use a regular expression to add kivy color and ref markup around web addresses
         text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
         return text_str
+    
+    #format the wiki syntax to kivy markup language
+    def format_wiki_syntax(self, text_str):
+        #use a regular expression to add kivy color and ref markup around web addresses
+        text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
+        
+        text_str = re.sub(r'\[\[(\S*)\]\]', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
+        
+        return text_str
+        
+    def link_clicked(self, link):
+        if link.startswith("http"):
+            import webbrowser
+            webbrowser.open(link)

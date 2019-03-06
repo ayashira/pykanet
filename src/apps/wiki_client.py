@@ -105,11 +105,11 @@ class WikiClient(Screen):
         self.network_interface.network_send(message)
     
     def update_text(self, msg):
-        formatted_links_msg = self.ids["label"].format_links(msg)
+        formatted_msg = self.ids["label"].format_wiki_syntax(msg)
         
         #black color for main text
         text_color_str = "000000"
-        msg_color = "[color=" + text_color_str + "]" + formatted_links_msg + "[/color]"
+        msg_color = "[color=" + text_color_str + "]" + formatted_msg + "[/color]"
         
         self.ids["label"].text = msg_color
     
