@@ -5,6 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
+from kivy.properties import BooleanProperty
 
 from widgets.scrollable_label import ScrollableLabel
 from widgets.shift_enter_textinput import ShiftEnterTextInput
@@ -15,35 +16,68 @@ Builder.load_string('''
         orientation: "vertical"
         size: root.size
         
-        Button:
-            id: edit_button
-            text: "Edit"
+        BoxLayout:
+            orientation: "horizontal"
             size_hint_y: .1
+            
+            Button:
+                id: edit_button
+                text: "Edit"
+                disabled: root.is_edit
+                on_release: 
+                    screen_manager.current = "edit_screen"
+                    root.is_edit = True
+                    root.start_edit()
+            
+            Button:
+                id: cancel_button
+                text: "Cancel"
+                disabled: not root.is_edit
+                on_release:
+                    screen_manager.current = "display_screen"
+                    root.is_edit = False
+                    root.cancel_edit()
+
+            Button:
+                id: save_button
+                text: "Save"
+                disabled: not root.is_edit
+                on_release:
+                    screen_manager.current = "display_screen"
+                    root.is_edit = False
+                    root.save_edit()
         
-        Button:
-            id: edit_button
-            text: "Save"
-            size_hint_y: .1
-        
-        ScrollableLabel:
-            id:label
-            text: ""
-        ShiftEnterTextInput:
-            id:textbox
-            size_hint_y: .5
+        ScreenManager:
+            id: screen_manager
+            Screen:
+                id: display_screen
+                name: "display_screen"
+                ScrollableLabel:
+                    id:label
+                    text: ""
+            Screen:
+                id: edit_screen
+                name: "edit_screen"
+                ShiftEnterTextInput:
+                    id:textbox
 ''')
-    
+
 class WikiClient(Screen):
     
     #kivy string property indicating the target network address
     target_address = StringProperty()
     
+    is_edit = BooleanProperty(False)
+    
     #called by Kivy when the screen is entered (displayed)
     def on_enter(self):
         #self.ids["textbox"].font_name=utf8_font_path
-        self.ids["textbox"].focus = True
         self.ids["textbox"].text_validate_unfocus = False
         self.ids["textbox"].bind(on_text_validate=self.send_message)
+        
+        self.ids["screen_manager"].transition = NoTransition()
+        
+        self.current_content = ""
         
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
@@ -61,8 +95,8 @@ class WikiClient(Screen):
     def receive_message(self, message):
         #print(message.network_command, message.message_content)
         if message.network_command == "READ_RESULT":
-            self.update_text(message.message_content)
-            self.ids["textbox"].text = message.message_content
+            self.current_content = message.message_content
+            self.update_text(self.current_content)
         elif message.network_command == "WRITE_DONE":
             #read the address again after writing
             self.read_address(self.target_address)
@@ -79,3 +113,13 @@ class WikiClient(Screen):
         msg_color = "[color=" + text_color_str + "]" + formatted_links_msg + "[/color]"
         
         self.ids["label"].text = msg_color
+    
+    def start_edit(self):
+        self.ids["textbox"].focus = True
+        self.ids["textbox"].text = self.current_content
+    
+    def save_edit(self):
+        pass
+        
+    def cancel_edit(self):
+        pass
