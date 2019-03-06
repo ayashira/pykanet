@@ -82,8 +82,9 @@ class ChatClient(Screen):
     #when the status changes, we remove the current status from the label, and display the new one (if any)
     def add_typing_message(self, msg):
         text_color_str = "0000ff"
-        self.current_typing_msg = "[color=" + text_color_str + "]    " + msg + " typing... [/color]\n"
-        self.ids["label"].text += self.current_typing_msg
+        new_typing_msg = "[color=" + text_color_str + "]    " + msg + " typing... [/color]\n"
+        self.current_typing_msg += new_typing_msg
+        self.ids["label"].text += new_typing_msg
     
     def remove_typing_message(self):
         status_len = len(self.current_typing_msg)
