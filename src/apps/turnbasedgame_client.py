@@ -39,7 +39,12 @@ class TurnBasedGameClient(Screen):
     def on_enter(self):
         self.target_game = TurnBasedGameList.get_game_from_name(self.target_address)
         
+        #create the grid of buttons
         self.create_grid()
+        
+        #update the button display before starting the game (needed for some games)
+        self.update_display()
+        
         self.ids["state_label"].text = "Waiting opponent"
         
         #game state
