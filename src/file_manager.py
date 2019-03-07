@@ -15,13 +15,16 @@ class File_Manager():
             return ""
     
     #TODO: for efficiency, some cache mechanism could be used
+    #return True if writing was successful
     def file_write(network_path, new_content):
         filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
         try:
             with open(filename, "w") as file:
                 file.write(new_content)
+            return True
         except:
             print("Warning: could not open file ", filename, "to save data of ", network_path)
+            return False
     
     #TODO: for efficiency, some cache mechanism could be used
     def file_append(network_path, added_content):
