@@ -62,26 +62,12 @@ class TurnBasedGameServer():
                 for client in self.clients:
                     client.send_message(message)
                 
-                #check if the player won
-                if self.target_game.has_won(player = self.current_player_id + 1):
-                    if self.current_player_id == 0:
-                        command = "PLAYER1_WIN"
-                    else:
-                        command = "PLAYER2_WIN"
+                #check if the game is finished
+                winner = self.target_game.winner()
+                if winner != -1:
+                    command = "GAME_FINISHED"
                     
-                    message = Network_Message("dummy_user", self.network_path, command, "")
-                    for client in self.clients:
-                        client.send_message(message)
-                        
-                        #end the connection
-                        client.lose_connection()
-                    
-                    self.game_ended = True
-                    return
-                
-                #check if it is a draw
-                if self.target_game.is_draw():
-                    message = Network_Message("dummy_user", self.network_path, "DRAW", "")
+                    message = Network_Message("dummy_user", self.network_path, command, str(winner))
                     for client in self.clients:
                         client.send_message(message)
                         

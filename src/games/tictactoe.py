@@ -48,22 +48,21 @@ class TicTacToe():
         col = move % 3
         self.board[row][col] = player
     
-    #indicate if a player has won or not, by checking if he has finished a line
-    def has_won(self, player):
+    #return -1 if the game is not finished, 0 if draw, 1 or 2 if one of the player wins
+    def winner(self):
         for line in TicTacToe.lines:
             a, b, c = line
-            if self.board[a[0]][a[1]] == self.board[b[0]][b[1]] == self.board[c[0]][c[1]] == player:
-                return True
-        return False
-    
-    #draw if all cells are occupied and no player wins
-    def is_draw(self):
+            if self.board[a[0]][a[1]] != 0 and \
+               self.board[a[0]][a[1]] == self.board[b[0]][b[1]] == self.board[c[0]][c[1]]:
+                #one of the player won, return the player id (1 or 2)
+                return self.board[a[0]][a[1]]
+        
+        #no player has won yet, check for a draw
         for x in range(3):
             for y in range(3):
                 if self.board[x][y] == 0:
-                    return False
+                    #play still possible, game not finished
+                    return -1
         
-        if self.has_won(player=1) or self.has_won(player=2):
-            return False
-            
-        return True
+        #no play is possible anymore, this is a draw
+        return 0

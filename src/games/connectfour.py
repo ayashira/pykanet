@@ -36,12 +36,7 @@ class ConnectFour():
         #TODO
         pass
     
-    #indicate if a player has won or not
-    def has_won(self, player):
-        #TODO
-        pass
-    
-    #draw if all cells are occupied and no player wins
-    def is_draw(self):
+    #must return -1 if game not finished, 0 if draw, 1 or 2 if player 1 or 2 has won
+    def winner(self):
         #TODO
         pass
