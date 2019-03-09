@@ -13,7 +13,6 @@ class Reversi():
         pos = (self.rows()//2-1, self.rows()//2)
         for p1, p2 in itertools.product(pos, pos):
             self.board[p1][p2] = ((p1-pos[0])^(p2-pos[0]))+1
-
     
     def rows(self):
         return 4
@@ -50,30 +49,26 @@ class Reversi():
             self.board[x][y] = player
             for ix, iy in fd:
                 self.board[ix][iy] = player
-        
     
-    #indicate if a player has won or not
-    def has_won(self, player):
-        point = np.sum(self.board == player)
-        other_point = np.sum((self.board != player) & (self.board != 0))
+    #returns -1 if game is not finished, 0 if draw, 1 or 2 if player 1 or 2 has won
+    def winner(self):
         blank = np.sum(self.board == 0)
-        if (point >= other_point) and (blank == 0):
-                return True
+        if blank > 0:
+            #game not finished
+            #TODO : game is finished only if no player can play anymore
+            #there are cases in reversi where some empty cells remain at the end
+            return -1
+        
+        point_1 = np.sum(self.board == 1)
+        point_2 = np.sum(self.board == 2)
+        
+        if point_1 > point_2:
+            return 1
+        elif point_1 < point_2:
+            return 2
         else:
-            return False
-    
-    #draw if all cells are occupied and no player wins
-    def is_draw(self):
-        for x in range(self.rows()):
-            for y in range(self.cols()):
-                if self.board[x][y] == 0:
-                    return False
-
-        if self.has_won(player=1) or self.has_won(player=2):
-            return False
-            
-        return True
-
+            #point_1 == point_2, this is a draw
+            return 0
     
     def __flip_discs(self, x, y, player):
         #list of possible straight 8 directions through the board
