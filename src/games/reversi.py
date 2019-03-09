@@ -8,9 +8,10 @@ class Reversi():
     def __init__(self):
         #0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
         self.board  = np.zeros((self.rows(), self.cols()))
+        
         #set the initial state(Othello opening)
         pos = (self.rows()//2-1, self.rows()//2)
-        for p1, p2 in list(itertools.product(pos, pos)):
+        for p1, p2 in itertools.product(pos, pos):
             self.board[p1][p2] = ((p1-pos[0])^(p2-pos[0]))+1
 
     
@@ -38,14 +39,14 @@ class Reversi():
         x = move // self.rows()
         y = move % self.cols()
         #return self.board[x][y] == 0
-        return len(self.__flip_discs(x, y, player)) != 0 
+        return len(self.__flip_discs(x, y, player)) > 0 
     
     #update the board with the move from a player
     def play(self, move, player):
         x = move // self.rows()
         y = move % self.cols()
         fd = self.__flip_discs(x, y, player)
-        if len(fd):
+        if len(fd)>0:
             self.board[x][y] = player
             for ix, iy in fd:
                 self.board[ix][iy] = player
@@ -55,8 +56,8 @@ class Reversi():
     def has_won(self, player):
         point = np.sum(self.board == player)
         other_point = np.sum((self.board != player) & (self.board != 0))
-        brank = np.sum(self.board == 0)
-        if (point >= other_point) and (brank == 0):
+        blank = np.sum(self.board == 0)
+        if (point >= other_point) and (blank == 0):
                 return True
         else:
             return False
@@ -75,10 +76,14 @@ class Reversi():
 
     
     def __flip_discs(self, x, y, player):
+        #list of possible straight 8 directions through the board
+        #one direction is represented by the move variation on x and y axis
+        #note : it also includes a useless "no move" direction 
+        increment_funcs = (lambda x:x, lambda x:x+1, lambda x:x-1)
+        directions = itertools.product(increment_funcs, increment_funcs)
+        
         fd = []
-        fancs = (lambda f:f, lambda f1:f1+1, lambda f2:f2-1)
-
-        for f1, f2 in list(itertools.product(fancs, fancs)):
+        for f1, f2 in directions:
             dx, dy = f1(x), f2(y)
             stack = []
             while(True):
@@ -87,7 +92,7 @@ class Reversi():
                         (dy < 0) or (dy >= self.cols()):
                     stack = []
                     break
-                # brank grid
+                # empty cell
                 elif(self.board[dx][dy] == 0):
                     stack = []
                     break
@@ -101,4 +106,3 @@ class Reversi():
 
             fd += stack
         return fd
-
