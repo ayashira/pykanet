@@ -96,12 +96,13 @@ class TurnBasedGameClient(Screen):
             move = int(message.message_content)
             self.target_game.play(move, player=2)
             self.update_display()
-        elif message.network_command == "PLAYER1_WIN" or message.network_command == "PLAYER2_WIN" or message.network_command == "DRAW":
+        elif message.network_command == "GAME_FINISHED":
             self.ids["state_label"].text = "Game finished"
+            winner = int(message.message_content)
             
-            if message.network_command == "DRAW":
+            if winner == 0:
                 win_result = "Draw"
-            elif (message.network_command == "PLAYER1_WIN" and self.player_id==1) or (message.network_command == "PLAYER2_WIN" and self.player_id==2):
+            elif winner == self.player_id:
                 win_result = "You Win"
             else:
                 win_result = "You Lose"

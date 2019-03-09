@@ -8,11 +8,12 @@ class Reversi():
     def __init__(self):
         #0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
         self.board  = np.zeros((self.rows(), self.cols()))
+        self.current_player = 1
+        
         #set the initial state(Othello opening)
         pos = (self.rows()//2-1, self.rows()//2)
-        for p1, p2 in list(itertools.product(pos, pos)):
+        for p1, p2 in itertools.product(pos, pos):
             self.board[p1][p2] = ((p1-pos[0])^(p2-pos[0]))+1
-
     
     def rows(self):
         return 4
@@ -38,47 +39,54 @@ class Reversi():
         x = move // self.rows()
         y = move % self.cols()
         #return self.board[x][y] == 0
-        return len(self.__flip_discs(x, y, player)) != 0 
+        return len(self.__flip_discs(x, y, player)) > 0 
     
     #update the board with the move from a player
     def play(self, move, player):
         x = move // self.rows()
         y = move % self.cols()
         fd = self.__flip_discs(x, y, player)
-        if len(fd):
+        if len(fd)>0:
             self.board[x][y] = player
             for ix, iy in fd:
                 self.board[ix][iy] = player
+
+        #update the current_player
+        #TODO : same player should play again if opponent has no possible move
+        self.current_player = 2 if self.current_player == 1 else 1
+    
+    def get_current_player(self):
+        return self.current_player
+    
+    #returns -1 if game is not finished, 0 if draw, 1 or 2 if player 1 or 2 has won
+    def winner(self):
+        blank = np.sum(self.board == 0)
+        if blank > 0:
+            #game not finished
+            #TODO : game is finished only if no player can play anymore
+            #there are cases in reversi where some empty cells remain at the end
+            return -1
         
-    
-    #indicate if a player has won or not
-    def has_won(self, player):
-        point = np.sum(self.board == player)
-        other_point = np.sum((self.board != player) & (self.board != 0))
-        brank = np.sum(self.board == 0)
-        if (point >= other_point) and (brank == 0):
-                return True
+        point_1 = np.sum(self.board == 1)
+        point_2 = np.sum(self.board == 2)
+        
+        if point_1 > point_2:
+            return 1
+        elif point_1 < point_2:
+            return 2
         else:
-            return False
-    
-    #draw if all cells are occupied and no player wins
-    def is_draw(self):
-        for x in range(self.rows()):
-            for y in range(self.cols()):
-                if self.board[x][y] == 0:
-                    return False
-
-        if self.has_won(player=1) or self.has_won(player=2):
-            return False
-            
-        return True
-
+            #point_1 == point_2, this is a draw
+            return 0
     
     def __flip_discs(self, x, y, player):
+        #list of possible straight 8 directions through the board
+        #one direction is represented by the move variation on x and y axis
+        #note : it also includes a useless "no move" direction 
+        increment_funcs = (lambda x:x, lambda x:x+1, lambda x:x-1)
+        directions = itertools.product(increment_funcs, increment_funcs)
+        
         fd = []
-        fancs = (lambda f:f, lambda f1:f1+1, lambda f2:f2-1)
-
-        for f1, f2 in list(itertools.product(fancs, fancs)):
+        for f1, f2 in directions:
             dx, dy = f1(x), f2(y)
             stack = []
             while(True):
@@ -87,7 +95,7 @@ class Reversi():
                         (dy < 0) or (dy >= self.cols()):
                     stack = []
                     break
-                # brank grid
+                # empty cell
                 elif(self.board[dx][dy] == 0):
                     stack = []
                     break
@@ -101,4 +109,3 @@ class Reversi():
 
             fd += stack
         return fd
-
