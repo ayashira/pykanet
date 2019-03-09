@@ -15,7 +15,8 @@ class TicTacToe():
     def __init__(self):
         #3x3 board, 0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
         self.board = [[0 for y in range(self.rows())] for x in range(self.cols())]
-    
+        self.current_player = 1
+        
     def rows(self):
         return 3
         
@@ -47,6 +48,12 @@ class TicTacToe():
         row = move // 3
         col = move % 3
         self.board[row][col] = player
+        
+        #update the current_player
+        self.current_player = 2 if self.current_player == 1 else 1
+    
+    def get_current_player(self):
+        return self.current_player
     
     #return -1 if the game is not finished, 0 if draw, 1 or 2 if one of the player wins
     def winner(self):

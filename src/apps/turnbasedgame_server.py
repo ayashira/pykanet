@@ -45,7 +45,6 @@ class TurnBasedGameServer():
         
         if message.network_command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
-                #TODO play move
                 move = int(message.message_content)
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     #move not valid, don't do anything. TODO : request a move again
@@ -66,7 +65,6 @@ class TurnBasedGameServer():
                 winner = self.target_game.winner()
                 if winner != -1:
                     command = "GAME_FINISHED"
-                    
                     message = Network_Message("dummy_user", self.network_path, command, str(winner))
                     for client in self.clients:
                         client.send_message(message)
@@ -77,15 +75,15 @@ class TurnBasedGameServer():
                     self.game_ended = True
                     return
                 
-                #request next move
-                #reverse current and opp players, and send messages requesting a move or requesting to wait
-                self.opp_player_id = self.current_player_id
-                self.current_player_id = (self.current_player_id + 1) % 2
+                #check which player is next in the game (in some games, the same player can play again)
+                self.current_player_id = self.target_game.get_current_player() - 1
+                self.opp_player_id = 0 if self.current_player_id == 1 else 1
                 
+                #request next move
                 message = Network_Message("dummy_user", self.network_path, "REQUEST_MOVE", "")
                 self.clients[self.current_player_id].send_message(message)
                 message = Network_Message("dummy_user", self.network_path, "WAIT_OPP_MOVE", "")
-                self.clients[(1 + self.current_player_id) % 2].send_message(message)
+                self.clients[self.opp_player_id].send_message(message)
             else:
                 #someone other than current player tried to play
                 pass

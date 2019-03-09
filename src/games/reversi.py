@@ -8,6 +8,7 @@ class Reversi():
     def __init__(self):
         #0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
         self.board  = np.zeros((self.rows(), self.cols()))
+        self.current_player = 1
         
         #set the initial state(Othello opening)
         pos = (self.rows()//2-1, self.rows()//2)
@@ -49,6 +50,13 @@ class Reversi():
             self.board[x][y] = player
             for ix, iy in fd:
                 self.board[ix][iy] = player
+
+        #update the current_player
+        #TODO : same player should play again if opponent has no possible move
+        self.current_player = 2 if self.current_player == 1 else 1
+    
+    def get_current_player(self):
+        return self.current_player
     
     #returns -1 if game is not finished, 0 if draw, 1 or 2 if player 1 or 2 has won
     def winner(self):
