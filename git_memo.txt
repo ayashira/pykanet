@@ -1,15 +1,36 @@
-Memo of the main git commands
+====== How to contribute ========
 
-* Clone the main branch of repository :
-* It will create a new folder xproject with all repository files
-git clone https://github.com/ZiP013/xproject.git
+1) Fork the repository in your own github account 
+2) Clone your fork on your local computer
+   git clone https://github.com/your_github_username/pykanet.git
+3) Add the pykanet master repository as the "upstream" (called 
+   git remote add upstream https://github.com/pykanet/pykanet.git
 
-All following commands are intended to be done inside the xproject folder
+4) After these 3 steps, you have 2 remote repositories defined on your local computer:
+* origin : your own fork on github
+* upstream : pykanet project main repository 
+You can show this information with:
+  git remote -v
 
-* Update the local repository
-git pull
+5) Update regularly your fork with changes on pykanet:
+  git pull upstream
+  git push origin
 
-* See the log history (of local repository, it includes local changes)  
+6) Work as you want inside your fork with the usual commands:
+  git add some_files.py
+  git commit -m "explanation for the change"
+  git push origin
+
+7) When some changes are ready to be included to the main project repository,
+  Go to the "pull requests" tab in your github fork page, and create a new pull request.
+  Or you can also simply leave a message in the chat room.
+
+======= Memo of useful git commands ======
+
+* Update your local repository with the changes of main pykanet repository
+git pull upstream
+
+* See the log history (of local repository, it includes local changes not pushed yet to your fork) 
 git log
 
 * See the current local changes not committed yet
@@ -22,8 +43,8 @@ git add files (typically, git add *.py in src folder)
 git diff --staged (this step is optional, it allows to see the diff of what will be included in the commit)
 git commit -m "explanation"
 
-* push all local commits to the main repository (network connection needed)
-git push
+* push all local commits to your fork (network connection needed)
+git push origin
 
 * set the local user.name for this project (needed once before the first push)
 * important note : user.name will be used as git "author" in the git log, it can be different from github account
