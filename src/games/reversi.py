@@ -14,6 +14,15 @@ class Reversi():
         pos = (self.rows()//2-1, self.rows()//2)
         for p1, p2 in itertools.product(pos, pos):
             self.board[p1][p2] = ((p1-pos[0])^(p2-pos[0]))+1
+
+        #for debug
+        #self.board[3] = np.ones(4)*1
+        #self.board[2][0] = 1
+        #self.board[1][1] = 1
+        #self.board[0][1] = 1
+        #self.board[2][1] = 2
+        #self.board[1][2] = 2
+        #self.board[0][3] = 2
     
     def rows(self):
         return 4
@@ -53,7 +62,14 @@ class Reversi():
 
         #update the current_player
         #TODO : same player should play again if opponent has no possible move
-        self.current_player = 2 if self.current_player == 1 else 1
+        #self.current_player = 2 if self.current_player == 1 else 1
+        next_player = 2 if self.current_player == 1 else 1
+        next_fd = []
+        for row in range(self.rows()):
+            for col in range(self.cols()):
+                if self.board[row][col] == 0:
+                    next_fd += self.__flip_discs(row, col, next_player)
+        self.current_player = next_player if len(next_fd) > 0 else self.current_player
     
     def get_current_player(self):
         return self.current_player
@@ -65,7 +81,15 @@ class Reversi():
             #game not finished
             #TODO : game is finished only if no player can play anymore
             #there are cases in reversi where some empty cells remain at the end
-            return -1
+            fd = []
+            next_player = 2 if self.current_player == 1 else 1
+            for row in range(self.rows()):
+                for col in range(self.cols()):
+                    if self.board[row][col] == 0:
+                        fd += self.__flip_discs(row, col, next_player)
+                        fd += self.__flip_discs(row, col, self.current_player)
+            if len(fd) > 0:
+                return -1
         
         point_1 = np.sum(self.board == 1)
         point_2 = np.sum(self.board == 2)
