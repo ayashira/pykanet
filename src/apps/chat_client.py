@@ -59,11 +59,11 @@ class ChatClient(Screen):
             self.ids["textbox"].text = ""
     
     def receive_message(self, message):
-        if message.network_command == "IS_TYPING":
+        if message.command == "IS_TYPING":
             self.add_typing_message(message.message_content)
             return
         
-        if message.network_command == "NOTIFICATION":
+        if message.command == "NOTIFICATION":
             #red for notifications
             text_color_str = "ff0000"
         else:

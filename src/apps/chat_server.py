@@ -52,13 +52,13 @@ class ChatServer():
     
     #called when a message is received by any of the connected clients
     def receive_message(self, sender_client, message):
-        if message.network_command == "ENTER":
+        if message.command == "ENTER":
             #a new client asked to enter the room
             #TODO:we should check that he is not already here
             self.add_client(sender_client)
             return
         
-        if message.network_command == "IS_TYPING":
+        if message.command == "IS_TYPING":
             message.message_content = sender_client.get_host_name()
             for client in self.clients:
                 client.send_message(message)

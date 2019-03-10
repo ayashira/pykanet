@@ -66,7 +66,7 @@ class Message_Passing_Protocol(protocol.Protocol):
             self.last_message_time = time.monotonic()
             
             #ignore keep-alive messages
-            if message.network_command == "KEEP_ALIVE":
+            if message.command == "KEEP_ALIVE":
                 continue
             
             if self.factory.is_server:

@@ -19,12 +19,12 @@ class Network_Message():
     
     #username : utf8 string, username of message sender
     #network_path : utf8 string, target address on the network where the message is sent
-    #network_command : utf8 string, requested action at the target address
+    #command : utf8 string, requested action at the target address
     #message_content : utf8 string, content of the message
-    def __init__(self, network_path=None, network_command=None, message_content=None):
+    def __init__(self, network_path=None, command=None, message_content=None):
         self.username = "dummy_user"
         self.network_path = network_path
-        self.network_command = network_command
+        self.command = command
         self.message_content = message_content
     
     #we convert each subpart of the message to bytes, and prefix each of them with their length in bytes
@@ -39,7 +39,7 @@ class Network_Message():
         complete_message += int(Network_Message.MESSAGE_VERSION).to_bytes(2, byteorder='big')
         
         #each subpart prefixed by its length
-        for i, subpart in enumerate( (self.username, self.network_path, self.network_command, self.message_content) ):
+        for i, subpart in enumerate( (self.username, self.network_path, self.command, self.message_content) ):
             subpart_utf8 = subpart.encode('utf-8')
             complete_message += (len(subpart_utf8)).to_bytes(Network_Message.SUBPART_PREFIX_SIZE[i], byteorder='big')
             complete_message += subpart_utf8
@@ -64,7 +64,7 @@ class Network_Message():
             start_idx += subpart_length
         
         #initialize the class variables with the message subparts
-        self.username, self.network_path, self.network_command, self.message_content = subpart_list
+        self.username, self.network_path, self.command, self.message_content = subpart_list
 
 def check_message_equality(message_a, message_b):
     if message_a.username != message_b.username:
@@ -75,8 +75,8 @@ def check_message_equality(message_a, message_b):
         print("FAILED: network_path")
         return False
     
-    if message_a.network_command != message_b.network_command:
-        print("FAILED: network_command")
+    if message_a.command != message_b.command:
+        print("FAILED: command")
         return False
     
     if message_a.message_content != message_b.message_content:
@@ -97,11 +97,11 @@ def check_identity(*message_arguments):
 #TODO : more unit tests, especially for exception handling of "bad" messages
 if __name__ == '__main__':
     #Test that we obtain the same message after converting to bytes and converting back from bytes
-    check_identity("user1", "/user/user1/userpage", "ADD", "A new message from user1")
-    check_identity("", "/user/user1/userpage", "ADD", "A new message from user1")
-    check_identity("user1", "", "ADD", "A new message from user1")
-    check_identity("user1", "/user/user1/userpage", "", "A new message from user1")
-    check_identity("user1", "/user/user1/userpage", "ADD", "")
-    check_identity("", "", "", "")
-    check_identity("a", "b", "c", "d")
-    check_identity("\n", "\n", "\n", "\n")
+    check_identity("/user/user1/userpage", "ADD", "A new message from user1")
+    check_identity("/user/user1/userpage", "ADD", "A new message from user1")
+    check_identity("", "ADD", "A new message from user1")
+    check_identity("/user/user1/userpage", "", "A new message from user1")
+    check_identity("/user/user1/userpage", "ADD", "")
+    check_identity("", "", "")
+    check_identity("b", "c", "d")
+    check_identity("\n", "\n", "\n")

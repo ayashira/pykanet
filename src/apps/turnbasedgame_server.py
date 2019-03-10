@@ -34,7 +34,7 @@ class TurnBasedGameServer():
     #called when a message is received from any of the connected clients
     def receive_message(self, sender_client, message):
         #print(message.to_bytes())
-        if message.network_command == "ENTER":
+        if message.command == "ENTER":
             #a new client asked to enter the room
             #we allow only two clients for now, the first and the second player
             if len(self.clients) < 2:
@@ -43,7 +43,7 @@ class TurnBasedGameServer():
                 sender_client.lose_connection()
             return
         
-        if message.network_command == "MOVE":
+        if message.command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
                 move = int(message.message_content)
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
