@@ -28,13 +28,12 @@ class CryptUtil():
 #singleton-class to manage the main logged user from any part of the program
 class MainUser():
     
-    username = "test"
+    username = ""
     user_id = ""
     public_key = ""
     private_key = ""
     
     def set_user(username):
-        print("set")
         MainUser.username = username
 
 #unit tests
