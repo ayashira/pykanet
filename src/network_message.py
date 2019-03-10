@@ -1,3 +1,5 @@
+from user_utils import MainUser
+
 #this class represents a general structure for messages between nodes on the network
 #All messages contain the following information:
 #  message encoding version
@@ -22,7 +24,7 @@ class NetworkMessage():
     #command : utf8 string, requested action at the target address
     #content : utf8 string, content of the message
     def __init__(self, network_path=None, command=None, content=None):
-        self.username = "dummy_user"
+        self.username = MainUser.username
         self.network_path = network_path
         self.command = command
         self.content = content
