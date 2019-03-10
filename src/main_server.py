@@ -1,9 +1,10 @@
 # this is a first test of server using Twisted library
 
 from twisted.internet import reactor
+from twisted.internet import protocol
 
-from message_passing_protocol import *
-from server_services import *
+from message_passing_protocol import Message_Passing_Protocol
+from server_services import Server_Services
 
 port_to_listen = 8883
 

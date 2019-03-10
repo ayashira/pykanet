@@ -1,4 +1,5 @@
-from network_interface import *
+from network_interface import NetworkInterface
+from network_message import Network_Message
 
 from kivy.uix.boxlayout import BoxLayout
 

@@ -2,7 +2,7 @@
 
 from twisted.internet import task
 from network_message import Network_Message
-from file_manager import *
+from file_manager import File_Manager
 import datetime
 
 from apps.turnbasedgame_list import TurnBasedGameList

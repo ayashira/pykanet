@@ -4,7 +4,7 @@ from twisted.internet import reactor, protocol
 from twisted.internet import task
 
 from network_message import Network_Message
-from message_passing_protocol import *
+from message_passing_protocol import Message_Passing_Protocol
 
 class NetworkInterface():
     #ip address and port of the first official server
