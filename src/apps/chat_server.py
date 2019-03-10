@@ -59,22 +59,22 @@ class ChatServer():
             return
         
         if message.command == "IS_TYPING":
-            message.message_content = sender_client.get_host_name()
+            message.content = sender_client.get_host_name()
             for client in self.clients:
                 client.send_message(message)
             return
         
         #forward the message to all connected clients, add the client name (currently ip address) in front
-        message.message_content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.get_host_name() + " : " + message.message_content
+        message.content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.get_host_name() + " : " + message.content
         
         for client in self.clients:
             client.send_message(message)
         
         #add the new message to the chat history
-        self.content += message.message_content + "\n"
+        self.content += message.content + "\n"
         
         #save the content to disk
-        File_Manager.file_append(self.network_path, message.message_content + "\n")
+        File_Manager.file_append(self.network_path, message.content + "\n")
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):

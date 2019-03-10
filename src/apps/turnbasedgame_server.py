@@ -45,7 +45,7 @@ class TurnBasedGameServer():
         
         if message.command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
-                move = int(message.message_content)
+                move = int(message.content)
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     #move not valid, don't do anything. TODO : request a move again
                     return

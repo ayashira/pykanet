@@ -20,12 +20,12 @@ class Network_Message():
     #username : utf8 string, username of message sender
     #network_path : utf8 string, target address on the network where the message is sent
     #command : utf8 string, requested action at the target address
-    #message_content : utf8 string, content of the message
-    def __init__(self, network_path=None, command=None, message_content=None):
+    #content : utf8 string, content of the message
+    def __init__(self, network_path=None, command=None, content=None):
         self.username = "dummy_user"
         self.network_path = network_path
         self.command = command
-        self.message_content = message_content
+        self.content = content
     
     #we convert each subpart of the message to bytes, and prefix each of them with their length in bytes
     #the complete message is also prefixed with the complete message length
@@ -39,7 +39,7 @@ class Network_Message():
         complete_message += int(Network_Message.MESSAGE_VERSION).to_bytes(2, byteorder='big')
         
         #each subpart prefixed by its length
-        for i, subpart in enumerate( (self.username, self.network_path, self.command, self.message_content) ):
+        for i, subpart in enumerate( (self.username, self.network_path, self.command, self.content) ):
             subpart_utf8 = subpart.encode('utf-8')
             complete_message += (len(subpart_utf8)).to_bytes(Network_Message.SUBPART_PREFIX_SIZE[i], byteorder='big')
             complete_message += subpart_utf8
@@ -64,7 +64,7 @@ class Network_Message():
             start_idx += subpart_length
         
         #initialize the class variables with the message subparts
-        self.username, self.network_path, self.command, self.message_content = subpart_list
+        self.username, self.network_path, self.command, self.content = subpart_list
 
 def check_message_equality(message_a, message_b):
     if message_a.username != message_b.username:
@@ -79,8 +79,8 @@ def check_message_equality(message_a, message_b):
         print("FAILED: command")
         return False
     
-    if message_a.message_content != message_b.message_content:
-        print("FAILED: message_content")
+    if message_a.content != message_b.content:
+        print("FAILED: content")
         return False
         
     return True

@@ -60,7 +60,7 @@ class ChatClient(Screen):
     
     def receive_message(self, message):
         if message.command == "IS_TYPING":
-            self.add_typing_message(message.message_content)
+            self.add_typing_message(message.content)
             return
         
         if message.command == "NOTIFICATION":
@@ -70,7 +70,7 @@ class ChatClient(Screen):
             #black for message content
             text_color_str = "000000"
         
-        self.print_message("[color=" + text_color_str + "]" + message.message_content + "\n[/color]")
+        self.print_message("[color=" + text_color_str + "]" + message.content + "\n[/color]")
     
     def print_message(self, msg):
         self.remove_typing_message()

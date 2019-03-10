@@ -95,9 +95,9 @@ class WikiClient(Screen):
             self.network_interface.send(message)
     
     def receive_message(self, message):
-        #print(message.command, message.message_content)
+        #print(message.command, message.content)
         if message.command == "READ_RESULT":
-            self.current_content = message.message_content
+            self.current_content = message.content
             self.update_text(self.current_content)
         elif message.command == "WRITE_DONE":
             #read the address again after writing

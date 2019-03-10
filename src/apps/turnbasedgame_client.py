@@ -82,23 +82,23 @@ class TurnBasedGameClient(Screen):
     def receive_message(self, message):
         #print(message.to_bytes())
         if message.command == "SET_PLAYER_ID":
-            self.player_id = int(message.message_content)
+            self.player_id = int(message.content)
         elif message.command == "REQUEST_MOVE":
             self.play_turn = True
             self.ids["state_label"].text = "Your turn"
         elif message.command == "WAIT_OPP_MOVE":
             self.ids["state_label"].text = "Opponent turn"
         elif message.command == "PLAYER1_MOVE":
-            move = int(message.message_content)
+            move = int(message.content)
             self.target_game.play(move, player=1)
             self.update_display()
         elif message.command == "PLAYER2_MOVE":
-            move = int(message.message_content)
+            move = int(message.content)
             self.target_game.play(move, player=2)
             self.update_display()
         elif message.command == "GAME_FINISHED":
             self.ids["state_label"].text = "Game finished"
-            winner = int(message.message_content)
+            winner = int(message.content)
             
             if winner == 0:
                 win_result = "Draw"

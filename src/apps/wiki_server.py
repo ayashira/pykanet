@@ -20,11 +20,11 @@ class WikiServer():
             #TODO: handle non-existing files with specific message
             page_content = File_Manager.file_read(message.network_path)            
             message.command = "READ_RESULT"
-            message.message_content = page_content
+            message.content = page_content
             sender_client.send_message(message)
         elif message.command == "WRITE":
             #write the new content at the address
-            File_Manager.file_write(message.network_path, message.message_content)
+            File_Manager.file_write(message.network_path, message.content)
             
             #send a message indicating that writing is done
             #TODO: handle writing errors
