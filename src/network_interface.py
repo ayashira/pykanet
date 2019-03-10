@@ -25,7 +25,7 @@ class NetworkInterface():
         self.connection_made_callback = connection_made_callback
     
     #send a message (type: Network_Message) to the network
-    def network_send(self, message):
+    def send(self, message):
         if self.connection:
             self.connection.write(message.to_bytes())
 

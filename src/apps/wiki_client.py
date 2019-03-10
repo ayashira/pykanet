@@ -92,7 +92,7 @@ class WikiClient(Screen):
         
         if msg and self.network_interface:
             message = Network_Message(self.target_address, "WRITE", msg)
-            self.network_interface.network_send(message)
+            self.network_interface.send(message)
     
     def receive_message(self, message):
         #print(message.network_command, message.message_content)
@@ -105,7 +105,7 @@ class WikiClient(Screen):
     
     def read_address(self, read_target_address):
         message = Network_Message(read_target_address, "READ", "")
-        self.network_interface.network_send(message)
+        self.network_interface.send(message)
     
     def update_text(self, msg):
         formatted_msg = self.ids["label"].format_wiki_syntax(msg)
@@ -123,7 +123,7 @@ class WikiClient(Screen):
     def save_edit(self):
         msg = self.ids["textbox"].text
         message = Network_Message(self.target_address, "WRITE", msg)
-        self.network_interface.network_send(message)
+        self.network_interface.send(message)
     
         #remove the current content of the label to show that we are waiting the server response
         self.ids["label"].text = ""

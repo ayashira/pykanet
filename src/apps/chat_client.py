@@ -47,7 +47,7 @@ class ChatClient(Screen):
     def connection_made(self):
         #connection is established, connect to the target address
         message = Network_Message(self.chat_address, "ENTER", "")
-        self.network_interface.network_send(message)
+        self.network_interface.send(message)
     
     def send_message(self, *args):
         msg = self.ids["textbox"].text
@@ -55,7 +55,7 @@ class ChatClient(Screen):
         if msg and self.network_interface:
             self.isTyping = False
             message = Network_Message(self.chat_address, "APPEND", msg)
-            self.network_interface.network_send(message)
+            self.network_interface.send(message)
             self.ids["textbox"].text = ""
     
     def receive_message(self, message):
@@ -99,4 +99,4 @@ class ChatClient(Screen):
         if not self.isTyping:
             self.isTyping = True
             message = Network_Message(self.chat_address, "IS_TYPING", "")
-            self.network_interface.network_send(message)
+            self.network_interface.send(message)
