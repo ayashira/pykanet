@@ -6,7 +6,7 @@ import time
 
 #this class implements the message passing protocol
 #one instance of this class is created for each new connection received by the server
-class Message_Passing_Protocol(protocol.Protocol):
+class MessagePassingProtocol(protocol.Protocol):
     #called by Twisted when the connection is created
     def connectionMade(self):
         #disable Nagle's algorithm

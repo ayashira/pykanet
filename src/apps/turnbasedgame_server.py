@@ -2,7 +2,7 @@
 
 from twisted.internet import task
 from network_message import Network_Message
-from file_manager import File_Manager
+from file_manager import FileManager
 import datetime
 
 from apps.turnbasedgame_list import TurnBasedGameList
@@ -19,7 +19,7 @@ class TurnBasedGameServer():
         self.clients = []
         
         #for now, we don' t save anything
-        #self.content = File_Manager.file_read(network_path)
+        #self.content = FileManager.file_read(network_path)
         
         self.network_path = network_path
         

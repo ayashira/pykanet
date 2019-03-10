@@ -2,7 +2,7 @@
 
 from twisted.internet import task
 from network_message import Network_Message
-from file_manager import File_Manager
+from file_manager import FileManager
 import datetime
 
 class ChatServer():
@@ -12,7 +12,7 @@ class ChatServer():
         self.clients = []
         
         #initialize the content with the saved file (if existing) corresponding to the network address
-        self.content = File_Manager.file_read(network_path)
+        self.content = FileManager.file_read(network_path)
         
         self.network_path = network_path
         
@@ -74,7 +74,7 @@ class ChatServer():
         self.content += message.content + "\n"
         
         #save the content to disk
-        File_Manager.file_append(self.network_path, message.content + "\n")
+        FileManager.file_append(self.network_path, message.content + "\n")
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):

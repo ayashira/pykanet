@@ -3,16 +3,16 @@
 from twisted.internet import reactor
 from twisted.internet import protocol
 
-from message_passing_protocol import Message_Passing_Protocol
-from server_services import Server_Services
+from message_passing_protocol import MessagePassingProtocol
+from server_services import ServerServices
 
 port_to_listen = 8883
 
 def main():
     factory = protocol.ServerFactory()
-    factory.protocol = Message_Passing_Protocol
+    factory.protocol = MessagePassingProtocol
     factory.is_server = True
-    factory.server_services = Server_Services()
+    factory.server_services = ServerServices()
     
     reactor.listenTCP(port_to_listen,factory)
     reactor.run()

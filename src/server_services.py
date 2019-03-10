@@ -9,7 +9,7 @@ from apps.turnbasedgame_server import TurnBasedGameServer
 #main class launching the server services when a connection is made at a given network address
 #only one instance of this class is created for one server node (in the server factory)
 #this class is the "glue" between connections and services 
-class Server_Services():
+class ServerServices():
     
     def __init__(self):
         #dictionary of currently running services dict("address", service)

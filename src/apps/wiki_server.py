@@ -2,14 +2,14 @@
 
 from twisted.internet import task
 from network_message import Network_Message
-from file_manager import File_Manager
+from file_manager import FileManager
 import datetime
 
 class WikiServer():
     
     def __init__(self, network_path):
         #initialize the content with the saved file (if existing) corresponding to the network address
-        #self.content = File_Manager.file_read(network_path)
+        #self.content = FileManager.file_read(network_path)
         
         self.network_path = network_path
         
@@ -18,13 +18,13 @@ class WikiServer():
         if message.command == "READ":
             #return the content of the requested address (if existing)
             #TODO: handle non-existing files with specific message
-            page_content = File_Manager.file_read(message.network_path)            
+            page_content = FileManager.file_read(message.network_path)            
             message.command = "READ_RESULT"
             message.content = page_content
             sender_client.send_message(message)
         elif message.command == "WRITE":
             #write the new content at the address
-            File_Manager.file_write(message.network_path, message.content)
+            FileManager.file_write(message.network_path, message.content)
             
             #send a message indicating that writing is done
             #TODO: handle writing errors

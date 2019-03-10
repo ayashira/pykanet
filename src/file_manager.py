@@ -4,7 +4,7 @@ import hashlib
 #Interface to the host file system
 #All "file accesses" should be done through this class
 #It will allow in the future to cache data, and also reorganize it and store it efficiently 
-class File_Manager():
+class FileManager():
     def file_read(network_path):
         filename = hashlib.sha224(network_path.encode('utf-8')).hexdigest()
         try:
