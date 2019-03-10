@@ -85,7 +85,7 @@ class Message_Passing_Protocol(protocol.Protocol):
     
     #send a keep-alive message
     def send_keep_alive(self):
-        message = Network_Message("dummy_user", "dummy_address", "KEEP_ALIVE", "")
+        message = Network_Message("dummy_address", "KEEP_ALIVE", "")
         self.send_message(message)
     
     #get the ip address

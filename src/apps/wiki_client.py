@@ -91,7 +91,7 @@ class WikiClient(Screen):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
-            message = Network_Message("dummy_user", self.target_address, "WRITE", msg)
+            message = Network_Message(self.target_address, "WRITE", msg)
             self.network_interface.network_send(message)
     
     def receive_message(self, message):
@@ -104,7 +104,7 @@ class WikiClient(Screen):
             self.read_address(self.target_address)
     
     def read_address(self, read_target_address):
-        message = Network_Message("dummy_user", read_target_address, "READ", "")
+        message = Network_Message(read_target_address, "READ", "")
         self.network_interface.network_send(message)
     
     def update_text(self, msg):
@@ -122,7 +122,7 @@ class WikiClient(Screen):
     
     def save_edit(self):
         msg = self.ids["textbox"].text
-        message = Network_Message("dummy_user", self.target_address, "WRITE", msg)
+        message = Network_Message(self.target_address, "WRITE", msg)
         self.network_interface.network_send(message)
     
         #remove the current content of the label to show that we are waiting the server response

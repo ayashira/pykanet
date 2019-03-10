@@ -29,7 +29,7 @@ class WikiServer():
             #send a message indicating that writing is done
             #TODO: handle writing errors
             #TODO: write history
-            message = Network_Message("dummy_user", message.network_path, "WRITE_DONE", "")
+            message = Network_Message(message.network_path, "WRITE_DONE", "")
             sender_client.send_message(message)
 
     #called when a client connection is lost

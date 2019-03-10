@@ -21,8 +21,8 @@ class Network_Message():
     #network_path : utf8 string, target address on the network where the message is sent
     #network_command : utf8 string, requested action at the target address
     #message_content : utf8 string, content of the message
-    def __init__(self, username=None, network_path=None, network_command=None, message_content=None):
-        self.username = username
+    def __init__(self, network_path=None, network_command=None, message_content=None):
+        self.username = "dummy_user"
         self.network_path = network_path
         self.network_command = network_command
         self.message_content = message_content
