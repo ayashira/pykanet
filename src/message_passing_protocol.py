@@ -22,6 +22,8 @@ class MessagePassingProtocol(protocol.Protocol):
         self.message_receiver_callback = None
         self.connection_lost_callback = None        
         
+        self.username = ""
+        
         #time of last message
         self.last_message_time = time.monotonic()
         
@@ -68,6 +70,12 @@ class MessagePassingProtocol(protocol.Protocol):
             #ignore keep-alive messages
             if message.command == "KEEP_ALIVE":
                 continue
+            
+            #initialize the client name if not already done
+            #TODO : this is also here that we will check message signatures
+            #       (so that all applications receive only messages with valid signatures)
+            if self.username == "":
+                self.username = message.username
             
             if self.factory.is_server:
                 self.factory.server_services.receive_message(self, message)

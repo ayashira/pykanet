@@ -24,7 +24,7 @@ class ChatServer():
     #add a new client to the list of connected clients
     def add_client(self, new_client):
         #send a message to existing clients
-        greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  A new guest is here \^_^/ : ") + new_client.get_host_name()
+        greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  A new guest is here \^_^/ : ") + new_client.username
         message = NetworkMessage(self.network_path, "NOTIFICATION", greetings)
         for client in self.clients:
             client.send_message(message)
@@ -39,11 +39,11 @@ class ChatServer():
         if len(self.clients) > 0:
             new_client_greetings += str("  Currently connected guests: ")
             for client in self.clients:
-                new_client_greetings += client.get_host_name() + " "
+                new_client_greetings += client.username + " "
         else:
             new_client_greetings += str("  No other guest currently connected.")
         
-        new_client_greetings += str("\nYou are guest : ") + new_client.get_host_name()
+        new_client_greetings += str("\nYou are guest : ") + new_client.username
         
         message = NetworkMessage(self.network_path, "NOTIFICATION", new_client_greetings)
         new_client.send_message(message)
@@ -59,13 +59,13 @@ class ChatServer():
             return
         
         if message.command == "IS_TYPING":
-            message.content = sender_client.get_host_name()
+            message.content = sender_client.username
             for client in self.clients:
                 client.send_message(message)
             return
         
-        #forward the message to all connected clients, add the client name (currently ip address) in front
-        message.content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.get_host_name() + " : " + message.content
+        #forward the message to all connected clients with the client username in front
+        message.content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.username + " : " + message.content
         
         for client in self.clients:
             client.send_message(message)
@@ -94,7 +94,7 @@ class ChatServer():
             return
         
         #message to other clients
-        notification_to_send = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  Chat left by ") + lost_client.get_host_name()
+        notification_to_send = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  Chat left by ") + lost_client.username
         message = NetworkMessage(self.network_path, "NOTIFICATION", notification_to_send)
         
         for client in self.clients:
