@@ -1,5 +1,5 @@
 from network_interface import NetworkInterface
-from network_message import Network_Message
+from network_message import NetworkMessage
 
 from kivy.uix.screenmanager import Screen
 from kivy.uix.gridlayout import GridLayout
@@ -77,7 +77,7 @@ class TurnBasedGameClient(Screen):
         
     def connection_made(self):
         #connection is established, connect to the target address
-        message = Network_Message(self.target_address, "ENTER", "")
+        message = NetworkMessage(self.target_address, "ENTER", "")
         self.network_interface.send(message)
         
     def receive_message(self, message):
@@ -121,7 +121,7 @@ class TurnBasedGameClient(Screen):
                 return
             
             self.play_turn = False
-            message = Network_Message(self.target_address, "MOVE", button.id)
+            message = NetworkMessage(self.target_address, "MOVE", button.id)
             self.network_interface.send(message)
     
     def update_display(self):

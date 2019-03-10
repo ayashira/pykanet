@@ -1,7 +1,7 @@
 # Server node implementing a chat
 
 from twisted.internet import task
-from network_message import Network_Message
+from network_message import NetworkMessage
 from file_manager import FileManager
 import datetime
 
@@ -25,13 +25,13 @@ class ChatServer():
     def add_client(self, new_client):
         #send a message to existing clients
         greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  A new guest is here \^_^/ : ") + new_client.get_host_name()
-        message = Network_Message(self.network_path, "NOTIFICATION", greetings)
+        message = NetworkMessage(self.network_path, "NOTIFICATION", greetings)
         for client in self.clients:
             client.send_message(message)
         
         #send the current content to the new client
         new_client_greetings = self.content
-        message = Network_Message(self.network_path, "APPEND", new_client_greetings)
+        message = NetworkMessage(self.network_path, "APPEND", new_client_greetings)
         new_client.send_message(message)
         
         #send a notification to the new client with the list of currently connected users
@@ -45,7 +45,7 @@ class ChatServer():
         
         new_client_greetings += str("\nYou are guest : ") + new_client.get_host_name()
         
-        message = Network_Message(self.network_path, "NOTIFICATION", new_client_greetings)
+        message = NetworkMessage(self.network_path, "NOTIFICATION", new_client_greetings)
         new_client.send_message(message)
         
         self.clients.append(new_client)
@@ -95,7 +95,7 @@ class ChatServer():
         
         #message to other clients
         notification_to_send = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  Chat left by ") + lost_client.get_host_name()
-        message = Network_Message(self.network_path, "NOTIFICATION", notification_to_send)
+        message = NetworkMessage(self.network_path, "NOTIFICATION", notification_to_send)
         
         for client in self.clients:
             client.send_message(message)

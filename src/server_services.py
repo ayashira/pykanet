@@ -1,6 +1,6 @@
 # this is a first test of protocol based on the Twisted library
 
-from network_message import Network_Message
+from network_message import NetworkMessage
 
 from apps.chat_server import ChatServer
 from apps.wiki_server import WikiServer

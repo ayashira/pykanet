@@ -1,7 +1,7 @@
 
 from twisted.internet import protocol, task
 
-from network_message import Network_Message
+from network_message import NetworkMessage
 import time
 
 #this class implements the message passing protocol
@@ -31,7 +31,7 @@ class MessagePassingProtocol(protocol.Protocol):
             self.factory.network_interface.on_connection(self.transport)
             self.activate_keep_alive()
     
-    #send a Network_Message to the other end of the connection 
+    #send a NetworkMessage to the other end of the connection 
     def send_message(self, message):
         self.transport.write(message.to_bytes())
     
@@ -46,10 +46,10 @@ class MessagePassingProtocol(protocol.Protocol):
         #note for later : infinite loop here could be a problem if the buffer contains really a lot of messages
         while True:
             #exit the loop if there is no more message, or if the bytes for the total message length are not received
-            if len(self.receive_buffer) < Network_Message.MESSAGE_PREFIX_SIZE:
+            if len(self.receive_buffer) < NetworkMessage.MESSAGE_PREFIX_SIZE:
                 return
             
-            message_length = int.from_bytes(self.receive_buffer[:Network_Message.MESSAGE_PREFIX_SIZE], byteorder='big')
+            message_length = int.from_bytes(self.receive_buffer[:NetworkMessage.MESSAGE_PREFIX_SIZE], byteorder='big')
             
             #exit the loop if a complete message is not received yet
             if len(self.receive_buffer) < message_length:
@@ -59,7 +59,7 @@ class MessagePassingProtocol(protocol.Protocol):
             next_message_data = self.receive_buffer[:message_length]
             self.receive_buffer = self.receive_buffer[message_length:]
             
-            message = Network_Message()
+            message = NetworkMessage()
             message.from_bytes(next_message_data)
             
             #update the time of the last received message
@@ -85,7 +85,7 @@ class MessagePassingProtocol(protocol.Protocol):
     
     #send a keep-alive message
     def send_keep_alive(self):
-        message = Network_Message("dummy_address", "KEEP_ALIVE", "")
+        message = NetworkMessage("dummy_address", "KEEP_ALIVE", "")
         self.send_message(message)
     
     #get the ip address

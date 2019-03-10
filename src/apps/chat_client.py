@@ -1,5 +1,5 @@
 from network_interface import NetworkInterface
-from network_message import Network_Message
+from network_message import NetworkMessage
 
 from kivy.uix.boxlayout import BoxLayout
 
@@ -47,7 +47,7 @@ class ChatClient(Screen):
     
     def connection_made(self):
         #connection is established, connect to the target address
-        message = Network_Message(self.chat_address, "ENTER", "")
+        message = NetworkMessage(self.chat_address, "ENTER", "")
         self.network_interface.send(message)
     
     def send_message(self, *args):
@@ -55,7 +55,7 @@ class ChatClient(Screen):
         
         if msg and self.network_interface:
             self.isTyping = False
-            message = Network_Message(self.chat_address, "APPEND", msg)
+            message = NetworkMessage(self.chat_address, "APPEND", msg)
             self.network_interface.send(message)
             self.ids["textbox"].text = ""
     
@@ -99,5 +99,5 @@ class ChatClient(Screen):
         #if the user was not already typing, send a TYPING message to the server
         if not self.isTyping:
             self.isTyping = True
-            message = Network_Message(self.chat_address, "IS_TYPING", "")
+            message = NetworkMessage(self.chat_address, "IS_TYPING", "")
             self.network_interface.send(message)

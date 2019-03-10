@@ -3,7 +3,7 @@
 from twisted.internet import reactor, protocol
 from twisted.internet import task
 
-from network_message import Network_Message
+from network_message import NetworkMessage
 from message_passing_protocol import MessagePassingProtocol
 
 class NetworkInterface():
@@ -24,7 +24,7 @@ class NetworkInterface():
         self.data_received_callback = data_received_callback
         self.connection_made_callback = connection_made_callback
     
-    #send a message (type: Network_Message) to the network
+    #send a message (type: NetworkMessage) to the network
     def send(self, message):
         if self.connection:
             self.connection.write(message.to_bytes())

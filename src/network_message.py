@@ -10,7 +10,7 @@
 #The array of bytes is converted back to a Message class when received with from_bytes()
 
 #TODO : exception handling
-class Network_Message():
+class NetworkMessage():
     #constants defining the version and the number of bytes used for prefixing the length
     #the number of bytes used for the length put a limit of 2^(nb bytes) on each subpart
     MESSAGE_VERSION = 0
@@ -33,33 +33,33 @@ class Network_Message():
         complete_message = bytearray(b'')
         
         #reserve the space for the message total length
-        complete_message += int(0).to_bytes(Network_Message.MESSAGE_PREFIX_SIZE, byteorder='big')
+        complete_message += int(0).to_bytes(NetworkMessage.MESSAGE_PREFIX_SIZE, byteorder='big')
         
         #message encoding version
-        complete_message += int(Network_Message.MESSAGE_VERSION).to_bytes(2, byteorder='big')
+        complete_message += int(NetworkMessage.MESSAGE_VERSION).to_bytes(2, byteorder='big')
         
         #each subpart prefixed by its length
         for i, subpart in enumerate( (self.username, self.network_path, self.command, self.content) ):
             subpart_utf8 = subpart.encode('utf-8')
-            complete_message += (len(subpart_utf8)).to_bytes(Network_Message.SUBPART_PREFIX_SIZE[i], byteorder='big')
+            complete_message += (len(subpart_utf8)).to_bytes(NetworkMessage.SUBPART_PREFIX_SIZE[i], byteorder='big')
             complete_message += subpart_utf8
         
         #initialize the total message length at the beginning of the message
-        complete_message[:Network_Message.MESSAGE_PREFIX_SIZE] = (len(complete_message)).to_bytes(Network_Message.MESSAGE_PREFIX_SIZE, byteorder='big')
+        complete_message[:NetworkMessage.MESSAGE_PREFIX_SIZE] = (len(complete_message)).to_bytes(NetworkMessage.MESSAGE_PREFIX_SIZE, byteorder='big')
         
         return complete_message
     
     #read each subpart of the message from a byte encoding
     def from_bytes(self, complete_message):
-        start_idx = Network_Message.MESSAGE_PREFIX_SIZE
+        start_idx = NetworkMessage.MESSAGE_PREFIX_SIZE
         version = int.from_bytes(complete_message[start_idx:start_idx+2], byteorder='big')
         start_idx += 2
         
         subpart_list = []
-        nb_subparts = len(Network_Message.SUBPART_PREFIX_SIZE)
+        nb_subparts = len(NetworkMessage.SUBPART_PREFIX_SIZE)
         for i in range(nb_subparts):
-            subpart_length = int.from_bytes(complete_message[start_idx:start_idx+Network_Message.SUBPART_PREFIX_SIZE[i]], byteorder='big')
-            start_idx += Network_Message.SUBPART_PREFIX_SIZE[i]
+            subpart_length = int.from_bytes(complete_message[start_idx:start_idx+NetworkMessage.SUBPART_PREFIX_SIZE[i]], byteorder='big')
+            start_idx += NetworkMessage.SUBPART_PREFIX_SIZE[i]
             subpart_list.append( complete_message[start_idx:start_idx+subpart_length].decode('utf-8') )
             start_idx += subpart_length
         
@@ -87,8 +87,8 @@ def check_message_equality(message_a, message_b):
 
 #check that we obtain the same message after converting to bytes and converting back from bytes
 def check_identity(*message_arguments):
-    message_a = Network_Message(*message_arguments)
-    message_b = Network_Message()
+    message_a = NetworkMessage(*message_arguments)
+    message_b = NetworkMessage()
     message_b.from_bytes( message_a.to_bytes() )
     if check_message_equality(message_a, message_b):
         print("Test... OK")

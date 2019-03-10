@@ -1,7 +1,7 @@
 # Server node implementing wiki pages
 
 from twisted.internet import task
-from network_message import Network_Message
+from network_message import NetworkMessage
 from file_manager import FileManager
 import datetime
 
@@ -29,7 +29,7 @@ class WikiServer():
             #send a message indicating that writing is done
             #TODO: handle writing errors
             #TODO: write history
-            message = Network_Message(message.network_path, "WRITE_DONE", "")
+            message = NetworkMessage(message.network_path, "WRITE_DONE", "")
             sender_client.send_message(message)
 
     #called when a client connection is lost

@@ -1,7 +1,7 @@
 # Server node implementing a turned-based game
 
 from twisted.internet import task
-from network_message import Network_Message
+from network_message import NetworkMessage
 from file_manager import FileManager
 import datetime
 
@@ -57,7 +57,7 @@ class TurnBasedGameServer():
                 else:
                     command = "PLAYER2_MOVE"
                 
-                message = Network_Message(self.network_path, command, str(move))
+                message = NetworkMessage(self.network_path, command, str(move))
                 for client in self.clients:
                     client.send_message(message)
                 
@@ -65,7 +65,7 @@ class TurnBasedGameServer():
                 winner = self.target_game.winner()
                 if winner != -1:
                     command = "GAME_FINISHED"
-                    message = Network_Message(self.network_path, command, str(winner))
+                    message = NetworkMessage(self.network_path, command, str(winner))
                     for client in self.clients:
                         client.send_message(message)
                         
@@ -80,9 +80,9 @@ class TurnBasedGameServer():
                 self.opp_player_id = 0 if self.current_player_id == 1 else 1
                 
                 #request next move
-                message = Network_Message(self.network_path, "REQUEST_MOVE", "")
+                message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
                 self.clients[self.current_player_id].send_message(message)
-                message = Network_Message(self.network_path, "WAIT_OPP_MOVE", "")
+                message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
                 self.clients[self.opp_player_id].send_message(message)
             else:
                 #someone other than current player tried to play
@@ -94,25 +94,25 @@ class TurnBasedGameServer():
         
         if len(self.clients) == 1:
             #case of the first client (=first player), indicate that we are waiting another player
-            message = Network_Message(self.network_path, "WAITING_PLAYER", "")
+            message = NetworkMessage(self.network_path, "WAITING_PLAYER", "")
             new_client.send_message(message)
         elif len(self.clients) == 2:
             #second player is here, we can start the game
-            message = Network_Message(self.network_path, "START", "")
+            message = NetworkMessage(self.network_path, "START", "")
             self.clients[0].send_message(message)
             new_client.send_message(message)
             self.game_started = True
             
             self.current_player_id = 0
             self.opp_player_id = 1
-            message = Network_Message(self.network_path, "SET_PLAYER_ID", "1")
+            message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "1")
             self.clients[self.current_player_id].send_message(message)
-            message = Network_Message(self.network_path, "REQUEST_MOVE", "")
+            message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
             self.clients[self.current_player_id].send_message(message)
             
-            message = Network_Message(self.network_path, "SET_PLAYER_ID", "2")
+            message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "2")
             self.clients[self.opp_player_id].send_message(message)
-            message = Network_Message(self.network_path, "WAIT_OPP_MOVE", "")
+            message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
             self.clients[self.opp_player_id].send_message(message)
     
     #called when a client connection is lost
