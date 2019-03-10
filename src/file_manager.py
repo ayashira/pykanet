@@ -20,8 +20,11 @@ class FileManager():
         
         return True
     
+    def get_file_name(network_path):
+        return FileManager.root_dir + hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+    
     def file_read(network_path):
-        filename = FileManager.root_dir + hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+        filename = FileManager.get_file_name(network_path)
         try:
             with open(filename) as file:
                 return file.read()
@@ -32,7 +35,7 @@ class FileManager():
     #TODO: for efficiency, some cache mechanism could be used
     #return True if writing was successful
     def file_write(network_path, new_content):
-        filename = FileManager.root_dir + hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+        filename = FileManager.get_file_name(network_path)
         try:
             with open(filename, "w") as file:
                 file.write(new_content)
@@ -43,7 +46,7 @@ class FileManager():
     
     #TODO: for efficiency, some cache mechanism could be used
     def file_append(network_path, added_content):
-        filename = FileManager.root_dir + hashlib.sha224(network_path.encode('utf-8')).hexdigest()
+        filename = FileManager.get_file_name(network_path)
         try:
             with open(filename, "a") as file:
                 file.write(added_content)
