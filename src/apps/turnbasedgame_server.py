@@ -1,8 +1,8 @@
 # Server node implementing a turned-based game
 
 from twisted.internet import task
-from network_message import Network_Message
-from file_manager import *
+from network_message import NetworkMessage
+from file_manager import FileManager
 import datetime
 
 from apps.turnbasedgame_list import TurnBasedGameList
@@ -19,7 +19,7 @@ class TurnBasedGameServer():
         self.clients = []
         
         #for now, we don' t save anything
-        #self.content = File_Manager.file_read(network_path)
+        #self.content = FileManager.file_read(network_path)
         
         self.network_path = network_path
         
@@ -34,7 +34,7 @@ class TurnBasedGameServer():
     #called when a message is received from any of the connected clients
     def receive_message(self, sender_client, message):
         #print(message.to_bytes())
-        if message.network_command == "ENTER":
+        if message.command == "ENTER":
             #a new client asked to enter the room
             #we allow only two clients for now, the first and the second player
             if len(self.clients) < 2:
@@ -43,9 +43,9 @@ class TurnBasedGameServer():
                 sender_client.lose_connection()
             return
         
-        if message.network_command == "MOVE":
+        if message.command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
-                move = int(message.message_content)
+                move = int(message.content)
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     #move not valid, don't do anything. TODO : request a move again
                     return
@@ -57,7 +57,7 @@ class TurnBasedGameServer():
                 else:
                     command = "PLAYER2_MOVE"
                 
-                message = Network_Message("dummy_user", self.network_path, command, str(move))
+                message = NetworkMessage(self.network_path, command, str(move))
                 for client in self.clients:
                     client.send_message(message)
                 
@@ -65,7 +65,7 @@ class TurnBasedGameServer():
                 winner = self.target_game.winner()
                 if winner != -1:
                     command = "GAME_FINISHED"
-                    message = Network_Message("dummy_user", self.network_path, command, str(winner))
+                    message = NetworkMessage(self.network_path, command, str(winner))
                     for client in self.clients:
                         client.send_message(message)
                         
@@ -80,9 +80,9 @@ class TurnBasedGameServer():
                 self.opp_player_id = 0 if self.current_player_id == 1 else 1
                 
                 #request next move
-                message = Network_Message("dummy_user", self.network_path, "REQUEST_MOVE", "")
+                message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
                 self.clients[self.current_player_id].send_message(message)
-                message = Network_Message("dummy_user", self.network_path, "WAIT_OPP_MOVE", "")
+                message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
                 self.clients[self.opp_player_id].send_message(message)
             else:
                 #someone other than current player tried to play
@@ -94,25 +94,25 @@ class TurnBasedGameServer():
         
         if len(self.clients) == 1:
             #case of the first client (=first player), indicate that we are waiting another player
-            message = Network_Message("dummy_user", self.network_path, "WAITING_PLAYER", "")
+            message = NetworkMessage(self.network_path, "WAITING_PLAYER", "")
             new_client.send_message(message)
         elif len(self.clients) == 2:
             #second player is here, we can start the game
-            message = Network_Message("dummy_user", self.network_path, "START", "")
+            message = NetworkMessage(self.network_path, "START", "")
             self.clients[0].send_message(message)
             new_client.send_message(message)
             self.game_started = True
             
             self.current_player_id = 0
             self.opp_player_id = 1
-            message = Network_Message("dummy_user", self.network_path, "SET_PLAYER_ID", "1")
+            message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "1")
             self.clients[self.current_player_id].send_message(message)
-            message = Network_Message("dummy_user", self.network_path, "REQUEST_MOVE", "")
+            message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
             self.clients[self.current_player_id].send_message(message)
             
-            message = Network_Message("dummy_user", self.network_path, "SET_PLAYER_ID", "2")
+            message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "2")
             self.clients[self.opp_player_id].send_message(message)
-            message = Network_Message("dummy_user", self.network_path, "WAIT_OPP_MOVE", "")
+            message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
             self.clients[self.opp_player_id].send_message(message)
     
     #called when a client connection is lost

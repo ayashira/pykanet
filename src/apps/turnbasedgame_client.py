@@ -1,4 +1,5 @@
-from network_interface import *
+from network_interface import NetworkInterface
+from network_message import NetworkMessage
 
 from kivy.uix.screenmanager import Screen
 from kivy.uix.gridlayout import GridLayout
@@ -76,29 +77,29 @@ class TurnBasedGameClient(Screen):
         
     def connection_made(self):
         #connection is established, connect to the target address
-        message = Network_Message("dummy_user", self.target_address, "ENTER", "")
-        self.network_interface.network_send(message)
+        message = NetworkMessage(self.target_address, "ENTER", "")
+        self.network_interface.send(message)
         
     def receive_message(self, message):
         #print(message.to_bytes())
-        if message.network_command == "SET_PLAYER_ID":
-            self.player_id = int(message.message_content)
-        elif message.network_command == "REQUEST_MOVE":
+        if message.command == "SET_PLAYER_ID":
+            self.player_id = int(message.content)
+        elif message.command == "REQUEST_MOVE":
             self.play_turn = True
             self.ids["state_label"].text = "Your turn"
-        elif message.network_command == "WAIT_OPP_MOVE":
+        elif message.command == "WAIT_OPP_MOVE":
             self.ids["state_label"].text = "Opponent turn"
-        elif message.network_command == "PLAYER1_MOVE":
-            move = int(message.message_content)
+        elif message.command == "PLAYER1_MOVE":
+            move = int(message.content)
             self.target_game.play(move, player=1)
             self.update_display()
-        elif message.network_command == "PLAYER2_MOVE":
-            move = int(message.message_content)
+        elif message.command == "PLAYER2_MOVE":
+            move = int(message.content)
             self.target_game.play(move, player=2)
             self.update_display()
-        elif message.network_command == "GAME_FINISHED":
+        elif message.command == "GAME_FINISHED":
             self.ids["state_label"].text = "Game finished"
-            winner = int(message.message_content)
+            winner = int(message.content)
             
             if winner == 0:
                 win_result = "Draw"
@@ -120,8 +121,8 @@ class TurnBasedGameClient(Screen):
                 return
             
             self.play_turn = False
-            message = Network_Message("dummy_user", self.target_address, "MOVE", button.id)
-            self.network_interface.network_send(message)
+            message = NetworkMessage(self.target_address, "MOVE", button.id)
+            self.network_interface.send(message)
     
     def update_display(self):
         #update all the buttons (at least for now and for usual board games, this is not too heavy)

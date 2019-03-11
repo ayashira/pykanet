@@ -1,12 +1,12 @@
 
 from twisted.internet import protocol, task
 
-from network_message import Network_Message
+from network_message import NetworkMessage
 import time
 
 #this class implements the message passing protocol
 #one instance of this class is created for each new connection received by the server
-class Message_Passing_Protocol(protocol.Protocol):
+class MessagePassingProtocol(protocol.Protocol):
     #called by Twisted when the connection is created
     def connectionMade(self):
         #disable Nagle's algorithm
@@ -22,6 +22,8 @@ class Message_Passing_Protocol(protocol.Protocol):
         self.message_receiver_callback = None
         self.connection_lost_callback = None        
         
+        self.username = ""
+        
         #time of last message
         self.last_message_time = time.monotonic()
         
@@ -31,7 +33,7 @@ class Message_Passing_Protocol(protocol.Protocol):
             self.factory.network_interface.on_connection(self.transport)
             self.activate_keep_alive()
     
-    #send a Network_Message to the other end of the connection 
+    #send a NetworkMessage to the other end of the connection 
     def send_message(self, message):
         self.transport.write(message.to_bytes())
     
@@ -46,10 +48,10 @@ class Message_Passing_Protocol(protocol.Protocol):
         #note for later : infinite loop here could be a problem if the buffer contains really a lot of messages
         while True:
             #exit the loop if there is no more message, or if the bytes for the total message length are not received
-            if len(self.receive_buffer) < Network_Message.MESSAGE_PREFIX_SIZE:
+            if len(self.receive_buffer) < NetworkMessage.MESSAGE_PREFIX_SIZE:
                 return
             
-            message_length = int.from_bytes(self.receive_buffer[:Network_Message.MESSAGE_PREFIX_SIZE], byteorder='big')
+            message_length = int.from_bytes(self.receive_buffer[:NetworkMessage.MESSAGE_PREFIX_SIZE], byteorder='big')
             
             #exit the loop if a complete message is not received yet
             if len(self.receive_buffer) < message_length:
@@ -59,15 +61,21 @@ class Message_Passing_Protocol(protocol.Protocol):
             next_message_data = self.receive_buffer[:message_length]
             self.receive_buffer = self.receive_buffer[message_length:]
             
-            message = Network_Message()
+            message = NetworkMessage()
             message.from_bytes(next_message_data)
             
             #update the time of the last received message
             self.last_message_time = time.monotonic()
             
             #ignore keep-alive messages
-            if message.network_command == "KEEP_ALIVE":
+            if message.command == "KEEP_ALIVE":
                 continue
+            
+            #initialize the client name if not already done
+            #TODO : this is also here that we will check message signatures
+            #       (so that all applications receive only messages with valid signatures)
+            if self.username == "":
+                self.username = message.username
             
             if self.factory.is_server:
                 self.factory.server_services.receive_message(self, message)
@@ -85,7 +93,7 @@ class Message_Passing_Protocol(protocol.Protocol):
     
     #send a keep-alive message
     def send_keep_alive(self):
-        message = Network_Message("dummy_user", "dummy_address", "KEEP_ALIVE", "")
+        message = NetworkMessage("dummy_address", "KEEP_ALIVE", "")
         self.send_message(message)
     
     #get the ip address

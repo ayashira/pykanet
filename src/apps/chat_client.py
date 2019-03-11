@@ -1,4 +1,5 @@
-from network_interface import *
+from network_interface import NetworkInterface
+from network_message import NetworkMessage
 
 from kivy.uix.boxlayout import BoxLayout
 
@@ -46,31 +47,31 @@ class ChatClient(Screen):
     
     def connection_made(self):
         #connection is established, connect to the target address
-        message = Network_Message("dummy_user", self.chat_address, "ENTER", "")
-        self.network_interface.network_send(message)
+        message = NetworkMessage(self.chat_address, "ENTER", "")
+        self.network_interface.send(message)
     
     def send_message(self, *args):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
             self.isTyping = False
-            message = Network_Message("dummy_user", self.chat_address, "APPEND", msg)
-            self.network_interface.network_send(message)
+            message = NetworkMessage(self.chat_address, "APPEND", msg)
+            self.network_interface.send(message)
             self.ids["textbox"].text = ""
     
     def receive_message(self, message):
-        if message.network_command == "IS_TYPING":
-            self.add_typing_message(message.message_content)
+        if message.command == "IS_TYPING":
+            self.add_typing_message(message.content)
             return
         
-        if message.network_command == "NOTIFICATION":
+        if message.command == "NOTIFICATION":
             #red for notifications
             text_color_str = "ff0000"
         else:
             #black for message content
             text_color_str = "000000"
         
-        self.print_message("[color=" + text_color_str + "]" + message.message_content + "\n[/color]")
+        self.print_message("[color=" + text_color_str + "]" + message.content + "\n[/color]")
     
     def print_message(self, msg):
         self.remove_typing_message()
@@ -98,5 +99,5 @@ class ChatClient(Screen):
         #if the user was not already typing, send a TYPING message to the server
         if not self.isTyping:
             self.isTyping = True
-            message = Network_Message("dummy_user", self.chat_address, "IS_TYPING", "")
-            self.network_interface.network_send(message)
+            message = NetworkMessage(self.chat_address, "IS_TYPING", "")
+            self.network_interface.send(message)

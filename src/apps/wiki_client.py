@@ -1,4 +1,5 @@
-from network_interface import *
+from network_interface import NetworkInterface
+from network_message import NetworkMessage
 
 from kivy.uix.boxlayout import BoxLayout
 
@@ -91,21 +92,21 @@ class WikiClient(Screen):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
-            message = Network_Message("dummy_user", self.target_address, "WRITE", msg)
-            self.network_interface.network_send(message)
+            message = NetworkMessage(self.target_address, "WRITE", msg)
+            self.network_interface.send(message)
     
     def receive_message(self, message):
-        #print(message.network_command, message.message_content)
-        if message.network_command == "READ_RESULT":
-            self.current_content = message.message_content
+        #print(message.command, message.content)
+        if message.command == "READ_RESULT":
+            self.current_content = message.content
             self.update_text(self.current_content)
-        elif message.network_command == "WRITE_DONE":
+        elif message.command == "WRITE_DONE":
             #read the address again after writing
             self.read_address(self.target_address)
     
     def read_address(self, read_target_address):
-        message = Network_Message("dummy_user", read_target_address, "READ", "")
-        self.network_interface.network_send(message)
+        message = NetworkMessage(read_target_address, "READ", "")
+        self.network_interface.send(message)
     
     def update_text(self, msg):
         formatted_msg = self.ids["label"].format_wiki_syntax(msg)
@@ -122,8 +123,8 @@ class WikiClient(Screen):
     
     def save_edit(self):
         msg = self.ids["textbox"].text
-        message = Network_Message("dummy_user", self.target_address, "WRITE", msg)
-        self.network_interface.network_send(message)
+        message = NetworkMessage(self.target_address, "WRITE", msg)
+        self.network_interface.send(message)
     
         #remove the current content of the label to show that we are waiting the server response
         self.ids["label"].text = ""

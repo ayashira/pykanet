@@ -5,6 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.lang import Builder
 
+from apps.login_client import LoginClient
 from apps.chat_client import ChatClient
 from apps.wiki_client import WikiClient
 from apps.turnbasedgame_client import TurnBasedGameClient
@@ -58,7 +59,13 @@ class StartScreen(Screen):
 Builder.load_string('''
 <DesktopClient>:
     id: screen_manager
-
+    
+    LoginClient:
+        name: "loginscreen"
+        manager: screen_manager
+        on_login_finished:
+            root.current = "startscreen"
+        
     StartScreen:
         name: "startscreen"
         manager: screen_manager

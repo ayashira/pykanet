@@ -3,8 +3,8 @@
 from twisted.internet import reactor, protocol
 from twisted.internet import task
 
-from network_message import Network_Message
-from message_passing_protocol import *
+from network_message import NetworkMessage
+from message_passing_protocol import MessagePassingProtocol
 
 class NetworkInterface():
     #ip address and port of the first official server
@@ -24,15 +24,15 @@ class NetworkInterface():
         self.data_received_callback = data_received_callback
         self.connection_made_callback = connection_made_callback
     
-    #send a message (type: Network_Message) to the network
-    def network_send(self, message):
+    #send a message (type: NetworkMessage) to the network
+    def send(self, message):
         if self.connection:
             self.connection.write(message.to_bytes())
 
     # =========== private functions ========
     def connect_to_server(self):
         factory = protocol.ClientFactory()
-        factory.protocol = Message_Passing_Protocol
+        factory.protocol = MessagePassingProtocol
         factory.is_server = False
         factory.network_interface = self
         reactor.connectTCP(NetworkInterface.server_address, NetworkInterface.server_port, factory)

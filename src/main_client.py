@@ -44,7 +44,7 @@ from kivy.uix.screenmanager import NoTransition
 from apps.desktop_client import DesktopClient
 
 #currently needed to set localhost
-from network_interface import *
+from network_interface import NetworkInterface
 
 #Kivy does not include fonts supporting japanese
 #A font file must be provided manually
