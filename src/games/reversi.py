@@ -61,8 +61,9 @@ class Reversi():
 
         #update the current_player
         #same player plays again if opponent has no possible move
-        next_player = 2 if player == 1 else 1
-        self.current_player = next_player if self.__is_flip_discs(player) else player
+        next_player = 2 if self.current_player == 1 else 1
+        if self._play_possible(next_player):
+            self.current_player = next_player
     
     def get_current_player(self):
         return self.current_player
@@ -72,7 +73,8 @@ class Reversi():
         blank = np.sum(self.board == 0)
         if blank > 0:
             #if any of the player can still play, game is not finished
-            if self.__is_flip_discs(self.current_player, allplayers=True):
+            next_player = 2 if self.current_player == 1 else 1
+            if self._play_possible(next_player) or self._play_possible(self.current_player):
                 return -1
         
         #game is finished
@@ -125,14 +127,10 @@ class Reversi():
             fd += stack
         return fd
     
-    def __is_flip_discs(self, player, allplayers=False):        
-        fd = []
-        next_player = 2 if player == 1 else 1
+    def _play_possible(self, player):
         for row in range(self.rows()):
             for col in range(self.cols()):
-                fd += self.__flip_discs(row, col, next_player) 
-                fd += self.__flip_discs(row, col, player) if allplayers else []
-                if len(fd) > 0:
+                if len(self.__flip_discs(row, col, player)) > 0:
                     return True
-
+        
         return False
