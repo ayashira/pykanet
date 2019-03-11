@@ -60,8 +60,7 @@ class Reversi():
                 self.board[ix][iy] = player
 
         #update the current_player
-        #TODO : same player should play again if opponent has no possible move
-        #self.current_player = 2 if self.current_player == 1 else 1
+        #same player plays again if opponent has no possible move
         next_player = 2 if player == 1 else 1
         self.current_player = next_player if self.__is_flip_discs(player) else player
     
@@ -72,13 +71,12 @@ class Reversi():
     def winner(self):
         blank = np.sum(self.board == 0)
         if blank > 0:
-            #game not finished
-            #TODO : game is finished only if no player can play anymore
-            #there are cases in reversi where some empty cells remain at the end
-
+            #if any of the player can still play, game is not finished
             if self.__is_flip_discs(self.current_player, allplayers=True):
                 return -1
         
+        #game is finished
+        #the winner is the player with most discs
         point_1 = np.sum(self.board == 1)
         point_2 = np.sum(self.board == 2)
         
@@ -126,10 +124,8 @@ class Reversi():
 
             fd += stack
         return fd
-
-
-    def __is_flip_discs(self, player, allplayers=False):
-        
+    
+    def __is_flip_discs(self, player, allplayers=False):        
         fd = []
         next_player = 2 if player == 1 else 1
         for row in range(self.rows()):
@@ -140,4 +136,3 @@ class Reversi():
                     return True
 
         return False
-
