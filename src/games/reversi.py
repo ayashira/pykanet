@@ -5,7 +5,10 @@ import itertools
 
 class Reversi():
 
-    def __init__(self):
+    def __init__(self, rows=8, cols=8):
+        self._rows=rows
+        self._cols=cols
+        
         #0 = empty, 1 = occupied by player 1, 2 = occupied by player 2 
         self.board  = np.zeros((self.rows(), self.cols()))
         self.current_player = 1
@@ -14,21 +17,12 @@ class Reversi():
         pos = (self.rows()//2-1, self.rows()//2)
         for p1, p2 in itertools.product(pos, pos):
             self.board[p1][p2] = ((p1-pos[0])^(p2-pos[0]))+1
-
-        #for debug
-        #self.board[3] = np.ones(4)*1
-        #self.board[2][0] = 1
-        #self.board[1][1] = 1
-        #self.board[0][1] = 1
-        #self.board[2][1] = 2
-        #self.board[1][2] = 2
-        #self.board[0][3] = 2
     
     def rows(self):
-        return 4
-        
+        return self._rows
+    
     def cols(self):
-        return 4
+        return self._cols
     
     #for display : width and height of a cell when displaying the game
     def cell_size(self):
@@ -134,3 +128,16 @@ class Reversi():
                     return True
         
         return False
+
+#tests
+if __name__ == '__main__':
+    #check that a player cannot play
+    reversi = Reversi(4, 4)
+    reversi.board[0] = np.ones(4)*1
+    reversi.board[1] = np.ones(4)*1
+    reversi.board[2] = np.ones(4)*2
+    reversi.current_player = 2
+    if reversi._play_possible(2):
+        print("FAIL. Player 2 should not be able to play.")
+    else:
+        print("OK")
