@@ -15,11 +15,12 @@ class Serialize():
     DATA_INT_TYPE = 1
     DATA_BOOL_TYPE = 2
     DATA_LIST_TYPE = 3
-    DATA_DICT_TYPE = 4
+    DATA_TUPLE_TYPE = 4
+    DATA_DICT_TYPE = 5
     
     #dictionary of supported types
     types_list = {"<class 'str'>":DATA_STR_TYPE, "<class 'int'>":DATA_INT_TYPE, "<class 'bool'>":DATA_BOOL_TYPE,
-                  "<class 'list'>":DATA_LIST_TYPE, "<class 'dict'>":DATA_DICT_TYPE
+                  "<class 'list'>":DATA_LIST_TYPE, "<class 'tuple'>":DATA_TUPLE_TYPE, "<class 'dict'>":DATA_DICT_TYPE
     }
     
     def new_buffer():
@@ -28,7 +29,7 @@ class Serialize():
     #convert some value to bytes and add it to some data buffer
     def write_value(buffer, val):        
         #recursive types
-        if type(val) is list:
+        if type(val) is list or type(val) is tuple:
             #encode first the length of the list, and then each value separately
             buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
             buffer += (len(val)).to_bytes(Serialize.SIZE_PREFIX_LENGTH, byteorder='big')
@@ -64,13 +65,16 @@ class Serialize():
         start_idx += Serialize.SIZE_PREFIX_LENGTH
         
         #recursive types
-        if data_type == Serialize.DATA_LIST_TYPE:
+        if data_type == Serialize.DATA_LIST_TYPE or data_type == Serialize.DATA_TUPLE_TYPE:
             #read each element and append them to the list
             result_list = []
             for _ in range(data_length):
                 elmt, start_idx = Serialize.read_value(buffer, start_idx)
                 result_list.append(elmt)
-            return result_list, start_idx
+            if data_type == Serialize.DATA_LIST_TYPE:
+                return result_list, start_idx
+            else:
+                return tuple(result_list), start_idx
         elif data_type == Serialize.DATA_DICT_TYPE:
             #read each (key, value) pair and add them to the dictionary
             result_dict = {}
@@ -147,6 +151,12 @@ if __name__ == '__main__':
     test_identity([ [1, 2, [3, 4, [2], [ [34, ""], "aa" ]], [[[[[[1, 2], [[[]]] ]]]]]  ], [[[], 3], 4], 5 ])
     test_identity([[[[[[[[[[[[[[[[[[[[[[[[[1, 2], 3], True], False, False], []], 1]]]], 1]]], 3]], 4]]]]]]]]]]])
     
+    #tuples
+    test_identity( (0,) )
+    test_identity( (1, 2, 3) )
+    test_identity( ([1, 2], [2, 5], 3) )
+    test_identity( [(1,2), (59, 34)] )
+    
     #dictionaries
     test_identity({})
     test_identity({1:"test1", 2:"test2", 3:"test3"})
@@ -155,7 +165,7 @@ if __name__ == '__main__':
     
     #complex dictionaries
     test_identity({"aa":[True, "test"], "b":"rewtrrr", "c":[[["re"], "rr"]], "ddd":23})
-    test_identity({24: [3, 4, 5], "aa":[4, 5, 6, 7, {34:56, 78:79} ]})
+    test_identity({24: [3, 4, 5], "aa":[4, 5, (6, 6), (7, 8), {34:56, 78:79} ]})
     
     #horrible structure
-    test_identity([[[[  ], {1:2, 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {2:{1:{2:{3:[]}}}} ])
+    test_identity([[[[  ], {1:(2,(2,((2,), (2,(2,[[[]]]))))), 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {2:{1:{2:{3:[]}}}} ])
