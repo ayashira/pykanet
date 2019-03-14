@@ -11,6 +11,7 @@
 
 class BufferTooShortException(Exception): pass
 class UnknownTypeException(Exception): pass
+class BooleanConversionException(Exception): pass
 
 class Serialize():
     #data type described with 1 byte
@@ -72,12 +73,12 @@ class Serialize():
     
     def read_value(buffer, start_idx):
         if len(buffer) < start_idx+Serialize.TYPE_PREFIX_LENGTH:
-            raise BufferTooShortException()
+            raise BufferTooShortException
         data_type = int.from_bytes(buffer[start_idx:start_idx+Serialize.TYPE_PREFIX_LENGTH], byteorder='big')
         start_idx += Serialize.TYPE_PREFIX_LENGTH
 
         if len(buffer) < start_idx+Serialize.SIZE_PREFIX_LENGTH:
-            raise BufferTooShortException()
+            raise BufferTooShortException
         data_length = int.from_bytes(buffer[start_idx:start_idx+Serialize.SIZE_PREFIX_LENGTH], byteorder='big')
         start_idx += Serialize.SIZE_PREFIX_LENGTH
         
@@ -103,12 +104,15 @@ class Serialize():
         
         #basic types
         if len(buffer) < start_idx+data_length:
-            raise BufferTooShortException()
+            raise BufferTooShortException
+        
         if data_type == Serialize.DATA_STR_TYPE:
             val = buffer[start_idx:start_idx+data_length].decode('utf-8')
         elif data_type == Serialize.DATA_INT_TYPE:
             val = int.from_bytes(buffer[start_idx:start_idx+data_length], byteorder='big', signed=True)
         elif data_type == Serialize.DATA_BOOL_TYPE:
+            if data_length != 1:
+                raise BooleanConversionException
             val = True if buffer[start_idx:start_idx+data_length] == bytearray(b'1') else False
         else:
             raise UnknownTypeException
@@ -130,6 +134,9 @@ class Serialize():
             return None
         except UnknownTypeException:
             #print("unknown")
+            return None
+        except BooleanConversionException:
+            #print("boolean")
             return None
         except:
             #print("other exception")
@@ -239,3 +246,5 @@ if __name__ == '__main__':
     s[0] = 95
     if Serialize.from_bytes(s) != None:
         print("FAIL. Unknown type could be deserialized")
+    
+    #TODO: test of using wrongly more than 1 byte for a boolean encoding
