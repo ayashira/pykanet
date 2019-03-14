@@ -5,10 +5,12 @@
 #Supported types : str, int, bool, list, tuple, dict
 
 #During deserialization, data structure and data range will be checked for security 
+#If something goes wrong, None value is returned by deserialization
 
 #Everything here will be critical for safe data exchange 
 
 class BufferTooShortException(Exception): pass
+class UnknownTypeException(Exception): pass
 
 class Serialize():
     #data type described with 1 byte
@@ -108,6 +110,9 @@ class Serialize():
             val = int.from_bytes(buffer[start_idx:start_idx+data_length], byteorder='big', signed=True)
         elif data_type == Serialize.DATA_BOOL_TYPE:
             val = True if buffer[start_idx:start_idx+data_length] == bytearray(b'1') else False
+        else:
+            raise UnknownTypeException
+        
         start_idx += data_length
         return val, start_idx
     
@@ -121,12 +126,18 @@ class Serialize():
             val, start_idx = Serialize.read_value(bytes_array, 0)
         except BufferTooShortException:
             #end of buffer was reached before all data could be deserialized
+            #print("short")
+            return None
+        except UnknownTypeException:
+            #print("unknown")
             return None
         except:
+            #print("other exception")
             return None
-
+        
         if start_idx < len(bytes_array):
             #some data in the buffer was not used, we also consider this as an anormal case
+            #print("long")
             return None
         
         return val
@@ -222,3 +233,9 @@ if __name__ == '__main__':
     t = s + bytearray(b'1')
     if Serialize.from_bytes(t) != None:
         print("FAIL. Too long array could be deserialized")
+    
+    #test of unknown type
+    s = Serialize.to_bytes("1")
+    s[0] = 95
+    if Serialize.from_bytes(s) != None:
+        print("FAIL. Unknown type could be deserialized")
