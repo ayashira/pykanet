@@ -35,6 +35,14 @@ class Serialize():
             for elmt in val:
                 Serialize.write_value(buffer, elmt)
             return
+        elif type(val) is dict:
+            #encode first the length of the dict, then each (key, value) pair
+            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
+            buffer += (len(val)).to_bytes(Serialize.SIZE_PREFIX_LENGTH, byteorder='big')
+            for key in val.keys():
+                Serialize.write_value(buffer, key)
+                Serialize.write_value(buffer, val[key])
+            return
         
         #basic types
         if type(val) is str:
@@ -63,6 +71,14 @@ class Serialize():
                 elmt, start_idx = Serialize.read_value(buffer, start_idx)
                 result_list.append(elmt)
             return result_list, start_idx
+        elif data_type == Serialize.DATA_DICT_TYPE:
+            #read each (key, value) pair and add them to the dictionary
+            result_dict = {}
+            for _ in range(data_length):
+                key, start_idx = Serialize.read_value(buffer, start_idx)
+                value, start_idx = Serialize.read_value(buffer, start_idx)
+                result_dict[key] = value
+            return result_dict, start_idx
         
         #basic types
         if data_type == Serialize.DATA_STR_TYPE:
@@ -130,3 +146,16 @@ if __name__ == '__main__':
     #multiple levels of list
     test_identity([ [1, 2, [3, 4, [2], [ [34, ""], "aa" ]], [[[[[[1, 2], [[[]]] ]]]]]  ], [[[], 3], 4], 5 ])
     test_identity([[[[[[[[[[[[[[[[[[[[[[[[[1, 2], 3], True], False, False], []], 1]]]], 1]]], 3]], 4]]]]]]]]]]])
+    
+    #dictionaries
+    test_identity({})
+    test_identity({1:"test1", 2:"test2", 3:"test3"})
+    test_identity({1112:123, 25435:2343243, 3242343:565464})
+    test_identity({"aaa":True, "b":False, "ccc":True, "ddd":True})
+    
+    #complex dictionaries
+    test_identity({"aa":[True, "test"], "b":"rewtrrr", "c":[[["re"], "rr"]], "ddd":23})
+    test_identity({24: [3, 4, 5], "aa":[4, 5, 6, 7, {34:56, 78:79} ]})
+    
+    #horrible structure
+    test_identity([[[[  ], {1:2, 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {2:{1:{2:{3:[]}}}} ])
