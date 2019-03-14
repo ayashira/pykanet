@@ -11,7 +11,8 @@ class CryptUtil():
     #for this dummy implementation, public=private
     def generate_key():
         private_key = hashlib.sha256(str(random.randint(1,1000000000)).encode('utf-8')).hexdigest()
-        public_key = private_key
+        #this is just to have different private/public keys
+        public_key = private_key + "xyz"
         return public_key, private_key
     
     #sign a message with a private key
@@ -22,7 +23,8 @@ class CryptUtil():
     #check the signature of a message with a public key
     def check_sign(public_key, message, message_sign):
         hash = hashlib.sha256(message.encode('utf-8')).hexdigest()
-        signature = hashlib.sha256( (public_key + hash).encode('utf-8')).hexdigest()
+        #remove the last 3 characters of the public key in order to obtain the private key
+        signature = hashlib.sha256( (public_key[:-3] + hash).encode('utf-8')).hexdigest()
         return signature == message_sign
 
 #singleton-class to manage the main logged user from any part of the program
@@ -35,6 +37,10 @@ class MainUser():
     
     def set_user(username):
         MainUser.username = username
+        
+    def set_keys(public_key, private_key):
+        MainUser.public_key = public_key
+        MainUser.private_key = private_key
 
 #unit tests
 if __name__ == '__main__':
