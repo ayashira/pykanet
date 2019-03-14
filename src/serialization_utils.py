@@ -2,14 +2,21 @@
 #pickle library cannot be used because there is no way to ensure security during deserialization
 
 #Each data block is converted to bytes, and prefixed with the data type and byte length
+#Supported types : str, int, bool, list, tuple, dict
 
 #During deserialization, data structure and data range will be checked for security 
 
 #Everything here will be critical for safe data exchange 
 
 class Serialize():
+    #data type described with 1 byte
     TYPE_PREFIX_LENGTH = 1
-    SIZE_PREFIX_LENGTH = 3
+    
+    #maximum length of any data block is 256^4
+    #i.e maximum length of a string, a list, or number of elements in a dictionary
+    #this is a bit verbose, could be improved to use only 1 byte up to a length of 254
+    #  and 255 as an escape character to encode a longer length
+    SIZE_PREFIX_LENGTH = 4
     
     DATA_STR_TYPE = 0
     DATA_INT_TYPE = 1
@@ -50,7 +57,8 @@ class Serialize():
             value_bytes = val.encode('utf-8')
             buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is int:
-            value_bytes = val.to_bytes((val.bit_length() + 7) // 8, byteorder='big')
+            #use one more byte than the length obtained with bit_length because of using signed numbers
+            value_bytes = val.to_bytes(1+( (val.bit_length() + 7) // 8), byteorder='big', signed=True)
             buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bool:
             value_bytes = bytearray(b'1') if val else bytearray(b'0')
@@ -88,7 +96,7 @@ class Serialize():
         if data_type == Serialize.DATA_STR_TYPE:
             val = buffer[start_idx:start_idx+data_length].decode('utf-8')
         elif data_type == Serialize.DATA_INT_TYPE:
-            val = int.from_bytes(buffer[start_idx:start_idx+data_length], byteorder='big')
+            val = int.from_bytes(buffer[start_idx:start_idx+data_length], byteorder='big', signed=True)
         elif data_type == Serialize.DATA_BOOL_TYPE:
             val = True if buffer[start_idx:start_idx+1] == bytearray(b'1') else False
         start_idx += data_length
@@ -123,7 +131,16 @@ if __name__ == '__main__':
     test_identity(11111111111112222222222222233333333333333)
     
     #negative numbers
-    #test_identity(-21)
+    test_identity(-21)
+    test_identity(-24563)
+    test_identity(-2111111111111111111111112222222222222222)
+    
+    #random numbers
+    import random
+    for _ in range(10000):
+        x = random.randint(0, 100000000000000000000)
+        test_identity(x)
+        test_identity(-x)
     
     #booleans
     test_identity(True)
@@ -135,8 +152,8 @@ if __name__ == '__main__':
     test_identity(["aaaa"])
     test_identity(["aaaa", "bbbb"])
     test_identity(["abc", "defghy", "", "ertetrer", "a", "", "dfg", "df", "df"])
-    test_identity([12, 345, 543525])
-    test_identity([121212121, 121212345, 12543525, 0, 0, 1, 12121, 3244])
+    test_identity([12, 345, -543525])
+    test_identity([121212121, -121212345, 12543525, 0, 0, 1, -12121, 3244])
     test_identity([True, False, True, True, True, True, False])
     
     #mixed list
@@ -154,7 +171,7 @@ if __name__ == '__main__':
     #tuples
     test_identity( (0,) )
     test_identity( (1, 2, 3) )
-    test_identity( ([1, 2], [2, 5], 3) )
+    test_identity( ([1, 2], [-2, 5], 3) )
     test_identity( [(1,2), (59, 34)] )
     
     #dictionaries
@@ -165,7 +182,7 @@ if __name__ == '__main__':
     
     #complex dictionaries
     test_identity({"aa":[True, "test"], "b":"rewtrrr", "c":[[["re"], "rr"]], "ddd":23})
-    test_identity({24: [3, 4, 5], "aa":[4, 5, (6, 6), (7, 8), {34:56, 78:79} ]})
+    test_identity({24: [-3, 4, 5], "aa":[4, 5, (-6, 6), (-7, -8), {34:56, 78:79} ]})
     
     #horrible structure
-    test_identity([[[[  ], {1:(2,(2,((2,), (2,(2,[[[]]]))))), 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {2:{1:{2:{3:[]}}}} ])
+    test_identity([[[[  ], {1:(2,(2,((2,), (2,(2,[[[]]]))))), 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {-2:{-1:{-2:{-3:[]}}}} ])
