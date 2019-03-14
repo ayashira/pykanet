@@ -8,6 +8,8 @@
 
 #Everything here will be critical for safe data exchange 
 
+class BufferTooShortException(Exception): pass
+
 class Serialize():
     #data type described with 1 byte
     TYPE_PREFIX_LENGTH = 1
@@ -67,8 +69,13 @@ class Serialize():
         buffer += value_bytes
     
     def read_value(buffer, start_idx):
+        if len(buffer) < start_idx+Serialize.TYPE_PREFIX_LENGTH:
+            raise BufferTooShortException()
         data_type = int.from_bytes(buffer[start_idx:start_idx+Serialize.TYPE_PREFIX_LENGTH], byteorder='big')
         start_idx += Serialize.TYPE_PREFIX_LENGTH
+
+        if len(buffer) < start_idx+Serialize.SIZE_PREFIX_LENGTH:
+            raise BufferTooShortException()
         data_length = int.from_bytes(buffer[start_idx:start_idx+Serialize.SIZE_PREFIX_LENGTH], byteorder='big')
         start_idx += Serialize.SIZE_PREFIX_LENGTH
         
@@ -93,12 +100,14 @@ class Serialize():
             return result_dict, start_idx
         
         #basic types
+        if len(buffer) < start_idx+data_length:
+            raise BufferTooShortException()
         if data_type == Serialize.DATA_STR_TYPE:
             val = buffer[start_idx:start_idx+data_length].decode('utf-8')
         elif data_type == Serialize.DATA_INT_TYPE:
             val = int.from_bytes(buffer[start_idx:start_idx+data_length], byteorder='big', signed=True)
         elif data_type == Serialize.DATA_BOOL_TYPE:
-            val = True if buffer[start_idx:start_idx+1] == bytearray(b'1') else False
+            val = True if buffer[start_idx:start_idx+data_length] == bytearray(b'1') else False
         start_idx += data_length
         return val, start_idx
     
@@ -108,7 +117,18 @@ class Serialize():
         return buffer
         
     def from_bytes(bytes_array):
-        val, _ = Serialize.read_value(bytes_array, 0)
+        try:
+            val, start_idx = Serialize.read_value(bytes_array, 0)
+        except BufferTooShortException:
+            #end of buffer was reached before all data could be deserialized
+            return None
+        except:
+            return None
+
+        if start_idx < len(bytes_array):
+            #some data in the buffer was not used, we also consider this as an anormal case
+            return None
+        
         return val
 
 def test_identity(value):
@@ -117,7 +137,7 @@ def test_identity(value):
         print("Identity FAILED", value, new_value)
 
 if __name__ == '__main__':
-    #Test that we obtain the same value after serialization/deserialization
+    #======= Test that deserialization(serialization()) = Identity ========
     
     #strings
     test_identity("")
@@ -186,3 +206,19 @@ if __name__ == '__main__':
     
     #horrible structure
     test_identity([[[[  ], {1:(2,(2,((2,), (2,(2,[[[]]]))))), 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {-2:{-1:{-2:{-3:[]}}}} ])
+    
+    #======== Test faulty length ====================
+    #serialize, delete one character, serialize, and check that result is None
+    s = Serialize.to_bytes(["1", "2", "3"])
+    for i in range(0, len(s)):
+        t = s[:i] + s[i+1:]
+        if Serialize.from_bytes(t) != None:
+            print("FAIL. Faulty array could be deserialized", i, Serialize.from_bytes(t))
+            print(s)
+            print(t)
+
+    #add a character at the end
+    s = Serialize.to_bytes(["1", "2", "3"])
+    t = s + bytearray(b'1')
+    if Serialize.from_bytes(t) != None:
+        print("FAIL. Too long array could be deserialized")
