@@ -150,10 +150,17 @@ class Serialize():
         
     def from_bytes_unguarded(bytes_array):
         #read the total length
+        if len(bytes_array) < Serialize.LENGTH_SIZE:
+            raise BufferTooShortException
         total_length = int.from_bytes(bytes_array[0:Serialize.LENGTH_SIZE], byteorder='big')
         start_idx = Serialize.LENGTH_SIZE
         
+        if len(bytes_array) < total_length:
+            raise BufferTooShortException
+        
         #read the serialization encoding version
+        if len(bytes_array) < start_idx + Serialize.VERSION_LENGTH:
+            raise BufferTooShortException
         version = int.from_bytes(bytes_array[start_idx:start_idx+Serialize.VERSION_LENGTH], byteorder='big')
         if version != Serialize.SERIAL_VERSION:
             #print("wrong version")
@@ -269,6 +276,30 @@ if __name__ == '__main__':
             print(s)
             print(t)
 
+    #test of array without at least 4 bytes of total length in front 
+    s = Serialize.to_bytes(["1", "2", "3"])
+    for i in range(4):
+        t = s[:i]
+        try:
+            a = Serialize.from_bytes_unguarded(t)
+        except BufferTooShortException:
+            #in this test, this is the normal case
+            pass
+        else:
+            print("FAIL. BufferTooShortException was not raised.")
+    
+    #test of array shorter than indicated by the total length in front 
+    s = Serialize.to_bytes({1:"aaa", 2:"bbb", 3:"ccccccc"})
+    for i in range(4, len(s)):
+        t = s[:i]
+        try:
+            a = Serialize.from_bytes_unguarded(t)
+        except BufferTooShortException:
+            #in this test, this is the normal case
+            pass
+        else:
+            print("FAIL. BufferTooShortException was not raised.")
+    
     #add a character at the end
     s = Serialize.to_bytes(["1", "2", "3"])
     t = s + bytearray(b'1')
