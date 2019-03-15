@@ -13,7 +13,7 @@ You can show this information with:
   git remote -v
 
 5) Update regularly your fork with changes on pykanet:
-  git pull upstream
+  git pull upstream master
   git push origin
 
 6) Work as you want inside your fork with the usual commands:
@@ -28,7 +28,8 @@ You can show this information with:
 ======= Memo of useful git commands ======
 
 * Update your local repository with the changes of main pykanet repository
-git pull upstream
+* This command can also be used to update a branch with the upstream master
+git pull upstream master
 
 * See the log history (of local repository, it includes local changes not pushed yet to your fork) 
 git log
