@@ -10,10 +10,21 @@
 #Everything here will be critical for safe data exchange 
 
 class BufferTooShortException(Exception): pass
+class BufferTooLongException(Exception): pass
 class UnknownTypeException(Exception): pass
 class BooleanConversionException(Exception): pass
+class WrongVersionException(Exception): pass
 
 class Serialize():
+    #version number of serialization
+    SERIAL_VERSION = 0
+    
+    #version encoding size
+    VERSION_LENGTH = 1
+    
+    #total serialization length encoded on 4 bytes
+    LENGTH_SIZE = 4
+    
     #data type described with 1 byte
     TYPE_PREFIX_LENGTH = 1
     
@@ -120,34 +131,64 @@ class Serialize():
         start_idx += data_length
         return val, start_idx
     
-    def to_bytes(val):
+    def to_bytes_unguarded(val):
         buffer = bytearray(b'')
+        
+        #reserve the space for encoding the total length
+        buffer += int(0).to_bytes(Serialize.LENGTH_SIZE, byteorder='big')        
+        
+        #serialization encoding version
+        buffer += int(Serialize.SERIAL_VERSION).to_bytes(Serialize.VERSION_LENGTH, byteorder='big')
+        
+        #serialize data
         Serialize.write_value(buffer, val)
+        
+        #initialize the total length in front of serialization with real value
+        buffer[:Serialize.LENGTH_SIZE] = (len(buffer)).to_bytes(Serialize.LENGTH_SIZE, byteorder='big')
+        
         return buffer
         
-    def from_bytes(bytes_array):
-        try:
-            val, start_idx = Serialize.read_value(bytes_array, 0)
-        except BufferTooShortException:
-            #end of buffer was reached before all data could be deserialized
-            #print("short")
-            return None
-        except UnknownTypeException:
-            #print("unknown")
-            return None
-        except BooleanConversionException:
-            #print("boolean")
-            return None
-        except:
-            #print("other exception")
-            return None
+    def from_bytes_unguarded(bytes_array):
+        #read the total length
+        if len(bytes_array) < Serialize.LENGTH_SIZE:
+            raise BufferTooShortException
+        total_length = int.from_bytes(bytes_array[0:Serialize.LENGTH_SIZE], byteorder='big')
+        start_idx = Serialize.LENGTH_SIZE
+        
+        if len(bytes_array) < total_length:
+            raise BufferTooShortException
+        
+        #read the serialization encoding version
+        if len(bytes_array) < start_idx + Serialize.VERSION_LENGTH:
+            raise BufferTooShortException
+        version = int.from_bytes(bytes_array[start_idx:start_idx+Serialize.VERSION_LENGTH], byteorder='big')
+        if version != Serialize.SERIAL_VERSION:
+            #print("wrong version")
+            raise WrongVersionException 
+        start_idx += Serialize.VERSION_LENGTH
+        
+        #deserialize data
+        val, start_idx = Serialize.read_value(bytes_array, start_idx)
         
         if start_idx < len(bytes_array):
             #some data in the buffer was not used, we also consider this as an anormal case
-            #print("long")
-            return None
+            raise BufferTooLongException
         
         return val
+    
+    #only difference with unguarded is that all exceptions are catched, and None is returned    
+    def to_bytes(val):
+        try:
+            return Serialize.to_bytes_unguarded(val)
+        except:
+            return None
+    
+    #only difference with unguarded is that all exceptions are catched and None is returned
+    def from_bytes(bytes_array):
+        try:
+            return Serialize.from_bytes_unguarded(bytes_array)
+        except:
+            return None
 
 def test_identity(value):
     new_value = Serialize.from_bytes( Serialize.to_bytes(value) )
@@ -228,23 +269,68 @@ if __name__ == '__main__':
     #======== Test faulty length ====================
     #serialize, delete one character, serialize, and check that result is None
     s = Serialize.to_bytes(["1", "2", "3"])
-    for i in range(0, len(s)):
+    for i in range(2, len(s)):
         t = s[:i] + s[i+1:]
         if Serialize.from_bytes(t) != None:
             print("FAIL. Faulty array could be deserialized", i, Serialize.from_bytes(t))
             print(s)
             print(t)
 
+    #test of array without at least 4 bytes of total length in front 
+    s = Serialize.to_bytes(["1", "2", "3"])
+    for i in range(4):
+        t = s[:i]
+        try:
+            a = Serialize.from_bytes_unguarded(t)
+        except BufferTooShortException:
+            #in this test, this is the normal case
+            pass
+        else:
+            print("FAIL. BufferTooShortException was not raised.")
+    
+    #test of array shorter than indicated by the total length in front 
+    s = Serialize.to_bytes({1:"aaa", 2:"bbb", 3:"ccccccc"})
+    for i in range(4, len(s)):
+        t = s[:i]
+        try:
+            a = Serialize.from_bytes_unguarded(t)
+        except BufferTooShortException:
+            #in this test, this is the normal case
+            pass
+        else:
+            print("FAIL. BufferTooShortException was not raised.")
+    
     #add a character at the end
     s = Serialize.to_bytes(["1", "2", "3"])
     t = s + bytearray(b'1')
-    if Serialize.from_bytes(t) != None:
-        print("FAIL. Too long array could be deserialized")
+    try:
+        a = Serialize.from_bytes_unguarded(t)
+    except BufferTooLongException:
+        #in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. BufferTooLongException was not raised.")
     
     #test of unknown type
     s = Serialize.to_bytes("1")
-    s[0] = 95
-    if Serialize.from_bytes(s) != None:
-        print("FAIL. Unknown type could be deserialized")
+    s[Serialize.LENGTH_SIZE + Serialize.VERSION_LENGTH] = 9
+    try:
+        a = Serialize.from_bytes_unguarded(s)
+    except UnknownTypeException:
+        #in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. UnknownTypeException was not raised.")
+    
+    #wrong serial version
+    s = Serialize.to_bytes("1")
+    s[Serialize.LENGTH_SIZE] = Serialize.SERIAL_VERSION + 5
+    try:
+        a = Serialize.from_bytes_unguarded(s)
+    except WrongVersionException:
+        #in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. WrongVersionException was not raised.")
     
     #TODO: test of using wrongly more than 1 byte for a boolean encoding
