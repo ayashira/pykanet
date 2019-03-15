@@ -12,8 +12,15 @@
 class BufferTooShortException(Exception): pass
 class UnknownTypeException(Exception): pass
 class BooleanConversionException(Exception): pass
+class WrongVersionException(Exception): pass
 
 class Serialize():
+    #version number of serialization
+    SERIAL_VERSION = 0
+    
+    #version encoding size
+    VERSION_LENGTH = 1
+    
     #data type described with 1 byte
     TYPE_PREFIX_LENGTH = 1
     
@@ -122,12 +129,18 @@ class Serialize():
     
     def to_bytes(val):
         buffer = bytearray(b'')
+        buffer += int(Serialize.SERIAL_VERSION).to_bytes(Serialize.VERSION_LENGTH, byteorder='big')
         Serialize.write_value(buffer, val)
         return buffer
         
     def from_bytes(bytes_array):
         try:
-            val, start_idx = Serialize.read_value(bytes_array, 0)
+            version = int.from_bytes(bytes_array[0:Serialize.VERSION_LENGTH], byteorder='big')
+            if version != Serialize.SERIAL_VERSION:
+                raise WrongVersionException
+            
+            start_idx = Serialize.VERSION_LENGTH
+            val, start_idx = Serialize.read_value(bytes_array, start_idx)
         except BufferTooShortException:
             #end of buffer was reached before all data could be deserialized
             #print("short")
@@ -137,6 +150,8 @@ class Serialize():
             return None
         except BooleanConversionException:
             #print("boolean")
+            return None
+        except WrongVersionException:
             return None
         except:
             #print("other exception")
@@ -228,7 +243,7 @@ if __name__ == '__main__':
     #======== Test faulty length ====================
     #serialize, delete one character, serialize, and check that result is None
     s = Serialize.to_bytes(["1", "2", "3"])
-    for i in range(0, len(s)):
+    for i in range(2, len(s)):
         t = s[:i] + s[i+1:]
         if Serialize.from_bytes(t) != None:
             print("FAIL. Faulty array could be deserialized", i, Serialize.from_bytes(t))
@@ -243,8 +258,14 @@ if __name__ == '__main__':
     
     #test of unknown type
     s = Serialize.to_bytes("1")
-    s[0] = 95
+    s[Serialize.VERSION_LENGTH] = 9
     if Serialize.from_bytes(s) != None:
         print("FAIL. Unknown type could be deserialized")
+    
+    #wrong serial version
+    s = Serialize.to_bytes("1")
+    s[0] = Serialize.SERIAL_VERSION + 5
+    if Serialize.from_bytes(s) != None:
+        print("FAIL. Wrong version could be deserialized")
     
     #TODO: test of using wrongly more than 1 byte for a boolean encoding
