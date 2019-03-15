@@ -41,8 +41,21 @@ class NetworkMessage():
     #read each subpart of the message from a byte encoding
     def from_bytes(self, complete_message):
         result = Serialize.from_bytes(complete_message)
+        #None means deserialization did not work correctly
         if result is not None:
-            self.version, self.username, self.network_path, self.command, self.content = result
+            try:
+                self.version, self.username, self.network_path, self.command, self.content = result
+                
+                #ignore messages without the correct version number and correct types
+                if self.version != NetworkMessage.MESSAGE_VERSION or type(self.username) is not str \
+                  or type(self.network_path) is not str or type(self.command) is not str:
+                    self.username = None
+                    self.network_path = None
+                    self.command = None
+                    self.content = None
+            except:
+                #could not parse the result in the correct list of variables
+                pass
 
 def check_message_equality(message_a, message_b):
     if message_a.username != message_b.username:
