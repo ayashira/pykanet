@@ -22,6 +22,9 @@ class Serialize():
     #version encoding size
     VERSION_LENGTH = 1
     
+    #total serialization length encoded on 4 bytes
+    LENGTH_SIZE = 4
+    
     #data type described with 1 byte
     TYPE_PREFIX_LENGTH = 1
     
@@ -130,16 +133,34 @@ class Serialize():
     
     def to_bytes_unguarded(val):
         buffer = bytearray(b'')
+        
+        #reserve the space for encoding the total length
+        buffer += int(0).to_bytes(Serialize.LENGTH_SIZE, byteorder='big')        
+        
+        #serialization encoding version
         buffer += int(Serialize.SERIAL_VERSION).to_bytes(Serialize.VERSION_LENGTH, byteorder='big')
+        
+        #serialize data
         Serialize.write_value(buffer, val)
+        
+        #initialize the total length in front of serialization with real value
+        buffer[:Serialize.LENGTH_SIZE] = (len(buffer)).to_bytes(Serialize.LENGTH_SIZE, byteorder='big')
+        
         return buffer
         
     def from_bytes_unguarded(bytes_array):
-        version = int.from_bytes(bytes_array[0:Serialize.VERSION_LENGTH], byteorder='big')
-        if version != Serialize.SERIAL_VERSION:
-            raise WrongVersionException
+        #read the total length
+        total_length = int.from_bytes(bytes_array[0:Serialize.LENGTH_SIZE], byteorder='big')
+        start_idx = Serialize.LENGTH_SIZE
         
-        start_idx = Serialize.VERSION_LENGTH
+        #read the serialization encoding version
+        version = int.from_bytes(bytes_array[start_idx:start_idx+Serialize.VERSION_LENGTH], byteorder='big')
+        if version != Serialize.SERIAL_VERSION:
+            #print("wrong version")
+            raise WrongVersionException 
+        start_idx += Serialize.VERSION_LENGTH
+        
+        #deserialize data
         val, start_idx = Serialize.read_value(bytes_array, start_idx)
         
         if start_idx < len(bytes_array):
@@ -261,7 +282,7 @@ if __name__ == '__main__':
     
     #test of unknown type
     s = Serialize.to_bytes("1")
-    s[Serialize.VERSION_LENGTH] = 9
+    s[Serialize.LENGTH_SIZE + Serialize.VERSION_LENGTH] = 9
     try:
         a = Serialize.from_bytes_unguarded(s)
     except UnknownTypeException:
@@ -272,7 +293,7 @@ if __name__ == '__main__':
     
     #wrong serial version
     s = Serialize.to_bytes("1")
-    s[0] = Serialize.SERIAL_VERSION + 5
+    s[Serialize.LENGTH_SIZE] = Serialize.SERIAL_VERSION + 5
     try:
         a = Serialize.from_bytes_unguarded(s)
     except WrongVersionException:
