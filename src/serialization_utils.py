@@ -251,19 +251,34 @@ if __name__ == '__main__':
     #add a character at the end
     s = Serialize.to_bytes(["1", "2", "3"])
     t = s + bytearray(b'1')
-    if Serialize.from_bytes(t) != None:
-        print("FAIL. Too long array could be deserialized")
+    try:
+        a = Serialize.from_bytes_unguarded(t)
+    except BufferTooLongException:
+        #in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. BufferTooLongException was not raised.")
     
     #test of unknown type
     s = Serialize.to_bytes("1")
     s[Serialize.VERSION_LENGTH] = 9
-    if Serialize.from_bytes(s) != None:
-        print("FAIL. Unknown type could be deserialized")
+    try:
+        a = Serialize.from_bytes_unguarded(s)
+    except UnknownTypeException:
+        #in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. UnknownTypeException was not raised.")
     
     #wrong serial version
     s = Serialize.to_bytes("1")
     s[0] = Serialize.SERIAL_VERSION + 5
-    if Serialize.from_bytes(s) != None:
-        print("FAIL. Wrong version could be deserialized")
+    try:
+        a = Serialize.from_bytes_unguarded(s)
+    except WrongVersionException:
+        #in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. WrongVersionException was not raised.")
     
     #TODO: test of using wrongly more than 1 byte for a boolean encoding
