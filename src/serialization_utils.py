@@ -127,35 +127,19 @@ class Serialize():
         start_idx += data_length
         return val, start_idx
     
-    def to_bytes(val):
+    def to_bytes_unguarded(val):
         buffer = bytearray(b'')
         buffer += int(Serialize.SERIAL_VERSION).to_bytes(Serialize.VERSION_LENGTH, byteorder='big')
         Serialize.write_value(buffer, val)
         return buffer
         
-    def from_bytes(bytes_array):
-        try:
-            version = int.from_bytes(bytes_array[0:Serialize.VERSION_LENGTH], byteorder='big')
-            if version != Serialize.SERIAL_VERSION:
-                raise WrongVersionException
-            
-            start_idx = Serialize.VERSION_LENGTH
-            val, start_idx = Serialize.read_value(bytes_array, start_idx)
-        except BufferTooShortException:
-            #end of buffer was reached before all data could be deserialized
-            #print("short")
-            return None
-        except UnknownTypeException:
-            #print("unknown")
-            return None
-        except BooleanConversionException:
-            #print("boolean")
-            return None
-        except WrongVersionException:
-            return None
-        except:
-            #print("other exception")
-            return None
+    def from_bytes_unguarded(bytes_array):
+        version = int.from_bytes(bytes_array[0:Serialize.VERSION_LENGTH], byteorder='big')
+        if version != Serialize.SERIAL_VERSION:
+            raise WrongVersionException
+        
+        start_idx = Serialize.VERSION_LENGTH
+        val, start_idx = Serialize.read_value(bytes_array, start_idx)
         
         if start_idx < len(bytes_array):
             #some data in the buffer was not used, we also consider this as an anormal case
@@ -163,6 +147,20 @@ class Serialize():
             return None
         
         return val
+    
+    #only difference with unguarded is that all exceptions are catched, and None is returned    
+    def to_bytes(val):
+        try:
+            return Serialize.to_bytes_unguarded(val)
+        except:
+            return None
+    
+    #only difference with unguarded is that all exceptions are catched and None is returned
+    def from_bytes(bytes_array):
+        try:
+            return Serialize.from_bytes_unguarded(bytes_array)
+        except:
+            return None
 
 def test_identity(value):
     new_value = Serialize.from_bytes( Serialize.to_bytes(value) )
