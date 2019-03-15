@@ -10,6 +10,7 @@
 #Everything here will be critical for safe data exchange 
 
 class BufferTooShortException(Exception): pass
+class BufferTooLongException(Exception): pass
 class UnknownTypeException(Exception): pass
 class BooleanConversionException(Exception): pass
 class WrongVersionException(Exception): pass
@@ -143,8 +144,7 @@ class Serialize():
         
         if start_idx < len(bytes_array):
             #some data in the buffer was not used, we also consider this as an anormal case
-            #print("long")
-            return None
+            raise BufferTooLongException
         
         return val
     
