@@ -28,7 +28,11 @@ class NetworkInterface():
     def send(self, message):
         if self.connection:
             self.connection.write(message.to_bytes())
-
+    
+    def lose_connection(self):
+        if self.connection:
+            self.connection.loseConnection()
+    
     # =========== private functions ========
     def connect_to_server(self):
         factory = protocol.ClientFactory()

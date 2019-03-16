@@ -5,6 +5,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.lang import Builder
 
+from kivy.properties import BooleanProperty
+
 from apps.login_client import LoginClient
 from apps.chat_client import ChatClient
 from apps.wiki_client import WikiClient
@@ -55,51 +57,88 @@ Builder.load_string('''
 class StartScreen(Screen):
     pass
 
+
+#currently, we close manually the connection of network_interface when a screen is left
+#this design is not good. Should be improved later.
     
 Builder.load_string('''
 <DesktopClient>:
-    id: screen_manager
-    
-    LoginClient:
-        name: "loginscreen"
-        manager: screen_manager
-        on_login_finished:
-            root.current = "startscreen"
+    BoxLayout:
+        orientation: "vertical"
+        size: root.size
         
-    StartScreen:
-        name: "startscreen"
-        manager: screen_manager
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: .1
+            
+            Button:
+                id: home_button
+                text: "Home"
+                size_hint_x: .3
+                disabled: not root.is_logged
+                on_release:
+                    screen_manager.current = "startscreen"
+            Label:
+                id: nothing_label
+            
+        ScreenManager:
+            id: screen_manager
+            
+            LoginClient:
+                name: "loginscreen"
+                manager: screen_manager
+                on_login_finished:
+                    self.manager.current = "startscreen"
+                    root.is_logged = True
+            
+            StartScreen:
+                name: "startscreen"
+                manager: screen_manager
 
-    ChatClient:
-        name: "devchatscreen"
-        manager: screen_manager
-        chat_address: "/chat/dev_main"
+            ChatClient:
+                name: "devchatscreen"
+                manager: screen_manager
+                chat_address: "/chat/dev_main"
+                on_leave:
+                    self.network_interface.lose_connection()
 
-    ChatClient:
-        name: "testchatscreen"
-        manager: screen_manager
-        chat_address: "/chat/dev_test"
+            ChatClient:
+                name: "testchatscreen"
+                manager: screen_manager
+                chat_address: "/chat/dev_test"
+                on_leave:
+                    self.network_interface.lose_connection()
 
-    WikiClient:
-        name: "wikiscreen"
-        manager: screen_manager
-        target_address: "/wiki/home"
-    
-    TurnBasedGameClient:
-        name: "tictactoescreen"
-        manager: screen_manager
-        target_address: "/game/tic_tac_toe"
+            WikiClient:
+                name: "wikiscreen"
+                manager: screen_manager
+                target_address: "/wiki/home"
+                on_leave:
+                    self.network_interface.lose_connection()
+                    self.target_address = "/wiki/home"
+            
+            TurnBasedGameClient:
+                name: "tictactoescreen"
+                manager: screen_manager
+                target_address: "/game/tic_tac_toe"
+                on_leave:
+                    self.network_interface.lose_connection()
 
-    TurnBasedGameClient:
-        name: "connectfourscreen"
-        manager: screen_manager
-        target_address: "/game/connect_four"
+            TurnBasedGameClient:
+                name: "connectfourscreen"
+                manager: screen_manager
+                target_address: "/game/connect_four"
+                on_leave:
+                    self.network_interface.lose_connection()
 
-    TurnBasedGameClient:
-        name: "reversiscreen"
-        manager: screen_manager
-        target_address: "/game/reversi"
+            TurnBasedGameClient:
+                name: "reversiscreen"
+                manager: screen_manager
+                target_address: "/game/reversi"
+                on_leave:
+                    self.network_interface.lose_connection()
 ''')
 
-class DesktopClient(ScreenManager):
-    pass
+class DesktopClient(Screen):
+    
+    is_logged = BooleanProperty(False)

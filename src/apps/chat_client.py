@@ -36,6 +36,7 @@ class ChatClient(Screen):
         self.ids["textbox"].text_validate_unfocus = False
         self.ids["textbox"].bind(on_text_validate=self.send_message)
         self.ids["textbox"].bind(on_key_pressed=self.key_pressed_event)
+        self.ids["label"].text = ""
         
         #indicates if the user is typing or not
         self.isTyping = False

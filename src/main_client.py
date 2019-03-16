@@ -55,7 +55,7 @@ utf8_font_path = "NotoSansCJK-Regular.ttc"
 class MainClient(App):
 
     def build(self):
-        return DesktopClient(transition=NoTransition())
+        return DesktopClient()
 
 if __name__ == '__main__':
     #note: command-line arguments are parsed at top of file, before kivy import
