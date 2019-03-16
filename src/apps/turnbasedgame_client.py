@@ -56,6 +56,10 @@ class TurnBasedGameClient(Screen):
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def create_grid(self):
+        #remove all existing buttons (current client on_enter() can be called multiple times)
+        self.ids["board_grid"].clear_widgets()
+        
+        #initialize the grid rows and cols
         rows = self.target_game.rows()
         cols = self.target_game.cols()
         cell_width, cell_height = self.target_game.cell_size()
