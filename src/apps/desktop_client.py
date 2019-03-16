@@ -58,48 +58,66 @@ class StartScreen(Screen):
     
 Builder.load_string('''
 <DesktopClient>:
-    id: screen_manager
-    
-    LoginClient:
-        name: "loginscreen"
-        manager: screen_manager
-        on_login_finished:
-            root.current = "startscreen"
+    BoxLayout:
+        orientation: "vertical"
+        size: root.size
         
-    StartScreen:
-        name: "startscreen"
-        manager: screen_manager
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: .1
+            
+            Button:
+                id: home_button
+                text: "Home"
+                size_hint_x: .3
+                on_release:
+                    screen_manager.current = "startscreen"
+            Label:
+                id: nothing_label
+            
+        ScreenManager:
+            id: screen_manager
+            
+            LoginClient:
+                name: "loginscreen"
+                manager: screen_manager
+                on_login_finished:
+                    self.manager.current = "startscreen"
+                
+            StartScreen:
+                name: "startscreen"
+                manager: screen_manager
 
-    ChatClient:
-        name: "devchatscreen"
-        manager: screen_manager
-        chat_address: "/chat/dev_main"
+            ChatClient:
+                name: "devchatscreen"
+                manager: screen_manager
+                chat_address: "/chat/dev_main"
 
-    ChatClient:
-        name: "testchatscreen"
-        manager: screen_manager
-        chat_address: "/chat/dev_test"
+            ChatClient:
+                name: "testchatscreen"
+                manager: screen_manager
+                chat_address: "/chat/dev_test"
 
-    WikiClient:
-        name: "wikiscreen"
-        manager: screen_manager
-        target_address: "/wiki/home"
-    
-    TurnBasedGameClient:
-        name: "tictactoescreen"
-        manager: screen_manager
-        target_address: "/game/tic_tac_toe"
+            WikiClient:
+                name: "wikiscreen"
+                manager: screen_manager
+                target_address: "/wiki/home"
+            
+            TurnBasedGameClient:
+                name: "tictactoescreen"
+                manager: screen_manager
+                target_address: "/game/tic_tac_toe"
 
-    TurnBasedGameClient:
-        name: "connectfourscreen"
-        manager: screen_manager
-        target_address: "/game/connect_four"
+            TurnBasedGameClient:
+                name: "connectfourscreen"
+                manager: screen_manager
+                target_address: "/game/connect_four"
 
-    TurnBasedGameClient:
-        name: "reversiscreen"
-        manager: screen_manager
-        target_address: "/game/reversi"
+            TurnBasedGameClient:
+                name: "reversiscreen"
+                manager: screen_manager
+                target_address: "/game/reversi"
 ''')
 
-class DesktopClient(ScreenManager):
+class DesktopClient(Screen):
     pass
