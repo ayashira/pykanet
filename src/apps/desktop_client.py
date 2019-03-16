@@ -5,6 +5,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.lang import Builder
 
+from kivy.properties import BooleanProperty
+
 from apps.login_client import LoginClient
 from apps.chat_client import ChatClient
 from apps.wiki_client import WikiClient
@@ -70,6 +72,7 @@ Builder.load_string('''
                 id: home_button
                 text: "Home"
                 size_hint_x: .3
+                disabled: not root.is_logged
                 on_release:
                     screen_manager.current = "startscreen"
             Label:
@@ -83,7 +86,8 @@ Builder.load_string('''
                 manager: screen_manager
                 on_login_finished:
                     self.manager.current = "startscreen"
-                
+                    root.is_logged = True
+                    
             StartScreen:
                 name: "startscreen"
                 manager: screen_manager
@@ -120,4 +124,5 @@ Builder.load_string('''
 ''')
 
 class DesktopClient(Screen):
-    pass
+    
+    is_logged = BooleanProperty(False)
