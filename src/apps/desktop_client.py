@@ -57,6 +57,9 @@ Builder.load_string('''
 class StartScreen(Screen):
     pass
 
+
+#currently, we close manually the connection of network_interface when a screen is left
+#this design is not good. Should be improved later.
     
 Builder.load_string('''
 <DesktopClient>:
@@ -87,7 +90,7 @@ Builder.load_string('''
                 on_login_finished:
                     self.manager.current = "startscreen"
                     root.is_logged = True
-                    
+            
             StartScreen:
                 name: "startscreen"
                 manager: screen_manager
@@ -96,31 +99,44 @@ Builder.load_string('''
                 name: "devchatscreen"
                 manager: screen_manager
                 chat_address: "/chat/dev_main"
+                on_leave:
+                    self.network_interface.lose_connection()
 
             ChatClient:
                 name: "testchatscreen"
                 manager: screen_manager
                 chat_address: "/chat/dev_test"
+                on_leave:
+                    self.network_interface.lose_connection()
 
             WikiClient:
                 name: "wikiscreen"
                 manager: screen_manager
                 target_address: "/wiki/home"
+                on_leave:
+                    self.network_interface.lose_connection()
+                    self.target_address = "/wiki/home"
             
             TurnBasedGameClient:
                 name: "tictactoescreen"
                 manager: screen_manager
                 target_address: "/game/tic_tac_toe"
+                on_leave:
+                    self.network_interface.lose_connection()
 
             TurnBasedGameClient:
                 name: "connectfourscreen"
                 manager: screen_manager
                 target_address: "/game/connect_four"
+                on_leave:
+                    self.network_interface.lose_connection()
 
             TurnBasedGameClient:
                 name: "reversiscreen"
                 manager: screen_manager
                 target_address: "/game/reversi"
+                on_leave:
+                    self.network_interface.lose_connection()
 ''')
 
 class DesktopClient(Screen):
