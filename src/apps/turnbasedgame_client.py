@@ -23,11 +23,16 @@ Builder.load_string('''
     
         GridLayout:
             id: board_grid
-            size: root.size
-            
+            size_hint_y: 1
+
+
         Label:
             id: state_label
-            height: 90
+            size_hint_y: 0.1
+
+        Label:
+            id: user_label
+            size_hint_y: 0.1
 ''')
 
 
@@ -48,12 +53,16 @@ class TurnBasedGameClient(Screen):
         self.update_display()
         
         self.ids["state_label"].text = "Waiting opponent"
+
+        self.ids["user_label"].text = ""
         
         #game state
         self.play_turn = False
         self.player_id = 0
         
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
+
+        self.user_name = ""
     
     def create_grid(self):
         #remove all existing buttons (current client on_enter() can be called multiple times)
@@ -101,6 +110,10 @@ class TurnBasedGameClient(Screen):
             move = int(message.content)
             self.target_game.play(move, player=2)
             self.update_display()
+        elif message.command == "SET_USER_NAME":
+            self.user_name = message.content
+            user_text = "O" if self.player_id == 1 else "x"
+            self.ids["user_label"].text = self.user_name +  " : " + user_text 
         elif message.command == "GAME_FINISHED":
             self.ids["state_label"].text = "Game finished"
             winner = int(message.content)
