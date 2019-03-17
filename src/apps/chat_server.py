@@ -15,7 +15,7 @@ class ChatServer():
         if FileManager.file_exists(network_path):
             self.content = FileManager.file_read(network_path)
         else:
-            self.content = ""
+            self.content = []
         
         self.network_path = network_path
         
@@ -34,7 +34,7 @@ class ChatServer():
         
         #send the current content to the new client
         new_client_greetings = self.content
-        message = NetworkMessage(self.network_path, "APPEND", new_client_greetings)
+        message = NetworkMessage(self.network_path, "INIT_CONTENT", new_client_greetings)
         new_client.send_message(message)
         
         #send a notification to the new client with the list of currently connected users
@@ -67,14 +67,14 @@ class ChatServer():
                 client.send_message(message)
             return
         
-        #forward the message to all connected clients with the client username in front
-        message.content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.username + " : " + message.content
+        #forward the time, username and message to all connected clients
+        message.content = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), sender_client.username, message.content]
         
         for client in self.clients:
             client.send_message(message)
         
         #add the new message to the chat history
-        self.content += message.content + "\n"
+        self.content.append(message.content)
         
         #save the content to disk
         FileManager.file_write(self.network_path, self.content)

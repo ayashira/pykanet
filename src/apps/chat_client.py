@@ -10,6 +10,17 @@ from kivy.lang import Builder
 from widgets.scrollable_label import ScrollableLabel
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
+from datetime import datetime
+from dateutil import tz
+
+def convert_utc_to_local(utc_time):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S')
+    utc = utc.replace(tzinfo=from_zone)
+    local = utc.astimezone(to_zone)
+    return local.strftime('%Y-%m-%d %H:%M:%S')
+
 Builder.load_string('''
 <ChatClient>:
     BoxLayout:
@@ -65,14 +76,20 @@ class ChatClient(Screen):
             self.add_typing_message(message.content)
             return
         
-        if message.command == "NOTIFICATION":
+        if message.command == "INIT_CONTENT":
+            for item in message.content:
+                text_color_str = "000000"
+                self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
+                                   item[1] + " : " + item[2] + "\n[/color]")
+        elif message.command == "APPEND":
+            item = message.content
+            text_color_str = "000000"
+            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
+                               item[1] + " : " + item[2] + "\n[/color]")
+        elif message.command == "NOTIFICATION":
             #red for notifications
             text_color_str = "ff0000"
-        else:
-            #black for message content
-            text_color_str = "000000"
-        
-        self.print_message("[color=" + text_color_str + "]" + message.content + "\n[/color]")
+            self.print_message("[color=" + text_color_str + "]" + message.content + "\n[/color]")
     
     def print_message(self, msg):
         self.remove_typing_message()
