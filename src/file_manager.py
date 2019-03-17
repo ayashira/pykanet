@@ -9,6 +9,8 @@ from serialization_utils import Serialize
 #It will allow in the future to cache data, and also reorganize it and store it efficiently 
 class FileManager():
     
+    VERSION = 0
+    
     #should be called only once when application is started
     #return True if initialization was successful
     def init_save_path():
@@ -23,15 +25,15 @@ class FileManager():
                 return False
         
         #structure to keep a track of all files existing on the local node
-        if os.path.isfile(FileManager.index_file):
-            FileManager._read_index()
-        else:
-            FileManager.local_index = {}
+        FileManager._read_index()
         
         return True
     
     def _read_index():
-        FileManager.local_index = Serialize.from_bytes(FileManager._raw_file_read(FileManager.index_file))
+        if os.path.isfile(FileManager.index_file):
+            FileManager.local_index = Serialize.from_bytes(FileManager._raw_file_read(FileManager.index_file))
+        else:
+            FileManager.local_index = {"version":FileManager.VERSION, "file_list":{}}
     
     def _write_index():
         FileManager._raw_file_write(FileManager.index_file, Serialize.to_bytes(FileManager.local_index))
@@ -40,7 +42,7 @@ class FileManager():
     def _update_index_file_write(network_path):
         #currently, only keep a track of existing files
         if network_path not in FileManager.local_index:
-            FileManager.local_index[network_path] = FileManager.get_file_name(network_path)
+            FileManager.local_index["file_list"][network_path] = FileManager.get_file_name(network_path)
             FileManager._write_index()
     
     def get_file_name(network_path):
