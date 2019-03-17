@@ -27,11 +27,6 @@ Builder.load_string('''
             text: "Main Chat"
             on_release:
                 root.manager.current = "devchatscreen"
-                
-        Button:
-            text: "Test Chat : do what you want here, this is for tests :)"
-            on_release:
-                root.manager.current = "testchatscreen"
         
         Button:
             text: "Wiki"
@@ -101,14 +96,7 @@ Builder.load_string('''
                 chat_address: "/chat/dev_main"
                 on_leave:
                     self.network_interface.lose_connection()
-
-            ChatClient:
-                name: "testchatscreen"
-                manager: screen_manager
-                chat_address: "/chat/dev_test"
-                on_leave:
-                    self.network_interface.lose_connection()
-
+            
             WikiClient:
                 name: "wikiscreen"
                 manager: screen_manager
