@@ -77,7 +77,7 @@ class ChatServer():
         self.content += message.content + "\n"
         
         #save the content to disk
-        FileManager.file_append(self.network_path, message.content + "\n")
+        FileManager.file_write(self.network_path, self.content)
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):

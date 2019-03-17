@@ -60,10 +60,10 @@ class FileManager():
             #could not read the file (probably file not existing yet)
             return None
     
-    def _raw_file_write(filename, new_content):
+    def _raw_file_write(filename, bytearray_content):
         try:
             with open(filename, "wb") as file:
-                file.write(new_content)
+                file.write(bytearray_content)
             return True
         except:
             print("Warning: an error occurred when writing data to:", filename)
@@ -71,32 +71,12 @@ class FileManager():
     
     def file_read(network_path):
         filename = FileManager.get_file_name(network_path)
-        try:
-            with open(filename) as file:
-                return file.read()
-        except:
-            #could not read the file (probably file not existing yet)
-            return None
+        return Serialize.from_bytes(FileManager._raw_file_read(filename))
     
-    #TODO: for efficiency, some cache mechanism could be used
-    #return True if writing was successful
     def file_write(network_path, new_content):    
         FileManager._update_index_file_write(network_path)
         
         filename = FileManager.get_file_name(network_path)
-        try:
-            with open(filename, "w") as file:
-                file.write(new_content)
-            return True
-        except:
-            print("Warning: could not open file ", filename, "to save data of ", network_path)
-            return False
+        FileManager._raw_file_write(filename, Serialize.to_bytes(new_content))
     
-    #TODO: for efficiency, some cache mechanism could be used
-    def file_append(network_path, added_content):
-        filename = FileManager.get_file_name(network_path)
-        try:
-            with open(filename, "a") as file:
-                file.write(added_content)
-        except:
-            print("Warning: could not open file ", filename, "to save data of ", network_path)
+    #Note : append not supported anymore for some time (because serialization is used)
