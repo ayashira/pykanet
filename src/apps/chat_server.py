@@ -12,7 +12,10 @@ class ChatServer():
         self.clients = []
         
         #initialize the content with the saved file (if existing) corresponding to the network address
-        self.content = FileManager.file_read(network_path)
+        if FileManager.file_exists(network_path):
+            self.content = FileManager.file_read(network_path)
+        else:
+            self.content = ""
         
         self.network_path = network_path
         

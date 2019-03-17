@@ -7,6 +7,9 @@ import os
 #It will allow in the future to cache data, and also reorganize it and store it efficiently 
 class FileManager():
     
+    #structure to keep a track of all files existing on the local node
+    local_index = []
+    
     #should be called only once when application is started
     #return True if initialization was successful
     def init_save_path():
@@ -23,6 +26,10 @@ class FileManager():
     def get_file_name(network_path):
         return FileManager.root_dir + hashlib.sha224(network_path.encode('utf-8')).hexdigest()
     
+    def file_exists(network_path):
+        filename = FileManager.get_file_name(network_path)
+        return os.path.exists(filename)
+    
     def file_read(network_path):
         filename = FileManager.get_file_name(network_path)
         try:
@@ -30,7 +37,7 @@ class FileManager():
                 return file.read()
         except:
             #could not read the file (probably file not existing yet)
-            return ""
+            return None
     
     #TODO: for efficiency, some cache mechanism could be used
     #return True if writing was successful
