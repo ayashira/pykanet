@@ -4,6 +4,7 @@ from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager
 import datetime
+import random
 
 from apps.turnbasedgame_list import TurnBasedGameList
 
@@ -102,17 +103,25 @@ class TurnBasedGameServer():
             self.clients[0].send_message(message)
             new_client.send_message(message)
             self.game_started = True
-            
+
+            # TODO: determine the first player at random
             self.current_player_id = 0
             self.opp_player_id = 1
+
             message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "1")
-            self.clients[self.current_player_id].send_message(message)
+            self.clients[0].send_message(message)
             message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
+            self.clients[self.current_player_id].send_message(message)
+            # pass the username on to client
+            message = NetworkMessage(self.network_path, "SET_USER_NAME", self.clients[self.current_player_id].username)
             self.clients[self.current_player_id].send_message(message)
             
             message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "2")
-            self.clients[self.opp_player_id].send_message(message)
+            self.clients[1].send_message(message)
             message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
+            self.clients[self.opp_player_id].send_message(message)
+            
+            message = NetworkMessage(self.network_path, "SET_USER_NAME", self.clients[self.opp_player_id].username)
             self.clients[self.opp_player_id].send_message(message)
     
     #called when a client connection is lost
