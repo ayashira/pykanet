@@ -135,43 +135,43 @@ class ChatClient(Screen):
         if message.command == "INIT_CONTENT":
             for item in message.content:
                 text_color_str = "000000"
-                self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
-                                   item[1] + " : " + item[2] + "\n[/color]", item[1])
+                self.print_message(convert_utc_to_local(item[0]) + " " + item[1] + " : " + item[2], \
+                                   text_color_str, item[1])
         elif message.command == "APPEND":
             item = message.content
             text_color_str = "000000"
-            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
-                               item[1] + " : " + item[2] + "\n[/color]", item[1])
+            self.print_message(convert_utc_to_local(item[0]) + " " + item[1] + " : " + item[2], \
+                               text_color_str, item[1])
         elif message.command == "NOTIFICATION_NEW_CLIENT":
             item = message.content
             #red for notifications
             text_color_str = "ff0000"
-            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
-                               "  A new guest is here \^_^/ : " + item[1] + "\n[/color]")
+            self.print_message(convert_utc_to_local(item[0]) + " " + \
+                               "  A new guest is here \^_^/ : " + item[1], \
+                               text_color_str)
         elif message.command == "NOTIFICATION_CLIENT_LIST":
             #we receive a list [time, username, otheruser1, otheruser2, ...]
             #red for notifications
             text_color_str = "ff0000"
-            text = "[color=" + text_color_str + "]" + convert_utc_to_local(message.content[0])
+            text = convert_utc_to_local(message.content[0])
             if len(message.content) > 2:
                 text += "  Currently connected guests: "
                 for item in message.content[2:]:
                     text += item + " "
             else:
                 text += "  No other guest currently connected."
-            
-            text += "\nYou are guest : " + message.content[1] + "\n[/color]"
-            self.print_message(text)
+            text += "\nYou are guest : " + message.content[1]
+            self.print_message(text, text_color_str)
         elif message.command == "NOTIFICATION_CLIENT_LEFT":
             #red for notifications
             text_color_str = "ff0000"
-            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(message.content[0]) + \
-                               "  Chat left by " + message.content[1] + "\n[/color]")
+            self.print_message(convert_utc_to_local(message.content[0]) + "  Chat left by " + \
+                               message.content[1], text_color_str)
     
-    def print_message(self, msg, username=None, isTyping = False):
+    def print_message(self, msg, text_color_str, username=None, isTyping = False):
         self.remove_typing_message()
         label = CustomLabel()
-        label.text = format_links(msg)
+        label.text = "[color=" + text_color_str + "]" + format_links(msg) + "\n[/color]"
         if username == MainUser.username:
             label.bcolor = [0.8,0.93,1,1]
         self.ids["main_view"].add_widget(label)
@@ -184,9 +184,9 @@ class ChatClient(Screen):
     #when the status changes, we remove the current status from the label, and display the new one (if any)
     def add_typing_message(self, msg):
         text_color_str = "0000ff"
-        new_typing_msg = "[color=" + text_color_str + "]    " + msg + " typing... [/color]\n"
+        new_typing_msg = msg + " typing... \n"
         self.current_typing_msg += new_typing_msg
-        self.print_message(self.current_typing_msg, isTyping = True)
+        self.print_message(self.current_typing_msg, text_color_str, isTyping = True)
     
     def remove_typing_message(self):
         if not self.typing_widget is None:
