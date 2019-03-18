@@ -27,6 +27,14 @@ def convert_utc_to_local(utc_time):
     local = utc.astimezone(to_zone)
     return local.strftime('%Y-%m-%d, %H:%M:%S')
 
+def convert_utc_to_local_HM(utc_time):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S')
+    utc = utc.replace(tzinfo=from_zone)
+    local = utc.astimezone(to_zone)
+    return local.strftime('%H:%M')
+    
 #for regular expressions
 import re
 
@@ -49,6 +57,7 @@ Builder.load_string('''
         id:minor_label
         size_hint: None, None
         size: self.texture_size
+        markup:True
         text: ""
         pos_hint: {'left': 1}
     Label:
@@ -99,7 +108,7 @@ Builder.load_string('''
                 size_hint_y: None
                 height: self.minimum_height
                 padding: [12, 0, 12, 0]
-                spacing: 4
+                spacing: 5
                 id:main_view
         ShiftEnterTextInput:
             id:textbox
@@ -151,40 +160,35 @@ class ChatClient(Screen):
         if message.command == "INIT_CONTENT":
             for item in message.content:
                 text_color_str = "000000"
-                self.print_message(convert_utc_to_local(item[0]) + " " + item[1] + " : " + item[2], \
-                                   text_color_str, item[1])
+                self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
         elif message.command == "APPEND":
             item = message.content
             text_color_str = "000000"
-            self.print_message(convert_utc_to_local(item[0]) + " " + item[1] + " : " + item[2], \
-                               text_color_str, item[1])
+            self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
         elif message.command == "NOTIFICATION_NEW_CLIENT":
             item = message.content
             #red for notifications
             text_color_str = "ff0000"
-            self.print_message(convert_utc_to_local(item[0]) + " " + \
-                               "  A new guest is here \^_^/ : " + item[1], \
-                               text_color_str)
+            self.print_message("A new guest is here \^_^/ : " + item[1], text_color_str, msg_time=item[0])
         elif message.command == "NOTIFICATION_CLIENT_LIST":
             #we receive a list [time, username, otheruser1, otheruser2, ...]
             #red for notifications
             text_color_str = "ff0000"
-            text = convert_utc_to_local(message.content[0])
+            text = ""
             if len(message.content) > 2:
-                text += "  Currently connected guests: "
+                text += "Currently connected guests: "
                 for item in message.content[2:]:
                     text += item + " "
             else:
-                text += "  No other guest currently connected."
+                text += "No other guest currently connected."
             text += "\nYou are guest : " + message.content[1]
-            self.print_message(text, text_color_str)
+            self.print_message(text, text_color_str, msg_time=message.content[0])
         elif message.command == "NOTIFICATION_CLIENT_LEFT":
             #red for notifications
             text_color_str = "ff0000"
-            self.print_message(convert_utc_to_local(message.content[0]) + "  Chat left by " + \
-                               message.content[1], text_color_str)
+            self.print_message("Chat left by " + message.content[1], text_color_str, msg_time=message.content[0])
     
-    def print_message(self, msg, text_color_str, username=None, isTyping = False):
+    def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False):
         self.remove_typing_message()
         label = CustomLabel()
         label.ids["text_label"].text = "[color=" + text_color_str + "]" + format_links(msg) + "[/color]"
@@ -192,7 +196,17 @@ class ChatClient(Screen):
             #for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
             label.pos_hint = {'right': 1}
-            
+        
+        if msg_time is not None:
+            if username == MainUser.username:
+                #don't display name and aligned on right
+                label.ids["minor_label"].pos_hint = {'right': 1}
+            elif username is not None:
+                label.ids["minor_label"].text =  username + "  " 
+            else:
+                label.ids["minor_label"].text = ""
+            label.ids["minor_label"].text += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+        
         self.ids["main_view"].add_widget(label)
         
         if isTyping:
