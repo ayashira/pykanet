@@ -50,7 +50,7 @@ Builder.load_string('''
     canvas.before:
         Color:
             rgba: root.bcolor
-        Rectangle:
+        RoundedRectangle:
             pos: self.pos
             size: self.size
 ''')
@@ -191,8 +191,9 @@ class ChatClient(Screen):
     #when the status changes, we remove the current status from the label, and display the new one (if any)
     def add_typing_message(self, msg):
         text_color_str = "0000ff"
-        new_typing_msg = msg + " typing... \n"
-        self.current_typing_msg += new_typing_msg
+        if self.current_typing_msg != "":
+            self.current_typing_msg += "\n"
+        self.current_typing_msg += msg + " is typing..."
         self.print_message(self.current_typing_msg, text_color_str, isTyping = True)
     
     def remove_typing_message(self):
