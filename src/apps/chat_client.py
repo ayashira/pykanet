@@ -41,6 +41,7 @@ def format_links(text_str):
 Builder.load_string('''
 <CustomLabel>:
     size_hint_y: None
+    size_hint_x: 0.8
     height: self.texture_size[1]
     text_size: self.width, None
     markup:True
@@ -173,7 +174,10 @@ class ChatClient(Screen):
         label = CustomLabel()
         label.text = "[color=" + text_color_str + "]" + format_links(msg) + "\n[/color]"
         if username == MainUser.username:
+            #for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
+            label.pos_hint = {'right': 1}
+            
         self.ids["main_view"].add_widget(label)
         
         if isTyping:
