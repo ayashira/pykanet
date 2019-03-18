@@ -10,20 +10,86 @@ from kivy.lang import Builder
 from widgets.scrollable_label import ScrollableLabel
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.label import Label
+from kivy.properties import StringProperty, ListProperty
+
+from datetime import datetime
+from dateutil import tz
+
+from user_utils import MainUser
+
+def convert_utc_to_local(utc_time):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S')
+    utc = utc.replace(tzinfo=from_zone)
+    local = utc.astimezone(to_zone)
+    return local.strftime('%Y-%m-%d, %H:%M:%S')
+
+#for regular expressions
+import re
+
+#format the links in some text string, with the markup language of kivy
+#TODO : code redundancy with ScrollableLabel
+def format_links(text_str):
+    #use a regular expression to add kivy color and ref markup around web addresses
+    text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
+    return text_str
+
+    
+Builder.load_string('''
+<CustomLabel>:
+    size_hint_y: None
+    height: self.texture_size[1]
+    text_size: self.width, None
+    markup:True
+    on_ref_press: root.link_clicked(args[1])
+    canvas.before:
+        Color:
+            rgba: root.bcolor
+        Rectangle:
+            pos: self.pos
+            size: self.size
+''')
+
+#default text to None, default background to white
+class CustomLabel(Label):
+    
+    #add an event triggered when a link other than http link is clicked
+    __events__ = Label.__events__ + ['on_link_clicked']
+    
+    bcolor = ListProperty([1,1,1,1])
+    
+    def link_clicked(self, link):
+        if link.startswith("http"):
+            import webbrowser
+            webbrowser.open(link)
+        else:
+            self.dispatch('on_link_clicked', link)
+
+    def on_link_clicked(self, link):
+        pass
+
+
 Builder.load_string('''
 <ChatClient>:
     BoxLayout:
         orientation: "vertical"
         size: root.size
         
-        ScrollableLabel:
-            id:label
-            text: ""
+        ScrollView:
+            scroll_y:0
+            BoxLayout:
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                id:main_view
         ShiftEnterTextInput:
             id:textbox
             size_hint_y: .1
 ''')
-    
+
 class ChatClient(Screen):
     
     #kivy string property indicating the network address of the chat
@@ -36,13 +102,13 @@ class ChatClient(Screen):
         self.ids["textbox"].text_validate_unfocus = False
         self.ids["textbox"].bind(on_text_validate=self.send_message)
         self.ids["textbox"].bind(on_key_pressed=self.key_pressed_event)
-        self.ids["label"].text = ""
         
         #indicates if the user is typing or not
         self.isTyping = False
         
         #current typing status of all clients
         self.current_typing_msg = ""
+        self.typing_widget = None
         
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
@@ -65,19 +131,53 @@ class ChatClient(Screen):
             self.add_typing_message(message.content)
             return
         
-        if message.command == "NOTIFICATION":
+        #TODO: clean up code below
+        if message.command == "INIT_CONTENT":
+            for item in message.content:
+                text_color_str = "000000"
+                self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
+                                   item[1] + " : " + item[2] + "\n[/color]", item[1])
+        elif message.command == "APPEND":
+            item = message.content
+            text_color_str = "000000"
+            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
+                               item[1] + " : " + item[2] + "\n[/color]", item[1])
+        elif message.command == "NOTIFICATION_NEW_CLIENT":
+            item = message.content
             #red for notifications
             text_color_str = "ff0000"
-        else:
-            #black for message content
-            text_color_str = "000000"
-        
-        self.print_message("[color=" + text_color_str + "]" + message.content + "\n[/color]")
+            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
+                               "  A new guest is here \^_^/ : " + item[1] + "\n[/color]")
+        elif message.command == "NOTIFICATION_CLIENT_LIST":
+            #we receive a list [time, username, otheruser1, otheruser2, ...]
+            #red for notifications
+            text_color_str = "ff0000"
+            text = "[color=" + text_color_str + "]" + convert_utc_to_local(message.content[0])
+            if len(message.content) > 2:
+                text += "  Currently connected guests: "
+                for item in message.content[2:]:
+                    text += item + " "
+            else:
+                text += "  No other guest currently connected."
+            
+            text += "\nYou are guest : " + message.content[1] + "\n[/color]"
+            self.print_message(text)
+        elif message.command == "NOTIFICATION_CLIENT_LEFT":
+            #red for notifications
+            text_color_str = "ff0000"
+            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(message.content[0]) + \
+                               "  Chat left by " + message.content[1] + "\n[/color]")
     
-    def print_message(self, msg):
+    def print_message(self, msg, username=None, isTyping = False):
         self.remove_typing_message()
-        formatted_links_msg = self.ids["label"].format_links(msg)
-        self.ids["label"].text += formatted_links_msg
+        label = CustomLabel()
+        label.text = format_links(msg)
+        if username == MainUser.username:
+            label.bcolor = [0.8,0.93,1,1]
+        self.ids["main_view"].add_widget(label)
+        
+        if isTyping:
+            self.typing_widget = label
     
     #============= typing status ===========================
     #typing status is done by storing the current state of typing status
@@ -86,13 +186,12 @@ class ChatClient(Screen):
         text_color_str = "0000ff"
         new_typing_msg = "[color=" + text_color_str + "]    " + msg + " typing... [/color]\n"
         self.current_typing_msg += new_typing_msg
-        self.ids["label"].text += new_typing_msg
+        self.print_message(self.current_typing_msg, isTyping = True)
     
     def remove_typing_message(self):
-        status_len = len(self.current_typing_msg)
-        if status_len > 0:
-            #remove the status_len last characters of the label
-            self.ids["label"].text = self.ids["label"].text[:-status_len]
+        if not self.typing_widget is None:
+            self.ids["main_view"].remove_widget(self.typing_widget)
+            self.typing_widget = None
             self.current_typing_msg = ""
     
     #called when a key is pressed in the input

@@ -16,11 +16,15 @@ class WikiServer():
     #called when a message is received from a client
     def receive_message(self, sender_client, message):
         if message.command == "READ":
-            #return the content of the requested address (if existing)
-            #TODO: handle non-existing files with specific message
-            page_content = FileManager.file_read(message.network_path)            
-            message.command = "READ_RESULT"
-            message.content = page_content
+            #return the content of the requested address
+            if FileManager.file_exists(message.network_path):
+                page_content = FileManager.file_read(message.network_path)            
+                message.command = "READ_RESULT"
+                message.content = page_content
+            else:
+                #specific message when the page does not exist yet
+                message.command = "NOT_EXISTING"
+                message.content = ""
             sender_client.send_message(message)
         elif message.command == "WRITE":
             #write the new content at the address

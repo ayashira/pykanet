@@ -103,6 +103,9 @@ class WikiClient(Screen):
         elif message.command == "WRITE_DONE":
             #read the address again after writing
             self.read_address(self.target_address)
+        elif message.command == "NOT_EXISTING":
+            self.current_content = ""
+            self.update_text(self.target_address + " not existing yet.")
     
     def read_address(self, read_target_address):
         message = NetworkMessage(read_target_address, "READ", "")

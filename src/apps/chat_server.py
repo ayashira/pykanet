@@ -12,7 +12,10 @@ class ChatServer():
         self.clients = []
         
         #initialize the content with the saved file (if existing) corresponding to the network address
-        self.content = FileManager.file_read(network_path)
+        if FileManager.file_exists(network_path):
+            self.content = FileManager.file_read(network_path)
+        else:
+            self.content = []
         
         self.network_path = network_path
         
@@ -24,28 +27,22 @@ class ChatServer():
     #add a new client to the list of connected clients
     def add_client(self, new_client):
         #send a message to existing clients
-        greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  A new guest is here \^_^/ : ") + new_client.username
-        message = NetworkMessage(self.network_path, "NOTIFICATION", greetings)
+        greetings = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), new_client.username]
+        message = NetworkMessage(self.network_path, "NOTIFICATION_NEW_CLIENT", greetings)
         for client in self.clients:
             client.send_message(message)
         
         #send the current content to the new client
         new_client_greetings = self.content
-        message = NetworkMessage(self.network_path, "APPEND", new_client_greetings)
+        message = NetworkMessage(self.network_path, "INIT_CONTENT", new_client_greetings)
         new_client.send_message(message)
         
         #send a notification to the new client with the list of currently connected users
-        new_client_greetings = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
+        new_client_greetings = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), new_client.username]
         if len(self.clients) > 0:
-            new_client_greetings += str("  Currently connected guests: ")
             for client in self.clients:
-                new_client_greetings += client.username + " "
-        else:
-            new_client_greetings += str("  No other guest currently connected.")
-        
-        new_client_greetings += str("\nYou are guest : ") + new_client.username
-        
-        message = NetworkMessage(self.network_path, "NOTIFICATION", new_client_greetings)
+                new_client_greetings.append(client.username) # + " "     
+        message = NetworkMessage(self.network_path, "NOTIFICATION_CLIENT_LIST", new_client_greetings)
         new_client.send_message(message)
         
         self.clients.append(new_client)
@@ -64,17 +61,17 @@ class ChatServer():
                 client.send_message(message)
             return
         
-        #forward the message to all connected clients with the client username in front
-        message.content = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + "  " + sender_client.username + " : " + message.content
+        #forward the time, username and message to all connected clients
+        message.content = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), sender_client.username, message.content]
         
         for client in self.clients:
             client.send_message(message)
         
         #add the new message to the chat history
-        self.content += message.content + "\n"
+        self.content.append(message.content)
         
         #save the content to disk
-        FileManager.file_append(self.network_path, message.content + "\n")
+        FileManager.file_write(self.network_path, self.content)
     
     #called when a client connection is lost
     def connection_lost(self, lost_client):
@@ -94,8 +91,8 @@ class ChatServer():
             return
         
         #message to other clients
-        notification_to_send = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + str("  Chat left by ") + lost_client.username
-        message = NetworkMessage(self.network_path, "NOTIFICATION", notification_to_send)
+        notification_to_send = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), lost_client.username]
+        message = NetworkMessage(self.network_path, "NOTIFICATION_CLIENT_LEFT", notification_to_send)
         
         for client in self.clients:
             client.send_message(message)
