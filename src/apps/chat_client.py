@@ -40,26 +40,38 @@ def format_links(text_str):
     
 Builder.load_string('''
 <CustomLabel>:
-    size_hint_y: None
     size_hint_x: 0.8
-    height: self.texture_size[1]
-    text_size: self.width, None
-    padding: [7, 7]
-    markup:True
-    on_ref_press: root.link_clicked(args[1])
-    canvas.before:
-        Color:
-            rgba: root.bcolor
-        RoundedRectangle:
-            pos: self.pos
-            size: self.size
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: "vertical"
+    
+    Label:
+        id:minor_label
+        size_hint: None, None
+        size: self.texture_size
+        text: ""
+        pos_hint: {'left': 1}
+    Label:
+        id:text_label
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+        padding: [7, 7]
+        markup:True
+        on_ref_press: root.link_clicked(args[1])
+        canvas.before:
+            Color:
+                rgba: root.bcolor
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
 ''')
 
 #default text to None, default background to white
-class CustomLabel(Label):
+class CustomLabel(BoxLayout):
     
     #add an event triggered when a link other than http link is clicked
-    __events__ = Label.__events__ + ['on_link_clicked']
+    __events__ = BoxLayout.__events__ + ('on_link_clicked',)
     
     bcolor = ListProperty([1,1,1,1])
     
@@ -87,7 +99,7 @@ Builder.load_string('''
                 size_hint_y: None
                 height: self.minimum_height
                 padding: [12, 0, 12, 0]
-                spacing: 10
+                spacing: 4
                 id:main_view
         ShiftEnterTextInput:
             id:textbox
@@ -175,7 +187,7 @@ class ChatClient(Screen):
     def print_message(self, msg, text_color_str, username=None, isTyping = False):
         self.remove_typing_message()
         label = CustomLabel()
-        label.text = "[color=" + text_color_str + "]" + format_links(msg) + "[/color]"
+        label.ids["text_label"].text = "[color=" + text_color_str + "]" + format_links(msg) + "[/color]"
         if username == MainUser.username:
             #for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
