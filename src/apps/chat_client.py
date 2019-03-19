@@ -27,6 +27,14 @@ def convert_utc_to_local(utc_time):
     local = utc.astimezone(to_zone)
     return local.strftime('%Y-%m-%d, %H:%M:%S')
 
+def convert_utc_to_local_HM(utc_time):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S')
+    utc = utc.replace(tzinfo=from_zone)
+    local = utc.astimezone(to_zone)
+    return local.strftime('%H:%M')
+    
 #for regular expressions
 import re
 
@@ -40,24 +48,39 @@ def format_links(text_str):
     
 Builder.load_string('''
 <CustomLabel>:
+    size_hint_x: 0.8
     size_hint_y: None
-    height: self.texture_size[1]
-    text_size: self.width, None
-    markup:True
-    on_ref_press: root.link_clicked(args[1])
-    canvas.before:
-        Color:
-            rgba: root.bcolor
-        Rectangle:
-            pos: self.pos
-            size: self.size
+    height: self.minimum_height
+    orientation: "vertical"
+    
+    Label:
+        id:minor_label
+        size_hint: None, None
+        size: self.texture_size
+        markup:True
+        text: ""
+        pos_hint: {'left': 1}
+    Label:
+        id:text_label
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+        padding: [7, 7]
+        markup:True
+        on_ref_press: root.link_clicked(args[1])
+        canvas.before:
+            Color:
+                rgba: root.bcolor
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
 ''')
 
 #default text to None, default background to white
-class CustomLabel(Label):
+class CustomLabel(BoxLayout):
     
     #add an event triggered when a link other than http link is clicked
-    __events__ = Label.__events__ + ['on_link_clicked']
+    __events__ = BoxLayout.__events__ + ('on_link_clicked',)
     
     bcolor = ListProperty([1,1,1,1])
     
@@ -84,6 +107,8 @@ Builder.load_string('''
                 orientation: "vertical"
                 size_hint_y: None
                 height: self.minimum_height
+                padding: [12, 0, 12, 0]
+                spacing: 5
                 id:main_view
         ShiftEnterTextInput:
             id:textbox
@@ -110,6 +135,8 @@ class ChatClient(Screen):
         self.current_typing_msg = ""
         self.typing_widget = None
         
+        self.last_msg_date = None
+        
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def connection_made(self):
@@ -135,45 +162,69 @@ class ChatClient(Screen):
         if message.command == "INIT_CONTENT":
             for item in message.content:
                 text_color_str = "000000"
-                self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
-                                   item[1] + " : " + item[2] + "\n[/color]", item[1])
+                self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
         elif message.command == "APPEND":
             item = message.content
             text_color_str = "000000"
-            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
-                               item[1] + " : " + item[2] + "\n[/color]", item[1])
+            self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
         elif message.command == "NOTIFICATION_NEW_CLIENT":
             item = message.content
             #red for notifications
             text_color_str = "ff0000"
-            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(item[0]) + " " + \
-                               "  A new guest is here \^_^/ : " + item[1] + "\n[/color]")
+            self.print_message("A new guest is here \^_^/ : " + item[1], text_color_str, msg_time=item[0])
         elif message.command == "NOTIFICATION_CLIENT_LIST":
             #we receive a list [time, username, otheruser1, otheruser2, ...]
             #red for notifications
             text_color_str = "ff0000"
-            text = "[color=" + text_color_str + "]" + convert_utc_to_local(message.content[0])
+            text = ""
             if len(message.content) > 2:
-                text += "  Currently connected guests: "
+                text += "Currently connected guests: "
                 for item in message.content[2:]:
                     text += item + " "
             else:
-                text += "  No other guest currently connected."
-            
-            text += "\nYou are guest : " + message.content[1] + "\n[/color]"
-            self.print_message(text)
+                text += "No other guest currently connected."
+            text += "\nYou are guest : " + message.content[1]
+            self.print_message(text, text_color_str, msg_time=message.content[0])
         elif message.command == "NOTIFICATION_CLIENT_LEFT":
             #red for notifications
             text_color_str = "ff0000"
-            self.print_message("[color=" + text_color_str + "]" + convert_utc_to_local(message.content[0]) + \
-                               "  Chat left by " + message.content[1] + "\n[/color]")
+            self.print_message("Chat left by " + message.content[1], text_color_str, msg_time=message.content[0])
     
-    def print_message(self, msg, username=None, isTyping = False):
+    def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False):
         self.remove_typing_message()
+        
+        #insert a label with the date if day of new message is different from last message
+        if msg_time != None:
+            msg_local_time = convert_utc_to_local(msg_time)
+            if self.last_msg_date is None or \
+               msg_local_time[:10] != self.last_msg_date[:10]:
+                day_label = CustomLabel()
+                day_label.ids["text_label"].text = "[color=000000]" + msg_local_time[5:10] + "[/color]"
+                day_label.bcolor = [0.8,1,0.8,1]
+                day_label.pos_hint = {'center_x': 0.5}
+                day_label.size_hint_x = 0.2
+                self.ids["main_view"].add_widget(day_label)
+            self.last_msg_date = msg_local_time
+        
+        #main message label
         label = CustomLabel()
-        label.text = format_links(msg)
+        label.ids["text_label"].text = "[color=" + text_color_str + "]" + format_links(msg) + "[/color]"
         if username == MainUser.username:
+            #for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
+            label.pos_hint = {'right': 1}
+        
+        #minor label with time and user name
+        if msg_time is not None:
+            if username == MainUser.username:
+                #don't display name and aligned on right
+                label.ids["minor_label"].pos_hint = {'right': 1}
+            elif username is not None:
+                label.ids["minor_label"].text =  username + "  " 
+            else:
+                label.ids["minor_label"].text = ""
+            label.ids["minor_label"].text += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+        
         self.ids["main_view"].add_widget(label)
         
         if isTyping:
@@ -184,9 +235,10 @@ class ChatClient(Screen):
     #when the status changes, we remove the current status from the label, and display the new one (if any)
     def add_typing_message(self, msg):
         text_color_str = "0000ff"
-        new_typing_msg = "[color=" + text_color_str + "]    " + msg + " typing... [/color]\n"
-        self.current_typing_msg += new_typing_msg
-        self.print_message(self.current_typing_msg, isTyping = True)
+        if self.current_typing_msg != "":
+            self.current_typing_msg += "\n"
+        self.current_typing_msg += msg + " is typing..."
+        self.print_message(self.current_typing_msg, text_color_str, isTyping = True)
     
     def remove_typing_message(self):
         if not self.typing_widget is None:
