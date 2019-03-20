@@ -131,7 +131,7 @@ class TurnBasedGameClient(Screen):
             move = int(message.content)
             self.target_game.play(move, player=2)
             self.update_display()
-        elif message.command == "SET_USER_NAME":
+        elif message.command == "SET_USER_NAMES":
             self.user_name, self.opp_user_name = message.content
             user_text = ("O", "x") if self.player_id == 1 else ("x", "O")
             self.ids["user_label"].text = self.user_name +  " : " + user_text[0]
