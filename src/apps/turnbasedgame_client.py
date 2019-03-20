@@ -100,7 +100,8 @@ class TurnBasedGameClient(Screen):
             for j in range(cols):
                 #note : button id defined here cannot be used to access buttons with their .ids
                 #       it is used to identify which button called cell_clicked
-                button = Button(text='', width=cell_width, height=cell_height, size_hint=(None, None), id=str(i*rows+j))
+                button = Button(text='', width=cell_width, height=cell_height, size_hint=(None, None))
+                button.coords = (i, j)
                 button.bind(on_press=self.cell_clicked)
                 self.ids["board_grid"].add_widget(button)
                 self.button_list.append(button)
@@ -109,7 +110,7 @@ class TurnBasedGameClient(Screen):
         #connection is established, connect to the target address
         message = NetworkMessage(self.target_address, "ENTER", "")
         self.network_interface.send(message)
-        
+    
     def receive_message(self, message):
         #print(message.to_bytes())
         if message.command == "SET_PLAYER_ID":
@@ -124,11 +125,11 @@ class TurnBasedGameClient(Screen):
             self.ids["user_label"].bold = False
             self.ids["opp_user_label"].bold = True
         elif message.command == "PLAYER1_MOVE":
-            move = int(message.content)
+            move = message.content
             self.target_game.play(move, player=1)
             self.update_display()
         elif message.command == "PLAYER2_MOVE":
-            move = int(message.content)
+            move = message.content
             self.target_game.play(move, player=2)
             self.update_display()
         elif message.command == "SET_USER_NAMES":
@@ -155,12 +156,12 @@ class TurnBasedGameClient(Screen):
     def cell_clicked(self, button):
         #print(button.id)
         if self.play_turn:
-            move = int(button.id)
+            move = button.coords
             if not self.target_game.is_valid_play(move, player=self.player_id):
                 return
             
             self.play_turn = False
-            message = NetworkMessage(self.target_address, "MOVE", button.id)
+            message = NetworkMessage(self.target_address, "MOVE", move)
             self.network_interface.send(message)
     
     def update_display(self):

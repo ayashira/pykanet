@@ -39,14 +39,12 @@ class Reversi():
             return "X"
     
     def is_valid_play(self, move, player):
-        x = move // self.rows()
-        y = move % self.cols()
+        x, y  = move
         return len(self.__flip_discs(x, y, player)) > 0
     
     #update the board with the move from a player
     def play(self, move, player):
-        x = move // self.rows()
-        y = move % self.cols()
+        x, y = move
         fd = self.__flip_discs(x, y, player)
         if len(fd)>0:
             self.board[x][y] = player

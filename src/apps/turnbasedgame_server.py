@@ -46,7 +46,7 @@ class TurnBasedGameServer():
         
         if message.command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
-                move = int(message.content)
+                move = message.content
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     #move not valid, don't do anything. TODO : request a move again
                     return
@@ -58,7 +58,7 @@ class TurnBasedGameServer():
                 else:
                     command = "PLAYER2_MOVE"
                 
-                message = NetworkMessage(self.network_path, command, str(move))
+                message = NetworkMessage(self.network_path, command, move)
                 for client in self.clients:
                     client.send_message(message)
                 
