@@ -108,7 +108,7 @@ class TurnBasedGameServer():
             self.opp_player_id = 1
             
             # to determine first player at random
-            first_player = random.randrange(1)
+            first_player = random.randrange(2)
             second_player = 1 if first_player == 0 else 0
 
             self.clients = self.clients[::-1] if first_player == 1 else self.clients
