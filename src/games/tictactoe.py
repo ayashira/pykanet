@@ -39,15 +39,13 @@ class TicTacToe():
     
     #a move by a player is valid if the cell is empty
     def is_valid_play(self, move, player):
-        x = move // 3
-        y = move % 3
+        x, y = move
         return self.board[x][y] == 0
     
     #update the board with the move from a player
     def play(self, move, player):
-        row = move // 3
-        col = move % 3
-        self.board[row][col] = player
+        x, y = move
+        self.board[x][y] = player
         
         #update the current_player
         self.current_player = 2 if self.current_player == 1 else 1

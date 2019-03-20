@@ -46,7 +46,7 @@ class TurnBasedGameServer():
         
         if message.command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
-                move = int(message.content)
+                move = message.content
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     #move not valid, don't do anything. TODO : request a move again
                     return
@@ -58,7 +58,7 @@ class TurnBasedGameServer():
                 else:
                     command = "PLAYER2_MOVE"
                 
-                message = NetworkMessage(self.network_path, command, str(move))
+                message = NetworkMessage(self.network_path, command, move)
                 for client in self.clients:
                     client.send_message(message)
                 
@@ -66,7 +66,7 @@ class TurnBasedGameServer():
                 winner = self.target_game.winner()
                 if winner != -1:
                     command = "GAME_FINISHED"
-                    message = NetworkMessage(self.network_path, command, str(winner))
+                    message = NetworkMessage(self.network_path, command, winner)
                     for client in self.clients:
                         client.send_message(message)
                         
@@ -108,20 +108,21 @@ class TurnBasedGameServer():
             self.opp_player_id = 1
             
             # to determine first player at random
-            first_player = random.randrange(1)
+            first_player = random.randrange(2)
             second_player = 1 if first_player == 0 else 0
+            
+            #change the order of the clients if second player was chosen to play first
+            if first_player == 1:
+                self.clients = self.clients[::-1]
 
-            self.clients = self.clients[::-1] if first_player == 1 else self.clients
-
-            username = [self.clients[idx].username for idx in range(2)]
-
+            usernames = [self.clients[idx].username for idx in range(2)]
 
             message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "1")
             self.clients[0].send_message(message)
             message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
             self.clients[self.current_player_id].send_message(message)
-            # pass the username on to client
-            message = NetworkMessage(self.network_path, "SET_USER_NAME", username)
+            # pass the usernames on to client
+            message = NetworkMessage(self.network_path, "SET_USER_NAMES", usernames)
             self.clients[self.current_player_id].send_message(message)
             
             message = NetworkMessage(self.network_path, "SET_PLAYER_ID", "2")
@@ -129,7 +130,7 @@ class TurnBasedGameServer():
             message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
             self.clients[self.opp_player_id].send_message(message)
             
-            message = NetworkMessage(self.network_path, "SET_USER_NAME", username[::-1])
+            message = NetworkMessage(self.network_path, "SET_USER_NAMES", usernames[::-1])
             self.clients[self.opp_player_id].send_message(message)
     
     #called when a client connection is lost
