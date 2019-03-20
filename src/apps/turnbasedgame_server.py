@@ -66,7 +66,7 @@ class TurnBasedGameServer():
                 winner = self.target_game.winner()
                 if winner != -1:
                     command = "GAME_FINISHED"
-                    message = NetworkMessage(self.network_path, command, str(winner))
+                    message = NetworkMessage(self.network_path, command, winner)
                     for client in self.clients:
                         client.send_message(message)
                         

@@ -139,7 +139,7 @@ class TurnBasedGameClient(Screen):
             self.ids["opp_user_label"].text = self.opp_user_name + " : " + user_text[1]
         elif message.command == "GAME_FINISHED":
             self.ids["state_label"].text = "Game finished"
-            winner = int(message.content)
+            winner = message.content
             
             if winner == 0:
                 win_result = "Draw"
