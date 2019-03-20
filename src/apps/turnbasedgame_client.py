@@ -17,22 +17,38 @@ from apps.turnbasedgame_list import TurnBasedGameList
 
 Builder.load_string('''
 <TurnBasedGameClient>:
-    BoxLayout:
-        orientation: "vertical"
+    FloatLayout:
         size: root.size
-    
-        GridLayout:
-            id: board_grid
-            size_hint_y: 1
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: None, None
+            height:self.minimum_height
+            width:self.minimum_width
+            pos_hint:{'top':1, 'center_x': 0.5}
+            spacing: 5
+            Label:
+                id: opp_user_label
+                size_hint: None, None
+                pos_hint:{'left':1}
+                size: self.texture_size
+            GridLayout:
+                id: board_grid
+                size_hint: None, None
+                height:self.minimum_height
+                width:self.minimum_width
+                
 
+            Label:
+                id: user_label
+                size_hint: None, None
+                size: self.texture_size
+                pos_hint:{'left':1}
 
-        Label:
-            id: state_label
-            size_hint_y: 0.1
-
-        Label:
-            id: user_label
-            size_hint_y: 0.1
+            Label:
+                id: state_label
+                size_hint: None, None
+                size: self.texture_size 
+                pos_hint:{'center_x': 0.5}
 ''')
 
 
@@ -53,8 +69,8 @@ class TurnBasedGameClient(Screen):
         self.update_display()
         
         self.ids["state_label"].text = "Waiting opponent"
-
-        self.ids["user_label"].text = ""
+        self.ids["user_label"].text = " "
+        self.ids["opp_user_label"].text = " "
         
         #game state
         self.play_turn = False
@@ -63,6 +79,7 @@ class TurnBasedGameClient(Screen):
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
 
         self.user_name = ""
+        self.opp_user_name = ""
     
     def create_grid(self):
         #remove all existing buttons (current client on_enter() can be called multiple times)
@@ -100,8 +117,12 @@ class TurnBasedGameClient(Screen):
         elif message.command == "REQUEST_MOVE":
             self.play_turn = True
             self.ids["state_label"].text = "Your turn"
+            self.ids["user_label"].bold = True
+            self.ids["opp_user_label"].bold = False
         elif message.command == "WAIT_OPP_MOVE":
             self.ids["state_label"].text = "Opponent turn"
+            self.ids["user_label"].bold = False
+            self.ids["opp_user_label"].bold = True
         elif message.command == "PLAYER1_MOVE":
             move = int(message.content)
             self.target_game.play(move, player=1)
@@ -111,9 +132,10 @@ class TurnBasedGameClient(Screen):
             self.target_game.play(move, player=2)
             self.update_display()
         elif message.command == "SET_USER_NAME":
-            self.user_name = message.content
-            user_text = "O" if self.player_id == 1 else "x"
-            self.ids["user_label"].text = self.user_name +  " : " + user_text 
+            self.user_name, self.opp_user_name = message.content
+            user_text = ("O", "x") if self.player_id == 1 else ("x", "O")
+            self.ids["user_label"].text = self.user_name +  " : " + user_text[0]
+            self.ids["opp_user_label"].text = self.opp_user_name + " : " + user_text[1]
         elif message.command == "GAME_FINISHED":
             self.ids["state_label"].text = "Game finished"
             winner = int(message.content)
