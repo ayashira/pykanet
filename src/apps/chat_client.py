@@ -7,7 +7,7 @@ from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-from widgets.custom_labels import CustomLabel, format_links
+from widgets.custom_labels import CustomLabel, FitTextRoundedLabel, format_links
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
 from kivy.uix.scrollview import ScrollView
@@ -138,11 +138,10 @@ class ChatClient(Screen):
             msg_local_time = convert_utc_to_local(msg_time)
             if self.last_msg_date is None or \
                msg_local_time[:10] != self.last_msg_date[:10]:
-                day_label = CustomLabel()
-                day_label.ids["text_label"].text = "[color=000000]" + msg_local_time[5:10] + "[/color]"
+                day_label = FitTextRoundedLabel()
+                day_label.text = "[color=000000]" + msg_local_time[5:10] + "[/color]"
                 day_label.bcolor = [0.8,1,0.8,1]
                 day_label.pos_hint = {'center_x': 0.5}
-                day_label.size_hint_x = 0.2
                 self.ids["main_view"].add_widget(day_label)
             self.last_msg_date = msg_local_time
         

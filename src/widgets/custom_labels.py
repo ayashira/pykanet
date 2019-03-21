@@ -1,3 +1,29 @@
+'''
+    Custom labels to define kivy interfaces more easily
+   
+    LinkLabel:
+        - clickable links
+   
+    RoundedLabel: 
+        - clickable links
+        - rounded rectangle background   
+    
+    FitTextRoundedLabel:
+        - clickable links
+        - rounded rectangle background
+        - label size fit to text (intended for one-line short text)
+    
+    ScrollableLabel:
+        - clickable links
+        - rectangle background
+        - scrollable (intended for large multi-line text)
+    
+    CustomLabel:
+        - clickable links
+        - rounded rectangle background
+        - decoration text above the label
+'''
+
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 from kivy.properties import StringProperty, ListProperty
@@ -45,6 +71,33 @@ class LinkLabel(Label):
     def on_link_clicked(self, link):
         pass
 
+
+Builder.load_string('''
+<RoundedLabel>:
+    padding: [7, 7]
+    
+    canvas.before:
+        Color:
+            rgba: root.bcolor
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+''')
+    
+class RoundedLabel(LinkLabel):     
+    bcolor = ListProperty([1,1,1,1])
+
+
+Builder.load_string('''
+<FitTextRoundedLabel>:
+    size_hint: None, None
+    size: self.texture_size
+''')
+
+class FitTextRoundedLabel(RoundedLabel):
+    pass
+
+
 Builder.load_string('''
 <ScrollableLabel>:
     scroll_y:0
@@ -89,19 +142,13 @@ Builder.load_string('''
         markup:True
         text: ""
         pos_hint: {'left': 1}
-    LinkLabel:
+    RoundedLabel:
         id:text_label
+        bcolor: root.bcolor
         size_hint_y: None
         height: self.texture_size[1]
         text_size: self.width, None
-        padding: [7, 7]
         on_link_clicked: root.dispatch(args[1])
-        canvas.before:
-            Color:
-                rgba: root.bcolor
-            RoundedRectangle:
-                pos: self.pos
-                size: self.size
 ''')
 
 #default text to None, default background to white
