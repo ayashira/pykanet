@@ -19,19 +19,18 @@ echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
 echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
 echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\n  eval "$(pyenv virtualenv-init -)"\nfi' >> ~/.bashrc
 
-==== xproject setup (local user) ===
+==== pykanet setup (local user) ===
 
-git clone https://github.com/ZiP013/xproject.git
+git clone https://github.com/pykanet/pykanet.git
 
 pyenv install 3.7.0
-pyenv virtualenv 3.7.0 xprojectenv
-cd xproject
-pyenv local xprojectenv
+pyenv virtualenv 3.7.0 pykanetenv
+cd pykanet
+pyenv local pykanetenv
 
 pip install twisted
 
 ===== launching the server (local user) ====
 
-cd xproject/src
-nohup python test_server.py &
-
+cd pykanet/src
+nohup python main_server.py &
