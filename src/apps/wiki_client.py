@@ -8,7 +8,7 @@ from kivy.properties import StringProperty
 from kivy.lang import Builder
 from kivy.properties import BooleanProperty
 
-from widgets.scrollable_label import ScrollableLabel
+from widgets.custom_labels import ScrollableLabel
 
 Builder.load_string('''
 <WikiClient>:

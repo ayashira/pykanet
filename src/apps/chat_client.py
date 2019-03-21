@@ -7,7 +7,7 @@ from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-from widgets.scrollable_label import CustomLabel, format_links
+from widgets.custom_labels import CustomLabel, format_links
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
 from kivy.uix.scrollview import ScrollView
