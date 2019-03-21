@@ -8,7 +8,7 @@ from kivy.properties import StringProperty
 from kivy.lang import Builder
 from kivy.properties import BooleanProperty
 
-from widgets.custom_labels import ScrollableLabel
+from widgets.custom_labels import ScrollableLabel, format_wiki_syntax
 
 Builder.load_string('''
 <WikiClient>:
@@ -112,7 +112,7 @@ class WikiClient(Screen):
         self.network_interface.send(message)
     
     def update_text(self, msg):
-        formatted_msg = self.ids["label"].format_wiki_syntax(msg)
+        formatted_msg = format_wiki_syntax(msg)
         
         #black color for main text
         text_color_str = "000000"

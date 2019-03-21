@@ -8,8 +8,21 @@ from kivy.uix.boxlayout import BoxLayout
 #for regular expressions
 import re
 
-#if a [ref] [/ref] link is clicked in the label, on_ref_press is called
-# and we open the user default webbrowser with the ref content 
+#format the links in some text string, with the markup language of kivy
+def format_links(text_str):
+    #use a regular expression to add kivy color and ref markup around web addresses
+    text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
+    return text_str
+
+#format the wiki syntax to kivy markup language
+def format_wiki_syntax(text_str):
+    #use a regular expression to add kivy color and ref markup around web addresses
+    text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
+    
+    #kivy color and ref markup for [[ ]] links
+    text_str = re.sub(r'\[\[(\S*)\]\]', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
+    
+    return text_str
 
 Builder.load_string('''
 <ScrollableLabel>:
@@ -38,41 +51,17 @@ class ScrollableLabel(ScrollView):
     text = StringProperty('')
     bcolor = ListProperty([1,1,1,1])
     
-    #format the links in some text string, with the markup language of kivy
-    #note: probably not the best place in the code for this function (should be independent of the label object)
-    def format_links(self, text_str):
-        #use a regular expression to add kivy color and ref markup around web addresses
-        text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
-        return text_str
-    
-    #format the wiki syntax to kivy markup language
-    def format_wiki_syntax(self, text_str):
-        #use a regular expression to add kivy color and ref markup around web addresses
-        text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
-        
-        #kivy color and ref markup for [[ ]] links
-        text_str = re.sub(r'\[\[(\S*)\]\]', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
-        
-        return text_str
-        
+    #called when a [ref] [/ref] link is clicked in the label
     def link_clicked(self, link):
         if link.startswith("http"):
             import webbrowser
             webbrowser.open(link)
         else:
             self.dispatch('on_link_clicked', link)
-
+    
     def on_link_clicked(self, link):
         pass
 
-#format the links in some text string, with the markup language of kivy
-#TODO : code redundancy with ScrollableLabel
-def format_links(text_str):
-    #use a regular expression to add kivy color and ref markup around web addresses
-    text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
-    return text_str
-
-    
 Builder.load_string('''
 <CustomLabel>:
     size_hint_x: 0.8
