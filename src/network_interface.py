@@ -11,13 +11,12 @@ class NetworkInterface():
     server_address = "31.192.230.58"
     server_port = 8883
     
-    connection = None
-    data_received_callback = None
+    use_local_host = False
     
     #set localhost as the network address
     #useful for tests on a local machine
     def set_server_to_localhost():
-        NetworkInterface.server_address = "localhost"
+        NetworkInterface.use_local_host = True
     
     def __init__(self, data_received_callback, connection_made_callback):
         self.connect_to_server()
@@ -39,12 +38,16 @@ class NetworkInterface():
         factory.protocol = MessagePassingProtocol
         factory.is_server = False
         factory.network_interface = self
-        reactor.connectTCP(NetworkInterface.server_address, NetworkInterface.server_port, factory)
+        
+        if NetworkInterface.use_local_host:
+            reactor.connectTCP("localhost", NetworkInterface.server_port, factory)
+        else:
+            reactor.connectTCP(NetworkInterface.server_address, NetworkInterface.server_port, factory)
     
     def on_connection(self, connection):
         print("Connected successfully!")
         self.connection = connection
         self.connection_made_callback()
-
+    
     def dataReceived(self, message):
         self.data_received_callback(message)

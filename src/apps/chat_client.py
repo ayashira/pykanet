@@ -7,7 +7,7 @@ from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-from widgets.scrollable_label import ScrollableLabel
+from widgets.custom_labels import TitledLabel, FitTextRoundedLabel
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
 from kivy.uix.scrollview import ScrollView
@@ -35,66 +35,6 @@ def convert_utc_to_local_HM(utc_time):
     local = utc.astimezone(to_zone)
     return local.strftime('%H:%M')
     
-#for regular expressions
-import re
-
-#format the links in some text string, with the markup language of kivy
-#TODO : code redundancy with ScrollableLabel
-def format_links(text_str):
-    #use a regular expression to add kivy color and ref markup around web addresses
-    text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
-    return text_str
-
-    
-Builder.load_string('''
-<CustomLabel>:
-    size_hint_x: 0.8
-    size_hint_y: None
-    height: self.minimum_height
-    orientation: "vertical"
-    
-    Label:
-        id:minor_label
-        size_hint: None, None
-        size: self.texture_size
-        markup:True
-        text: ""
-        pos_hint: {'left': 1}
-    Label:
-        id:text_label
-        size_hint_y: None
-        height: self.texture_size[1]
-        text_size: self.width, None
-        padding: [7, 7]
-        markup:True
-        on_ref_press: root.link_clicked(args[1])
-        canvas.before:
-            Color:
-                rgba: root.bcolor
-            RoundedRectangle:
-                pos: self.pos
-                size: self.size
-''')
-
-#default text to None, default background to white
-class CustomLabel(BoxLayout):
-    
-    #add an event triggered when a link other than http link is clicked
-    __events__ = BoxLayout.__events__ + ('on_link_clicked',)
-    
-    bcolor = ListProperty([1,1,1,1])
-    
-    def link_clicked(self, link):
-        if link.startswith("http"):
-            import webbrowser
-            webbrowser.open(link)
-        else:
-            self.dispatch('on_link_clicked', link)
-
-    def on_link_clicked(self, link):
-        pass
-
-
 Builder.load_string('''
 <ChatClient>:
     BoxLayout:
@@ -198,17 +138,16 @@ class ChatClient(Screen):
             msg_local_time = convert_utc_to_local(msg_time)
             if self.last_msg_date is None or \
                msg_local_time[:10] != self.last_msg_date[:10]:
-                day_label = CustomLabel()
-                day_label.ids["text_label"].text = "[color=000000]" + msg_local_time[5:10] + "[/color]"
+                day_label = FitTextRoundedLabel()
+                day_label.set_text(msg_local_time[5:10], text_color="000000")
                 day_label.bcolor = [0.8,1,0.8,1]
                 day_label.pos_hint = {'center_x': 0.5}
-                day_label.size_hint_x = 0.2
                 self.ids["main_view"].add_widget(day_label)
             self.last_msg_date = msg_local_time
         
         #main message label
-        label = CustomLabel()
-        label.ids["text_label"].text = "[color=" + text_color_str + "]" + format_links(msg) + "[/color]"
+        label = TitledLabel()
+        label.set_text(msg, text_color=text_color_str)
         if username == MainUser.username:
             #for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
@@ -216,14 +155,14 @@ class ChatClient(Screen):
         
         #minor label with time and user name
         if msg_time is not None:
+            title_txt = ""
             if username == MainUser.username:
-                #don't display name and aligned on right
-                label.ids["minor_label"].pos_hint = {'right': 1}
+                #don't display username and aligned on right
+                label.title_to_right()
             elif username is not None:
-                label.ids["minor_label"].text =  username + "  " 
-            else:
-                label.ids["minor_label"].text = ""
-            label.ids["minor_label"].text += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+                title_txt =  username + "  " 
+            title_txt += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+            label.set_title_text(title_txt)
         
         self.ids["main_view"].add_widget(label)
         
