@@ -3,14 +3,14 @@
    
     LinkLabel:
         - clickable links
-   
-    RoundedLabel: 
-        - clickable links
+        - add_text(text, text_color)
+    
+    RoundedLabel:
+        - inherits LinkLabel
         - rounded rectangle background   
     
     FitTextRoundedLabel:
-        - clickable links
-        - rounded rectangle background
+        - inherits RoundedLabel
         - label size fit to text (intended for one-line short text)
     
     ScrollableLabel:
@@ -53,12 +53,19 @@ def format_wiki_syntax(text_str):
 Builder.load_string('''
 <LinkLabel>:
     markup: True
+    text: ""
     on_ref_press: self.link_clicked(args[1])
 ''')
     
 class LinkLabel(Label):    
     #add an event triggered when a link other than http link is clicked
     __events__ = Label.__events__ + ['on_link_clicked']
+    
+    def add_text(self, text, text_color=None):
+        if text_color:
+            self.text = self.text + "[color=" + text_color + "]" + format_links(text) + "[/color]"
+        else:
+            self.text = self.text + format_links(text)
     
     #called when a [ref] [/ref] link is clicked in the label
     def link_clicked(self, link):
