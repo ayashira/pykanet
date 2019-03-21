@@ -130,7 +130,13 @@ class ScrollableLabel(ScrollView):
     
     text = StringProperty('')
     bcolor = ListProperty([1,1,1,1])
-
+    
+    def set_wiki_text(self, text, text_color=None):
+        if text_color:
+            self.text = "[color=" + text_color + "]" + format_wiki_syntax(text) + "[/color]"
+        else:
+            self.text = format_wiki_syntax(text)
+    
     def on_link_clicked(self, link):
         pass
 
