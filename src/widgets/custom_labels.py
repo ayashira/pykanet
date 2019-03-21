@@ -3,7 +3,7 @@
    
     LinkLabel:
         - clickable links
-        - add_text(text, text_color)
+        - set_text(text, text_color)
     
     RoundedLabel:
         - inherits LinkLabel
@@ -17,11 +17,12 @@
         - clickable links
         - rectangle background
         - scrollable (intended for large multi-line text)
+        - set_wiki_text(text, text_color)
     
-    CustomLabel:
+    TitledLabel:
         - clickable links
         - rounded rectangle background
-        - decoration text above the label
+        - title text above the label
 '''
 
 from kivy.uix.label import Label
@@ -61,7 +62,7 @@ class LinkLabel(Label):
     #add an event triggered when a link other than http link is clicked
     __events__ = Label.__events__ + ['on_link_clicked']
     
-    def add_text(self, text, text_color=None):
+    def set_text(self, text, text_color=None):
         if text_color:
             self.text = self.text + "[color=" + text_color + "]" + format_links(text) + "[/color]"
         else:
@@ -142,14 +143,14 @@ class ScrollableLabel(ScrollView):
 
 
 Builder.load_string('''
-<CustomLabel>:
+<TitledLabel>:
     size_hint_x: 0.8
     size_hint_y: None
     height: self.minimum_height
     orientation: "vertical"
     
-    Label:
-        id:minor_label
+    LinkLabel:
+        id:title_label
         size_hint: None, None
         size: self.texture_size
         markup:True
@@ -165,12 +166,21 @@ Builder.load_string('''
 ''')
 
 #default text to None, default background to white
-class CustomLabel(BoxLayout):
+class TitledLabel(BoxLayout):
     
     #add an event triggered when a link other than http link is clicked
     __events__ = BoxLayout.__events__ + ('on_link_clicked',)
     
     bcolor = ListProperty([1,1,1,1])
+
+    def set_text(self, text, text_color=None):
+        self.ids["text_label"].set_text(text, text_color)
+    
+    def set_title_text(self, text, text_color=None):
+        self.ids["title_label"].set_text(text, text_color)
+    
+    def title_to_right(self):
+        self.ids["title_label"].pos_hint = {'right': 1}
     
     def on_link_clicked(self, link):
         pass

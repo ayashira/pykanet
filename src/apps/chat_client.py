@@ -7,7 +7,7 @@ from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-from widgets.custom_labels import CustomLabel, FitTextRoundedLabel
+from widgets.custom_labels import TitledLabel, FitTextRoundedLabel
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
 from kivy.uix.scrollview import ScrollView
@@ -139,15 +139,15 @@ class ChatClient(Screen):
             if self.last_msg_date is None or \
                msg_local_time[:10] != self.last_msg_date[:10]:
                 day_label = FitTextRoundedLabel()
-                day_label.add_text(msg_local_time[5:10], text_color="000000")
+                day_label.set_text(msg_local_time[5:10], text_color="000000")
                 day_label.bcolor = [0.8,1,0.8,1]
                 day_label.pos_hint = {'center_x': 0.5}
                 self.ids["main_view"].add_widget(day_label)
             self.last_msg_date = msg_local_time
         
         #main message label
-        label = CustomLabel()
-        label.ids["text_label"].add_text(msg, text_color=text_color_str)
+        label = TitledLabel()
+        label.set_text(msg, text_color=text_color_str)
         if username == MainUser.username:
             #for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
@@ -155,14 +155,14 @@ class ChatClient(Screen):
         
         #minor label with time and user name
         if msg_time is not None:
+            title_txt = ""
             if username == MainUser.username:
-                #don't display name and aligned on right
-                label.ids["minor_label"].pos_hint = {'right': 1}
+                #don't display username and aligned on right
+                label.title_to_right()
             elif username is not None:
-                label.ids["minor_label"].text =  username + "  " 
-            else:
-                label.ids["minor_label"].text = ""
-            label.ids["minor_label"].text += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+                title_txt =  username + "  " 
+            title_txt += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+            label.set_title_text(title_txt)
         
         self.ids["main_view"].add_widget(label)
         
