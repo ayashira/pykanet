@@ -25,15 +25,35 @@ def format_wiki_syntax(text_str):
     return text_str
 
 Builder.load_string('''
+<LinkLabel>:
+    markup: True
+    on_ref_press: self.link_clicked(args[1])
+''')
+    
+class LinkLabel(Label):    
+    #add an event triggered when a link other than http link is clicked
+    __events__ = Label.__events__ + ['on_link_clicked']
+    
+    #called when a [ref] [/ref] link is clicked in the label
+    def link_clicked(self, link):
+        if link.startswith("http"):
+            import webbrowser
+            webbrowser.open(link)
+        else:
+            self.dispatch('on_link_clicked', link)
+    
+    def on_link_clicked(self, link):
+        pass
+
+Builder.load_string('''
 <ScrollableLabel>:
     scroll_y:0
-    Label:
+    LinkLabel:
         size_hint_y: None
         height: max(self.texture_size[1], root.size[1])
         text_size: self.width, None
         text: root.text
-        markup:True
-        on_ref_press: root.link_clicked(args[1])
+        on_link_clicked: root.dispatch('on_link_clicked', args[1])
         canvas.before:
             Color:
                 rgba: root.bcolor
@@ -50,17 +70,10 @@ class ScrollableLabel(ScrollView):
     
     text = StringProperty('')
     bcolor = ListProperty([1,1,1,1])
-    
-    #called when a [ref] [/ref] link is clicked in the label
-    def link_clicked(self, link):
-        if link.startswith("http"):
-            import webbrowser
-            webbrowser.open(link)
-        else:
-            self.dispatch('on_link_clicked', link)
-    
+
     def on_link_clicked(self, link):
         pass
+
 
 Builder.load_string('''
 <CustomLabel>:
@@ -76,14 +89,13 @@ Builder.load_string('''
         markup:True
         text: ""
         pos_hint: {'left': 1}
-    Label:
+    LinkLabel:
         id:text_label
         size_hint_y: None
         height: self.texture_size[1]
         text_size: self.width, None
         padding: [7, 7]
-        markup:True
-        on_ref_press: root.link_clicked(args[1])
+        on_link_clicked: root.dispatch(args[1])
         canvas.before:
             Color:
                 rgba: root.bcolor
@@ -100,12 +112,5 @@ class CustomLabel(BoxLayout):
     
     bcolor = ListProperty([1,1,1,1])
     
-    def link_clicked(self, link):
-        if link.startswith("http"):
-            import webbrowser
-            webbrowser.open(link)
-        else:
-            self.dispatch('on_link_clicked', link)
-
     def on_link_clicked(self, link):
         pass
