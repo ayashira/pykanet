@@ -1,11 +1,12 @@
-# Server node implementing wiki pages
-
 from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager
 import datetime
 
 class WikiServer():
+    '''
+        Wiki server implementation
+    '''
     
     def __init__(self, network_path):
         self.network_path = network_path

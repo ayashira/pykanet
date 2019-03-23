@@ -1,3 +1,6 @@
+'''
+    Main Screen of the client interface
+'''
 
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout

@@ -1,5 +1,3 @@
-# Server node implementing a chat
-
 from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager

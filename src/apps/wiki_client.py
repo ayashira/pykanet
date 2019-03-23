@@ -4,9 +4,8 @@ from network_message import NetworkMessage
 from kivy.uix.boxlayout import BoxLayout
 
 from kivy.uix.screenmanager import Screen, NoTransition
-from kivy.properties import StringProperty
+from kivy.properties import BooleanProperty, StringProperty
 from kivy.lang import Builder
-from kivy.properties import BooleanProperty
 
 from widgets.custom_labels import ScrollableLabel
 

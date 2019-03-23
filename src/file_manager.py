@@ -1,12 +1,14 @@
+'''
+    Interface to the host file system
+    All "file accesses" should be done through FileManager
+    It will allow in the future to cache data, and also reorganize it and store it efficiently 
+'''
 
 import hashlib
 import os
 
 from serialization_utils import Serialize
 
-# Interface to the host file system
-# All "file accesses" should be done through this class
-# It will allow in the future to cache data, and also reorganize it and store it efficiently 
 class FileManager():
     
     VERSION = 0

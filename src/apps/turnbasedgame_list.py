@@ -1,4 +1,7 @@
-#All turn-based games should be added here to link "game names" and classes
+'''
+    Class to create a game object from the game name
+    All game names/classes should be added here 
+'''
 
 from games.tictactoe import TicTacToe
 from games.connectfour import ConnectFour
