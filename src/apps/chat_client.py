@@ -57,10 +57,10 @@ Builder.load_string('''
 
 class ChatClient(Screen):
     
-    #kivy string property indicating the network address of the chat
+    # kivy string property indicating the network address of the chat
     chat_address = StringProperty()
     
-    #called by Kivy when the screen is entered (displayed)
+    # called by Kivy when the screen is entered (displayed)
     def on_enter(self):
         #self.ids["textbox"].font_name=utf8_font_path
         self.ids["textbox"].focus = True
@@ -68,10 +68,10 @@ class ChatClient(Screen):
         self.ids["textbox"].bind(on_text_validate=self.send_message)
         self.ids["textbox"].bind(on_key_pressed=self.key_pressed_event)
         
-        #indicates if the user is typing or not
+        # indicates if the user is typing or not
         self.isTyping = False
         
-        #current typing status of all clients
+        # current typing status of all clients
         self.current_typing_msg = ""
         self.typing_widget = None
         
@@ -80,7 +80,7 @@ class ChatClient(Screen):
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def connection_made(self):
-        #connection is established, connect to the target address
+        # connection is established, connect to the target address
         message = NetworkMessage(self.chat_address, "ENTER", "")
         self.network_interface.send(message)
     
@@ -109,12 +109,12 @@ class ChatClient(Screen):
             self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
         elif message.command == "NOTIFICATION_NEW_CLIENT":
             item = message.content
-            #red for notifications
+            # red for notifications
             text_color_str = "ff0000"
             self.print_message("A new guest is here \^_^/ : " + item[1], text_color_str, msg_time=item[0])
         elif message.command == "NOTIFICATION_CLIENT_LIST":
-            #we receive a list [time, username, otheruser1, otheruser2, ...]
-            #red for notifications
+            # we receive a list [time, username, otheruser1, otheruser2, ...]
+            # red for notifications
             text_color_str = "ff0000"
             text = ""
             if len(message.content) > 2:
@@ -126,14 +126,14 @@ class ChatClient(Screen):
             text += "\nYou are guest : " + message.content[1]
             self.print_message(text, text_color_str, msg_time=message.content[0])
         elif message.command == "NOTIFICATION_CLIENT_LEFT":
-            #red for notifications
+            # red for notifications
             text_color_str = "ff0000"
             self.print_message("Chat left by " + message.content[1], text_color_str, msg_time=message.content[0])
     
     def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False):
         self.remove_typing_message()
         
-        #insert a label with the date if day of new message is different from last message
+        # Insert a label with the date if day of new message is different from last message
         if msg_time != None:
             msg_local_time = convert_utc_to_local(msg_time)
             if self.last_msg_date is None or \
@@ -145,19 +145,19 @@ class ChatClient(Screen):
                 self.ids["main_view"].add_widget(day_label)
             self.last_msg_date = msg_local_time
         
-        #main message label
+        # main message label
         label = TitledLabel()
         label.set_text(msg, text_color=text_color_str)
         if username == MainUser.username:
-            #for message from the user itself, blue background and label on the right
+            # for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
             label.pos_hint = {'right': 1}
         
-        #minor label with time and user name
+        # minor label with time and user name
         if msg_time is not None:
             title_txt = ""
             if username == MainUser.username:
-                #don't display username and aligned on right
+                # don't display username and aligned on right
                 label.title_to_right()
             elif username is not None:
                 title_txt =  username + "  " 
@@ -170,8 +170,8 @@ class ChatClient(Screen):
             self.typing_widget = label
     
     #============= typing status ===========================
-    #typing status is done by storing the current state of typing status
-    #when the status changes, we remove the current status from the label, and display the new one (if any)
+    # Typing status is done by storing the current state of typing status
+    # When the status changes, we remove the current status from the label, and display the new one (if any)
     def add_typing_message(self, msg):
         text_color_str = "0000ff"
         if self.current_typing_msg != "":
@@ -185,9 +185,9 @@ class ChatClient(Screen):
             self.typing_widget = None
             self.current_typing_msg = ""
     
-    #called when a key is pressed in the input
+    # called when a key is pressed in the input
     def key_pressed_event(self, *args):
-        #if the user was not already typing, send a TYPING message to the server
+        # if the user was not already typing, send a TYPING message to the server
         if not self.isTyping:
             self.isTyping = True
             message = NetworkMessage(self.chat_address, "IS_TYPING", "")
