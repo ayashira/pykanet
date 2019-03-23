@@ -1,6 +1,6 @@
 '''
     Server main file
-    Use Twisted library, but not Kivy library
+    Server code is dependent on Twisted library, but not on Kivy library
 '''
 
 from twisted.internet import reactor

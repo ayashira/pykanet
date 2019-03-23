@@ -14,6 +14,8 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
 from kivy.properties import StringProperty, ListProperty
 
+from kivy.clock import Clock
+
 from datetime import datetime
 from dateutil import tz
 
@@ -68,6 +70,11 @@ class ChatClient(Screen):
         self.ids["textbox"].bind(on_text_validate=self.send_message)
         self.ids["textbox"].bind(on_key_pressed=self.key_pressed_event)
         
+        # remove existing widgets when the screen is entered
+        # note : could be improved later
+        self.ids["main_view"].clear_widgets()
+        self.scroll_y = 0
+        
         # indicates if the user is typing or not
         self.isTyping = False
         
@@ -75,7 +82,11 @@ class ChatClient(Screen):
         self.current_typing_msg = ""
         self.typing_widget = None
         
-        self.last_msg_date = None
+        self.top_date = None
+        self.bottom_date = None
+        
+        #current content
+        self.content = []
         
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
@@ -98,13 +109,13 @@ class ChatClient(Screen):
             self.add_typing_message(message.content)
             return
         
-        #TODO: clean up code below
         if message.command == "INIT_CONTENT":
-            for item in message.content:
-                text_color_str = "000000"
-                self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
+            self.content = message.content
+            self.item_add_last = len(self.content)
+            self.init_displayed_content()
         elif message.command == "APPEND":
             item = message.content
+            self.content.append(item)
             text_color_str = "000000"
             self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1])
         elif message.command == "NOTIFICATION_NEW_CLIENT":
@@ -130,20 +141,63 @@ class ChatClient(Screen):
             text_color_str = "ff0000"
             self.print_message("Chat left by " + message.content[1], text_color_str, msg_time=message.content[0])
     
-    def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False):
+    # Init the displayed content
+    # For a more reactive initialization, messages are added in small batches
+    # It allows Kivy to refresh the screen before all messages are added
+    # Batches of messages are added from the end of the messages (so that the last messages are immediately visible)
+    # In the future, we could do some more advanced processing with kivy RecycleView
+    # dt argument not used here. Set to the delta-time by Kivy.
+    def init_displayed_content(self, dt = 0):
+        # stop the initialization when all messages have been added
+        if self.item_add_last == 0:
+            return
+        
+        for _ in range(20):
+            self.item_add_last -= 1
+            item = self.content[self.item_add_last]
+            text_color_str = "000000"
+            self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_pos = 'top')        
+            
+            # after all message have been added, insert the first date manually 
+            if self.item_add_last == 0:
+                if self.top_date is not None:
+                    self.insert_date_label(date = self.top_date[5:10], insert_pos = 'top')
+                break
+        
+        #schedule initialization of the next batch of messages
+        Clock.schedule_once(self.init_displayed_content)
+    
+    def insert_date_label(self, date, insert_pos='bottom'):
+        day_label = FitTextRoundedLabel()
+        day_label.set_text(date, text_color="000000")
+        day_label.bcolor = [0.8,1,0.8,1]
+        day_label.pos_hint = {'center_x': 0.5}
+        
+        insert_idx = 0 if insert_pos == 'bottom' else len(self.ids["main_view"].children)
+        self.ids["main_view"].add_widget(day_label, insert_idx)
+    
+    def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False, insert_pos='bottom'):
         self.remove_typing_message()
         
-        # Insert a label with the date if day of new message is different from last message
+        # Insert a date label when the date between two messages is different
         if msg_time != None:
             msg_local_time = convert_utc_to_local(msg_time)
-            if self.last_msg_date is None or \
-               msg_local_time[:10] != self.last_msg_date[:10]:
-                day_label = FitTextRoundedLabel()
-                day_label.set_text(msg_local_time[5:10], text_color="000000")
-                day_label.bcolor = [0.8,1,0.8,1]
-                day_label.pos_hint = {'center_x': 0.5}
-                self.ids["main_view"].add_widget(day_label)
-            self.last_msg_date = msg_local_time
+            
+            # case of first inserted message, initialize both top and last date
+            if self.top_date is None or self.bottom_date is None:
+                self.top_date = msg_local_time
+                self.bottom_date = msg_local_time
+            
+            if insert_pos == 'bottom':
+                # compare the date with bottom msg date
+                if msg_local_time[:10] != self.bottom_date[:10]:
+                    self.insert_date_label(date = msg_local_time[5:10], insert_pos = insert_pos)
+                self.bottom_date = msg_local_time
+            elif insert_pos == 'top':
+                # compare the date with top msg date
+                if msg_local_time[:10] != self.top_date[:10]:
+                    self.insert_date_label(date = self.top_date[5:10], insert_pos = insert_pos)
+                self.top_date = msg_local_time
         
         # main message label
         label = TitledLabel()
@@ -164,10 +218,12 @@ class ChatClient(Screen):
             title_txt += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
             label.set_title_text(title_txt)
         
-        self.ids["main_view"].add_widget(label)
+        insert_idx = 0 if insert_pos == 'bottom' else len(self.ids["main_view"].children)
+        self.ids["main_view"].add_widget(label, insert_idx)
         
         if isTyping:
             self.typing_widget = label
+            
     
     #============= typing status ===========================
     # Typing status is done by storing the current state of typing status

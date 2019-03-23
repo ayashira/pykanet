@@ -59,8 +59,16 @@ Builder.load_string('''
 ''')
     
 class LinkLabel(Label):    
-    # add an event triggered when a link other than http link is clicked
-    __events__ = Label.__events__ + ['on_link_clicked']
+    '''
+        Link Label : Label with http link and wiki link formatting
+        
+        When an http link is clicked, client default browser is opened.
+        When a wiki link is clicked, a custom event 'on_link_clicked' is triggered.
+    '''
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.register_event_type('on_link_clicked')
     
     def set_text(self, text, text_color=None):
         if text_color:
@@ -126,11 +134,12 @@ Builder.load_string('''
 # default text to "", default background to white
 class ScrollableLabel(ScrollView):
     
-    # add an event triggered when a link other than http link is clicked
-    __events__ = ScrollView.__events__ + ('on_link_clicked',)
-    
     text = StringProperty('')
     bcolor = ListProperty([1,1,1,1])
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.register_event_type('on_link_clicked')
     
     def set_wiki_text(self, text, text_color=None):
         if text_color:
@@ -168,11 +177,12 @@ Builder.load_string('''
 # default text to None, default background to white
 class TitledLabel(BoxLayout):
     
-    # add an event triggered when a link other than http link is clicked
-    __events__ = BoxLayout.__events__ + ('on_link_clicked',)
-    
     bcolor = ListProperty([1,1,1,1])
-
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.register_event_type('on_link_clicked')
+    
     def set_text(self, text, text_color=None):
         self.ids["text_label"].set_text(text, text_color)
     

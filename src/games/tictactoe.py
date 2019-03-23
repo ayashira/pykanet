@@ -1,5 +1,9 @@
 
 class TicTacToe():
+    '''
+        Game of Tic-Tac-Toe
+        rules reference: https://en.wikipedia.org/wiki/Tic-tac-toe
+    '''
     
     # coordinates of the cells for each possible line
     lines = [ [(0,0), (0,1), (0,2)],

@@ -5,13 +5,13 @@ class ShiftEnterTextInput(TextInput):
         TextInput on multiple line with special support of ENTER and SHIFT+ENTER:
         Enter key to validate text (triggers on_text_validate event)
         Shift+Enter key to insert a new line
+        
+        'on_key_pressed' is a custom event triggered when a key is pressed
     '''
     
-    # add an event triggered when any key is pressed
-    __events__ = TextInput.__events__ + ('on_key_pressed',)
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.register_event_type('on_key_pressed')
         self.multiline = True
         
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
