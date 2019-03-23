@@ -82,8 +82,8 @@ class ChatClient(Screen):
         self.current_typing_msg = ""
         self.typing_widget = None
         
-        self.last_msg_date = None
-        self.top_msg_date = None
+        self.top_date = None
+        self.bottom_date = None
         
         #current content
         self.content = []
@@ -160,8 +160,8 @@ class ChatClient(Screen):
         self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_pos = 'top')        
         
         # after all message have been added, insert the first date manually 
-        if self.item_add_last == 0 and self.top_msg_date is not None:
-            self.insert_date_label(date = self.top_msg_date[5:10], insert_pos = 'top')
+        if self.item_add_last == 0 and self.top_date is not None:
+            self.insert_date_label(date = self.top_date[5:10], insert_pos = 'top')
         
         #schedule initialization of the next batch of messages
         Clock.schedule_once(self.init_displayed_content)
@@ -183,20 +183,20 @@ class ChatClient(Screen):
             msg_local_time = convert_utc_to_local(msg_time)
             
             # case of first inserted message, initialize both top and last date
-            if self.top_msg_date is None or self.last_msg_date is None:
-                self.top_msg_date = msg_local_time
-                self.last_msg_date = msg_local_time
+            if self.top_date is None or self.bottom_date is None:
+                self.top_date = msg_local_time
+                self.bottom_date = msg_local_time
             
             if insert_pos == 'bottom':
-                # compare the date with last msg date
-                if msg_local_time[:10] != self.last_msg_date[:10]:
+                # compare the date with bottom msg date
+                if msg_local_time[:10] != self.bottom_date[:10]:
                     self.insert_date_label(date = msg_local_time[5:10], insert_pos = insert_pos)
-                self.last_msg_date = msg_local_time
+                self.bottom_date = msg_local_time
             elif insert_pos == 'top':
                 # compare the date with top msg date
-                if msg_local_time[:10] != self.top_msg_date[:10]:
-                    self.insert_date_label(date = self.top_msg_date[5:10], insert_pos = insert_pos)
-                self.top_msg_date = msg_local_time
+                if msg_local_time[:10] != self.top_date[:10]:
+                    self.insert_date_label(date = self.top_date[5:10], insert_pos = insert_pos)
+                self.top_date = msg_local_time
         
         # main message label
         label = TitledLabel()
