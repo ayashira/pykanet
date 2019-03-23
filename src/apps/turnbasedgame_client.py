@@ -73,7 +73,9 @@ class TurnBasedGameClient(Screen):
         self.play_turn = False
         self.player_id = 0
         
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
+        self.network_interface = NetworkInterface(client = self)
+        message = NetworkMessage(self.target_address, "ENTER", "")
+        self.network_interface.send(message)
 
         self.user_name = ""
         self.opp_user_name = ""
@@ -101,11 +103,6 @@ class TurnBasedGameClient(Screen):
                 button.bind(on_press=self.cell_clicked)
                 self.ids["board_grid"].add_widget(button)
                 self.button_list.append(button)
-        
-    def connection_made(self):
-        # connection is established, connect to the target address
-        message = NetworkMessage(self.target_address, "ENTER", "")
-        self.network_interface.send(message)
     
     def receive_message(self, message):
         if message.command == "SET_PLAYER_ID":

@@ -77,15 +77,11 @@ class WikiClient(Screen):
     def on_enter(self):
         #self.ids["textbox"].font_name=utf8_font_path
         self.ids["textbox"].text_validate_unfocus = False
-        
         self.ids["screen_manager"].transition = NoTransition()
         
         self.current_content = ""
         
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
-    
-    def connection_made(self):
-        # connection is established, read the start address
+        self.network_interface = NetworkInterface(client = self)
         self.read_address(self.target_address)
     
     def send_message(self, *args):

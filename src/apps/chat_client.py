@@ -4,15 +4,13 @@ from network_message import NetworkMessage
 from kivy.uix.boxlayout import BoxLayout
 
 from kivy.uix.screenmanager import Screen, NoTransition
-from kivy.properties import StringProperty
 from kivy.lang import Builder
 
+from widgets.custom_layouts import ScrollableVBoxLayout
 from widgets.custom_labels import TitledLabel, FitTextRoundedLabel
 from widgets.shift_enter_textinput import ShiftEnterTextInput
 
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.label import Label
-from kivy.properties import StringProperty, ListProperty
+from kivy.properties import StringProperty
 
 from kivy.clock import Clock
 
@@ -43,15 +41,8 @@ Builder.load_string('''
         orientation: "vertical"
         size: root.size
         
-        ScrollView:
-            scroll_y:0
-            BoxLayout:
-                orientation: "vertical"
-                size_hint_y: None
-                height: self.minimum_height
-                padding: [12, 0, 12, 0]
-                spacing: 5
-                id:main_view
+        ScrollableVBoxLayout:
+            id:msg_view
         ShiftEnterTextInput:
             id:textbox
             size_hint_y: .1
@@ -72,8 +63,7 @@ class ChatClient(Screen):
         
         # remove existing widgets when the screen is entered
         # note : could be improved later
-        self.ids["main_view"].clear_widgets()
-        self.scroll_y = 0
+        self.ids["msg_view"].clear()
         
         # indicates if the user is typing or not
         self.isTyping = False
@@ -88,10 +78,7 @@ class ChatClient(Screen):
         #current content
         self.content = []
         
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
-    
-    def connection_made(self):
-        # connection is established, connect to the target address
+        self.network_interface = NetworkInterface(client = self)
         message = NetworkMessage(self.chat_address, "ENTER", "")
         self.network_interface.send(message)
     
@@ -171,10 +158,7 @@ class ChatClient(Screen):
         day_label = FitTextRoundedLabel()
         day_label.set_text(date, text_color="000000")
         day_label.bcolor = [0.8,1,0.8,1]
-        day_label.pos_hint = {'center_x': 0.5}
-        
-        insert_idx = 0 if insert_pos == 'bottom' else len(self.ids["main_view"].children)
-        self.ids["main_view"].add_widget(day_label, insert_idx)
+        self.ids["msg_view"].add(day_label, insert_pos, halign = 'center')
     
     def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False, insert_pos='bottom'):
         self.remove_typing_message()
@@ -201,11 +185,14 @@ class ChatClient(Screen):
         
         # main message label
         label = TitledLabel()
+        label.size_hint_x = 0.8
         label.set_text(msg, text_color=text_color_str)
         if username == MainUser.username:
             # for message from the user itself, blue background and label on the right
             label.bcolor = [0.8,0.93,1,1]
-            label.pos_hint = {'right': 1}
+            halign = 'right'
+        else:
+            halign = 'left'
         
         # minor label with time and user name
         if msg_time is not None:
@@ -218,8 +205,7 @@ class ChatClient(Screen):
             title_txt += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
             label.set_title_text(title_txt)
         
-        insert_idx = 0 if insert_pos == 'bottom' else len(self.ids["main_view"].children)
-        self.ids["main_view"].add_widget(label, insert_idx)
+        self.ids["msg_view"].add(label, insert_pos, halign)
         
         if isTyping:
             self.typing_widget = label
@@ -237,7 +223,7 @@ class ChatClient(Screen):
     
     def remove_typing_message(self):
         if not self.typing_widget is None:
-            self.ids["main_view"].remove_widget(self.typing_widget)
+            self.ids["msg_view"].remove(self.typing_widget)
             self.typing_widget = None
             self.current_typing_msg = ""
     

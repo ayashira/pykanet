@@ -20,15 +20,19 @@ class NetworkInterface():
     def set_server_to_localhost():
         NetworkInterface.use_local_host = True
     
-    def __init__(self, data_received_callback, connection_made_callback):
+    def __init__(self, client):
+        self.connection = None
         self.connect_to_server()
-        self.data_received_callback = data_received_callback
-        self.connection_made_callback = connection_made_callback
+        self.pending_message_list = []
+        self.client = client
     
     # send a message (type: NetworkMessage) to the network
     def send(self, message):
         if self.connection:
             self.connection.write(message.to_bytes())
+        else:
+            #wait until the connection is established
+            self.pending_message_list.append(message.to_bytes())
     
     def lose_connection(self):
         if self.connection:
@@ -49,7 +53,11 @@ class NetworkInterface():
     def on_connection(self, connection):
         print("Connected successfully!")
         self.connection = connection
-        self.connection_made_callback()
+        
+        #send all pending messages
+        for msg in self.pending_message_list:
+            self.connection.write(msg)
+        self.pending_message_list = []
     
     def dataReceived(self, message):
-        self.data_received_callback(message)
+        self.client.receive_message(message)
