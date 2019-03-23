@@ -157,57 +157,47 @@ class ChatClient(Screen):
         
         item = self.content[self.item_add_last]
         text_color_str = "000000"
-        self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert = 'top')        
+        self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_pos = 'top')        
         
         # after all message have been added, insert the first date manually 
         if self.item_add_last == 0 and self.top_msg_date is not None:
-            self.insert_date_label(date = self.top_msg_date[5:10], insert = 'top')
+            self.insert_date_label(date = self.top_msg_date[5:10], insert_pos = 'top')
         
         #schedule initialization of the next batch of messages
         Clock.schedule_once(self.init_displayed_content)
     
-    def insert_date_label(self, date, insert='bottom'):
+    def insert_date_label(self, date, insert_pos='bottom'):
         day_label = FitTextRoundedLabel()
         day_label.set_text(date, text_color="000000")
         day_label.bcolor = [0.8,1,0.8,1]
         day_label.pos_hint = {'center_x': 0.5}
         
-        if insert == 'bottom':
-            self.ids["main_view"].add_widget(day_label)
-        else:
-            #insert on top
-            insert_idx = len(self.ids["main_view"].children)
-            self.ids["main_view"].add_widget(day_label, insert_idx)
+        insert_idx = 0 if insert_pos == 'bottom' else len(self.ids["main_view"].children)
+        self.ids["main_view"].add_widget(day_label, insert_idx)
     
-    def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False, insert='bottom'):
+    def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False, insert_pos='bottom'):
         self.remove_typing_message()
         
         # Insert a date label when the date between two messages is different
         if msg_time != None:
             msg_local_time = convert_utc_to_local(msg_time)
             
-            if insert == 'bottom':
-                # compare the date with last msg date
-                if self.last_msg_date is not None \
-                   and msg_local_time[:10] != self.last_msg_date[:10]:
-                    self.insert_date_label(date = msg_local_time[5:10], insert = insert)
-                self.last_msg_date = msg_local_time
-                
-                # case of first inserted message, initialize also the the top date
-                if self.top_msg_date is None:
-                    self.top_msg_date = msg_local_time
-            else:
-                # compare the date with top msg date
-                if self.top_msg_date is not None \
-                   and msg_local_time[:10] != self.top_msg_date[:10]:
-                    self.insert_date_label(date = self.top_msg_date[5:10], insert = insert)                    
+            # case of first inserted message, initialize both top and last date
+            if self.top_msg_date is None or self.last_msg_date is None:
                 self.top_msg_date = msg_local_time
-
-                # case of first inserted message, initialize also the the last date
-                if self.last_msg_date is None:
-                    self.last_msg_date = msg_local_time
-
-                
+                self.last_msg_date = msg_local_time
+            
+            if insert_pos == 'bottom':
+                # compare the date with last msg date
+                if msg_local_time[:10] != self.last_msg_date[:10]:
+                    self.insert_date_label(date = msg_local_time[5:10], insert_pos = insert_pos)
+                self.last_msg_date = msg_local_time
+            elif insert_pos == 'top':
+                # compare the date with top msg date
+                if msg_local_time[:10] != self.top_msg_date[:10]:
+                    self.insert_date_label(date = self.top_msg_date[5:10], insert_pos = insert_pos)
+                self.top_msg_date = msg_local_time
+        
         # main message label
         label = TitledLabel()
         label.set_text(msg, text_color=text_color_str)
@@ -227,11 +217,8 @@ class ChatClient(Screen):
             title_txt += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
             label.set_title_text(title_txt)
         
-        if insert == 'bottom':
-            self.ids["main_view"].add_widget(label)
-        else:
-            insert_idx = len(self.ids["main_view"].children)
-            self.ids["main_view"].add_widget(label, insert_idx)
+        insert_idx = 0 if insert_pos == 'bottom' else len(self.ids["main_view"].children)
+        self.ids["main_view"].add_widget(label, insert_idx)
         
         if isTyping:
             self.typing_widget = label
