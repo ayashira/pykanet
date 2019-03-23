@@ -82,7 +82,7 @@ class WikiClient(Screen):
         
         self.current_content = ""
         
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
+        self.network_interface = NetworkInterface(client = self)
     
     def connection_made(self):
         # connection is established, read the start address

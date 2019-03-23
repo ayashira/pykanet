@@ -73,7 +73,7 @@ class TurnBasedGameClient(Screen):
         self.play_turn = False
         self.player_id = 0
         
-        self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
+        self.network_interface = NetworkInterface(client = self)
 
         self.user_name = ""
         self.opp_user_name = ""
