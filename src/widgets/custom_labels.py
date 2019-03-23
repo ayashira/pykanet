@@ -32,21 +32,21 @@ from kivy.lang import Builder
 
 from kivy.uix.boxlayout import BoxLayout
 
-#for regular expressions
+# for regular expressions
 import re
 
-#format the links in some text string, with the markup language of kivy
+# format the links in some text string, with the markup language of kivy
 def format_links(text_str):
-    #use a regular expression to add kivy color and ref markup around web addresses
+    # use a regular expression to add kivy color and ref markup around web addresses
     text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
     return text_str
 
-#format the wiki syntax to kivy markup language
+# format the wiki syntax to kivy markup language
 def format_wiki_syntax(text_str):
-    #use a regular expression to add kivy color and ref markup around web addresses
+    # use a regular expression to add kivy color and ref markup around web addresses
     text_str = re.sub(r'(https?:\S*)', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
     
-    #kivy color and ref markup for [[ ]] links
+    # kivy color and ref markup for [[ ]] links
     text_str = re.sub(r'\[\[(\S*)\]\]', r'[color=0000ff][u][ref=\1]\1[/ref][/u][/color]', text_str, flags=re.MULTILINE)
     
     return text_str
@@ -59,7 +59,7 @@ Builder.load_string('''
 ''')
     
 class LinkLabel(Label):    
-    #add an event triggered when a link other than http link is clicked
+    # add an event triggered when a link other than http link is clicked
     __events__ = Label.__events__ + ['on_link_clicked']
     
     def set_text(self, text, text_color=None):
@@ -68,7 +68,7 @@ class LinkLabel(Label):
         else:
             self.text = self.text + format_links(text)
     
-    #called when a [ref] [/ref] link is clicked in the label
+    # called when a [ref] [/ref] link is clicked in the label
     def link_clicked(self, link):
         if link.startswith("http"):
             import webbrowser
@@ -123,10 +123,10 @@ Builder.load_string('''
                 size: self.size
 ''')
 
-#default text to None, default background to white
+# default text to "", default background to white
 class ScrollableLabel(ScrollView):
     
-    #add an event triggered when a link other than http link is clicked
+    # add an event triggered when a link other than http link is clicked
     __events__ = ScrollView.__events__ + ('on_link_clicked',)
     
     text = StringProperty('')
@@ -165,10 +165,10 @@ Builder.load_string('''
         on_link_clicked: root.dispatch(args[1])
 ''')
 
-#default text to None, default background to white
+# default text to None, default background to white
 class TitledLabel(BoxLayout):
     
-    #add an event triggered when a link other than http link is clicked
+    # add an event triggered when a link other than http link is clicked
     __events__ = BoxLayout.__events__ + ('on_link_clicked',)
     
     bcolor = ListProperty([1,1,1,1])

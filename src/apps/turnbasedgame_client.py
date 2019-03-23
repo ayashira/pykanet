@@ -10,9 +10,6 @@ from kivy.uix.label import Label
 from kivy.properties import StringProperty
 from kivy.lang import Builder
 
-#from scrollable_label import ScrollableLabel
-#from shift_enter_textinput import ShiftEnterTextInput
-
 from apps.turnbasedgame_list import TurnBasedGameList
 
 Builder.load_string('''
@@ -54,25 +51,25 @@ Builder.load_string('''
 
 class TurnBasedGameClient(Screen):
     
-    #kivy string property indicating the target network address
+    # kivy string property indicating the target network address
     target_address = StringProperty()
     
-    #called by Kivy when the screen is entered (displayed)
+    # called by Kivy when the screen is entered (displayed)
     def on_enter(self):
         self.target_game = TurnBasedGameList.get_game_from_name(self.target_address)
         
-        #create the grid of buttons
+        # create the grid of buttons
         self.create_grid()
         
-        #update the button display before starting the game
-        #needed for some games when the start position is not empty
+        # update the button display before starting the game
+        # needed for some games when the start position is not empty
         self.update_display()
         
         self.ids["state_label"].text = "Waiting opponent"
         self.ids["user_label"].text = " "
         self.ids["opp_user_label"].text = " "
         
-        #game state
+        # game state
         self.play_turn = False
         self.player_id = 0
         
@@ -82,10 +79,10 @@ class TurnBasedGameClient(Screen):
         self.opp_user_name = ""
     
     def create_grid(self):
-        #remove all existing buttons (current client on_enter() can be called multiple times)
+        # remove all existing buttons (current client on_enter() can be called multiple times)
         self.ids["board_grid"].clear_widgets()
         
-        #initialize the grid rows and cols
+        # initialize the grid rows and cols
         rows = self.target_game.rows()
         cols = self.target_game.cols()
         cell_width, cell_height = self.target_game.cell_size()
@@ -93,13 +90,12 @@ class TurnBasedGameClient(Screen):
         self.ids["board_grid"].rows = rows
         self.ids["board_grid"].cols = cols
         
-        #list of buttons used to access buttons from an index
+        # list of buttons used to access buttons from an index
         self.button_list = []
         
         for i in range(rows):
             for j in range(cols):
-                #note : button id defined here cannot be used to access buttons with their .ids
-                #       it is used to identify which button called cell_clicked
+                # buttons are identified with coords value
                 button = Button(text='', width=cell_width, height=cell_height, size_hint=(None, None))
                 button.coords = (i, j)
                 button.bind(on_press=self.cell_clicked)
@@ -107,12 +103,11 @@ class TurnBasedGameClient(Screen):
                 self.button_list.append(button)
         
     def connection_made(self):
-        #connection is established, connect to the target address
+        # connection is established, connect to the target address
         message = NetworkMessage(self.target_address, "ENTER", "")
         self.network_interface.send(message)
     
     def receive_message(self, message):
-        #print(message.to_bytes())
         if message.command == "SET_PLAYER_ID":
             self.player_id = int(message.content)
         elif message.command == "REQUEST_MOVE":
@@ -154,7 +149,6 @@ class TurnBasedGameClient(Screen):
             popup.open()
     
     def cell_clicked(self, button):
-        #print(button.id)
         if self.play_turn:
             move = button.coords
             if not self.target_game.is_valid_play(move, player=self.player_id):
@@ -165,7 +159,7 @@ class TurnBasedGameClient(Screen):
             self.network_interface.send(message)
     
     def update_display(self):
-        #update all the buttons (at least for now and for usual board games, this is not too heavy)
+        # update all the buttons (at least for now and for usual board games, this is not too heavy)
         rows = self.target_game.rows()
         for i in range(rows):
             for j in range(self.target_game.cols()):

@@ -68,12 +68,12 @@ Builder.load_string('''
 
 class WikiClient(Screen):
     
-    #kivy string property indicating the target network address
+    # kivy string property indicating the target network address
     target_address = StringProperty()
     
     is_edit = BooleanProperty(False)
     
-    #called by Kivy when the screen is entered (displayed)
+    # called by Kivy when the screen is entered (displayed)
     def on_enter(self):
         #self.ids["textbox"].font_name=utf8_font_path
         self.ids["textbox"].text_validate_unfocus = False
@@ -85,7 +85,7 @@ class WikiClient(Screen):
         self.network_interface = NetworkInterface(data_received_callback = self.receive_message, connection_made_callback = self.connection_made)
     
     def connection_made(self):
-        #connection is established, read the start address
+        # connection is established, read the start address
         self.read_address(self.target_address)
     
     def send_message(self, *args):
@@ -96,12 +96,11 @@ class WikiClient(Screen):
             self.network_interface.send(message)
     
     def receive_message(self, message):
-        #print(message.command, message.content)
         if message.command == "READ_RESULT":
             self.current_content = message.content
             self.update_text(self.current_content)
         elif message.command == "WRITE_DONE":
-            #read the address again after writing
+            # read the address again after writing
             self.read_address(self.target_address)
         elif message.command == "NOT_EXISTING":
             self.current_content = ""
@@ -123,7 +122,7 @@ class WikiClient(Screen):
         message = NetworkMessage(self.target_address, "WRITE", msg)
         self.network_interface.send(message)
     
-        #remove the current content of the label to show that we are waiting the server response
+        # remove the current content of the label to show that we are waiting the server response
         self.ids["label"].text = ""
     
     def cancel_edit(self):

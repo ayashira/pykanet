@@ -50,22 +50,22 @@ Builder.load_string('''
 
 class LoginClient(Screen):
   
-    #add an event triggered when logging is finished
+    # add an event triggered when logging is finished
     __events__ = Screen.__events__ + ('on_login_finished',)
     
     def username_validated(self):
-        #print(self.ids.keys(), flush=True)
+        # print(self.ids.keys(), flush=True)
         self.username = self.ids["username_input"].text
         self.ids["password_input"].focus = True
 
     def password_validated(self):
         self.password = self.ids["password_input"].text
         
-        #set the username for network messages
-        #TODO: check that the username and password are valid
+        # set the username for network messages
+        # TODO: check that the username and password are valid
         MainUser.set_user(self.username)
         
-        #signal that user logging is finished
+        # signal that user logging is finished
         self.dispatch('on_login_finished')
     
     def on_login_finished(self):

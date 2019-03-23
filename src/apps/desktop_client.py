@@ -53,8 +53,8 @@ class StartScreen(Screen):
     pass
 
 
-#currently, we close manually the connection of network_interface when a screen is left
-#this design is not good. Should be improved later.
+# currently, we close manually the connection of network_interface when a screen is left
+# this design is not good. Should be improved later.
     
 Builder.load_string('''
 <DesktopClient>:
