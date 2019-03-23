@@ -79,9 +79,6 @@ class ChatClient(Screen):
         self.content = []
         
         self.network_interface = NetworkInterface(client = self)
-    
-    def connection_made(self):
-        # connection is established, connect to the target address
         message = NetworkMessage(self.chat_address, "ENTER", "")
         self.network_interface.send(message)
     
