@@ -177,7 +177,6 @@ class ScrollableLabel(ScrollView):
 
 Builder.load_string('''
 <TitledLabel>:
-    size_hint_x: 0.8
     size_hint_y: None
     height: self.minimum_height
     orientation: "vertical"
