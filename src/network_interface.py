@@ -31,7 +31,7 @@ class NetworkInterface():
         if self.connection:
             self.connection.write(message.to_bytes())
         else:
-            #wait until the connection is established
+            # wait until the connection is established
             self.pending_message_list.append(message.to_bytes())
     
     def lose_connection(self):
@@ -54,7 +54,7 @@ class NetworkInterface():
         print("Connected successfully!")
         self.connection = connection
         
-        #send all pending messages
+        # send all pending messages
         for msg in self.pending_message_list:
             self.connection.write(msg)
         self.pending_message_list = []

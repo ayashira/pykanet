@@ -75,7 +75,7 @@ class ChatClient(Screen):
         self.top_date = None
         self.bottom_date = None
         
-        #current content
+        # current content
         self.content = []
         
         self.network_interface = NetworkInterface(client = self)
@@ -151,7 +151,7 @@ class ChatClient(Screen):
                     self.insert_date_label(date = self.top_date[5:10], insert_pos = 'top')
                 break
         
-        #schedule initialization of the next batch of messages
+        # schedule initialization of the next batch of messages
         Clock.schedule_once(self.init_displayed_content)
     
     def insert_date_label(self, date, insert_pos='bottom'):
