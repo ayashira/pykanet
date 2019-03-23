@@ -4,15 +4,15 @@ import os
 
 from serialization_utils import Serialize
 
-#Interface to the host file system
-#All "file accesses" should be done through this class
-#It will allow in the future to cache data, and also reorganize it and store it efficiently 
+# Interface to the host file system
+# All "file accesses" should be done through this class
+# It will allow in the future to cache data, and also reorganize it and store it efficiently 
 class FileManager():
     
     VERSION = 0
     
-    #should be called only once when application is started
-    #return True if initialization was successful
+    # Should be called only once when application is started
+    # return True if initialization was successful
     def init_save_path():
         FileManager.root_dir = "pykanet_data/"
         FileManager.index_file = FileManager.root_dir + "index"
@@ -21,10 +21,10 @@ class FileManager():
             try:
                 os.makedirs(FileManager.root_dir)
             except:
-                #save directory does not exist and could not be created
+                # save directory does not exist and could not be created
                 return False
         
-        #structure to keep a track of all files existing on the local node
+        # structure to keep a track of all files existing on the local node
         FileManager._read_index()
         
         return True
@@ -38,9 +38,9 @@ class FileManager():
     def _write_index():
         FileManager._raw_file_write(FileManager.index_file, Serialize.to_bytes(FileManager.local_index))
     
-    #update the index of all files when a file is written
+    # update the index of all files when a file is written
     def _update_index_file_write(network_path):
-        #currently, only keep a track of existing files
+        # currently, only keep a track of existing files
         if network_path not in FileManager.local_index:
             FileManager.local_index["file_list"][network_path] = FileManager.get_file_name(network_path)
             FileManager._write_index()
@@ -57,7 +57,7 @@ class FileManager():
             with open(filename, "rb") as file:
                 return file.read()
         except:
-            #could not read the file (probably file not existing yet)
+            # could not read the file (probably file not existing yet)
             return None
     
     def _raw_file_write(filename, bytearray_content):
@@ -79,4 +79,4 @@ class FileManager():
         filename = FileManager.get_file_name(network_path)
         FileManager._raw_file_write(filename, Serialize.to_bytes(new_content))
     
-    #Note : append not supported anymore for some time (because serialization is used)
+    # Note : append not supported anymore for some time (because serialization is used)

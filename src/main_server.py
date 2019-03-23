@@ -1,4 +1,7 @@
-# this is a first test of server using Twisted library
+'''
+    Server main file
+    Use Twisted library, but not Kivy library
+'''
 
 from twisted.internet import reactor
 from twisted.internet import protocol
@@ -10,9 +13,9 @@ from file_manager import FileManager
 port_to_listen = 8883
 
 def main():
-    #initialize file saving directories
+    # initialize file saving directories
     if not FileManager.init_save_path():
-        #file saving not working correctly, we should not run the server
+        # file saving not working correctly, we should not run the server
         print("FileManager initialization... [FAILED]. Stopping.")
         return
     else:
@@ -27,6 +30,5 @@ def main():
     reactor.listenTCP(port_to_listen,factory)
     reactor.run()
 
-# this only runs if the module was *not* imported
 if __name__ == '__main__':
     main()
