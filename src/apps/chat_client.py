@@ -109,7 +109,6 @@ class ChatClient(Screen):
             self.add_typing_message(message.content)
             return
         
-        #TODO: clean up code below
         if message.command == "INIT_CONTENT":
             self.content = message.content
             self.item_add_last = len(self.content)
@@ -143,7 +142,7 @@ class ChatClient(Screen):
             self.print_message("Chat left by " + message.content[1], text_color_str, msg_time=message.content[0])
     
     # Init the displayed content
-    # For a more reactive initialization, messages are added one by one
+    # For a more reactive initialization, messages are added in small batches
     # It allows Kivy to refresh the screen before all messages are added
     # Batches of messages are added from the end of the messages (so that the last messages are immediately visible)
     # In the future, we could do some more advanced processing with kivy RecycleView
@@ -153,15 +152,17 @@ class ChatClient(Screen):
         if self.item_add_last == 0:
             return
         
-        self.item_add_last -= 1
-        
-        item = self.content[self.item_add_last]
-        text_color_str = "000000"
-        self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_pos = 'top')        
-        
-        # after all message have been added, insert the first date manually 
-        if self.item_add_last == 0 and self.top_date is not None:
-            self.insert_date_label(date = self.top_date[5:10], insert_pos = 'top')
+        for _ in range(20):
+            self.item_add_last -= 1
+            item = self.content[self.item_add_last]
+            text_color_str = "000000"
+            self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_pos = 'top')        
+            
+            # after all message have been added, insert the first date manually 
+            if self.item_add_last == 0:
+                if self.top_date is not None:
+                    self.insert_date_label(date = self.top_date[5:10], insert_pos = 'top')
+                break
         
         #schedule initialization of the next batch of messages
         Clock.schedule_once(self.init_displayed_content)
