@@ -83,6 +83,7 @@ class ChatClient(Screen):
         self.typing_widget = None
         
         self.last_msg_date = None
+        self.top_msg_date = None
         
         #current content
         self.content = []
@@ -142,7 +143,7 @@ class ChatClient(Screen):
             self.print_message("Chat left by " + message.content[1], text_color_str, msg_time=message.content[0])
     
     # Init the displayed content
-    # For a more reactive initialization, messages are added in small batches of 20 messages
+    # For a more reactive initialization, messages are added one by one
     # It allows Kivy to refresh the screen before all messages are added
     # Batches of messages are added from the end of the messages (so that the last messages are immediately visible)
     # In the future, we could do some more advanced processing with kivy RecycleView
@@ -152,35 +153,49 @@ class ChatClient(Screen):
         if self.item_add_last == 0:
             return
         
-        self.item_add_start = max(0, self.item_add_last - 20)
+        self.item_add_last -= 1
         
-        # insert all new messages above the existing ones
+        # insert the next message (which is older) above the existing ones
         insert_idx = len(self.ids["main_view"].children)
-        #print("insert idx", insert_idx)
         
-        for item in self.content[self.item_add_start:self.item_add_last]:
-            text_color_str = "000000"
-            self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_idx = insert_idx)        
+        item = self.content[self.item_add_last]
+        text_color_str = "000000"
+        self.print_message(item[2], text_color_str, msg_time=item[0], username=item[1], insert_idx = insert_idx)        
         
-        self.item_add_last = self.item_add_start
+        # special case of first message : add the date manually 
+        if self.item_add_last == 0 and self.top_msg_date is not None:
+            self.insert_date_label(date = self.top_msg_date[5:10], insert_idx = len(self.ids["main_view"].children) )
         
         #schedule initialization of the next batch of messages
         Clock.schedule_once(self.init_displayed_content)
-        
+    
+    def insert_date_label(self, date, insert_idx=0):
+        day_label = FitTextRoundedLabel()
+        day_label.set_text(date, text_color="000000")
+        day_label.bcolor = [0.8,1,0.8,1]
+        day_label.pos_hint = {'center_x': 0.5}
+        self.ids["main_view"].add_widget(day_label, insert_idx)
+    
+    # If we insert on bottom (insert_idx = 0),
+    #   compare the date with last msg BEFORE inserting message itself
+    # If we insert on top (insert_idx != 0),
+    #   compare the last with top msg AFTER inserting message itself
+    # TODO : try to simplify this logic
     def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False, insert_idx=0):
         self.remove_typing_message()
         
         # Insert a label with the date if day of new message is different from last message
-        if msg_time != None:
+        if insert_idx == 0 and msg_time != None:
             msg_local_time = convert_utc_to_local(msg_time)
-            if self.last_msg_date is None or \
-               msg_local_time[:10] != self.last_msg_date[:10]:
-                day_label = FitTextRoundedLabel()
-                day_label.set_text(msg_local_time[5:10], text_color="000000")
-                day_label.bcolor = [0.8,1,0.8,1]
-                day_label.pos_hint = {'center_x': 0.5}
-                self.ids["main_view"].add_widget(day_label, insert_idx)
+            if self.last_msg_date is not None \
+               and msg_local_time[:10] != self.last_msg_date[:10]:
+                self.insert_date_label(date = msg_local_time[5:10], insert_idx = insert_idx)
             self.last_msg_date = msg_local_time
+            
+            # if this is the first inserted message,
+            #  initialize also the the top date
+            if self.top_msg_date is None:
+                self.top_msg_date = msg_local_time
         
         # main message label
         label = TitledLabel()
@@ -205,6 +220,14 @@ class ChatClient(Screen):
         
         if isTyping:
             self.typing_widget = label
+            
+        # Insert a label with the date if day of new message is different from next message
+        if insert_idx != 0 and msg_time != None:
+            msg_local_time = convert_utc_to_local(msg_time)
+            if self.top_msg_date is not None \
+               and msg_local_time[:10] != self.top_msg_date[:10]:
+                self.insert_date_label(date = self.top_msg_date[5:10], insert_idx = insert_idx)
+            self.top_msg_date = msg_local_time
     
     #============= typing status ===========================
     # Typing status is done by storing the current state of typing status
