@@ -49,9 +49,14 @@ Builder.load_string('''
 ''')
 
 class LoginClient(Screen):
-  
-    # add an event triggered when logging is finished
-    __events__ = Screen.__events__ + ('on_login_finished',)
+    '''
+        Login screen
+        When login is finished, 'on_login_finished' custom event is triggered 
+    '''
+    
+    def __init__(self, **kwargs):
+        self.register_event_type('on_login_finished')
+        super().__init__(**kwargs)
     
     def username_validated(self):
         # print(self.ids.keys(), flush=True)
