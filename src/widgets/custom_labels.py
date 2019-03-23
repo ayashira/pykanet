@@ -3,7 +3,7 @@
    
     LinkLabel:
         - clickable links
-        - set_text(text, text_color)
+        - text should be set with set_text(text, text_color)
     
     RoundedLabel:
         - inherits LinkLabel
@@ -14,13 +14,13 @@
         - label size fit to text (intended for one-line short text)
     
     ScrollableLabel:
-        - clickable links
+        - clickable http and wiki links
         - rectangle background
         - scrollable (intended for large multi-line text)
         - set_wiki_text(text, text_color)
     
     TitledLabel:
-        - clickable links
+        - clickable http links
         - rounded rectangle background
         - title text above the label
 '''
@@ -31,6 +31,9 @@ from kivy.properties import StringProperty, ListProperty
 from kivy.lang import Builder
 
 from kivy.uix.boxlayout import BoxLayout
+
+# to open http links in user default webbrowser
+import webbrowser
 
 # for regular expressions
 import re
@@ -60,10 +63,12 @@ Builder.load_string('''
     
 class LinkLabel(Label):    
     '''
-        Link Label : Label with http link and wiki link formatting
+        Link Label : Label with http link support
         
         When an http link is clicked, client default browser is opened.
         When a wiki link is clicked, a custom event 'on_link_clicked' is triggered.
+        
+        set_text(text, text_color) : set the text of the label with a given color string
     '''
     
     def __init__(self, **kwargs):
@@ -72,14 +77,13 @@ class LinkLabel(Label):
     
     def set_text(self, text, text_color=None):
         if text_color:
-            self.text = self.text + "[color=" + text_color + "]" + format_links(text) + "[/color]"
+            self.text = "[color=" + text_color + "]" + format_links(text) + "[/color]"
         else:
-            self.text = self.text + format_links(text)
+            self.text = format_links(text)
     
     # called when a [ref] [/ref] link is clicked in the label
     def link_clicked(self, link):
         if link.startswith("http"):
-            import webbrowser
             webbrowser.open(link)
         else:
             self.dispatch('on_link_clicked', link)
@@ -101,6 +105,14 @@ Builder.load_string('''
 ''')
     
 class RoundedLabel(LinkLabel):     
+    '''
+        Rounded Label
+          - same as Link Label (support http links)
+          - uniform color rounded rectangle background 
+        
+        Background color can be set with bcolor property
+    '''
+    
     bcolor = ListProperty([1,1,1,1])
 
 
@@ -111,6 +123,10 @@ Builder.load_string('''
 ''')
 
 class FitTextRoundedLabel(RoundedLabel):
+    '''
+        Rounded Label with size fitted to text (for short text labels)
+    '''
+    
     pass
 
 
@@ -133,6 +149,14 @@ Builder.load_string('''
 
 # default text to "", default background to white
 class ScrollableLabel(ScrollView):
+    '''
+        Scrollable Label
+          - support http and wiki links
+          - wiki links trigger a custom event on_link_clicked 
+          - label is scrollable
+          - uniform color rectangle background
+          - background color can be set with bcolor property
+    '''
     
     text = StringProperty('')
     bcolor = ListProperty([1,1,1,1])
@@ -176,6 +200,13 @@ Builder.load_string('''
 
 # default text to None, default background to white
 class TitledLabel(BoxLayout):
+    '''
+        Rounded Label with a title above
+          - support http links in both the main label and title label
+          - background color can be set with bcolor property
+          - set_text(text, text_color) : set the text of the main label 
+          - set_title_text(text, text_color) : set the text of the title label
+    '''
     
     bcolor = ListProperty([1,1,1,1])
     
