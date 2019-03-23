@@ -84,7 +84,7 @@ class MessagePassingProtocol(protocol.Protocol):
                 self.factory.server_services.receive_message(self, message)
             else:
                 # case of client end of the connection
-                self.factory.network_interface.dataReceived(message)
+                self.factory.network_interface.receive_message(message)
         
     # activate application-level keep alive messages
     # it needs to be activated for connections to a service that keeps running for a long time

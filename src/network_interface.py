@@ -59,5 +59,5 @@ class NetworkInterface():
             self.connection.write(msg)
         self.pending_message_list = []
     
-    def dataReceived(self, message):
+    def receive_message(self, message):
         self.client.receive_message(message)
