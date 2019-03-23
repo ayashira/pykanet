@@ -176,25 +176,31 @@ class ChatClient(Screen):
         day_label.pos_hint = {'center_x': 0.5}
         self.ids["main_view"].add_widget(day_label, insert_idx)
     
-    # If we insert on bottom (insert_idx = 0),
-    #   compare the date with last msg BEFORE inserting message itself
-    # If we insert on top (insert_idx != 0),
-    #   compare the last with top msg AFTER inserting message itself
-    # TODO : try to simplify this logic
     def print_message(self, msg, text_color_str, msg_time=None, username=None, isTyping = False, insert_idx=0):
         self.remove_typing_message()
         
-        # Insert a label with the date if day of new message is different from last message
-        if insert_idx == 0 and msg_time != None:
+        # Insert a date label when the date between two messages is different
+        if msg_time != None:
             msg_local_time = convert_utc_to_local(msg_time)
-            if self.last_msg_date is not None \
-               and msg_local_time[:10] != self.last_msg_date[:10]:
-                self.insert_date_label(date = msg_local_time[5:10], insert_idx = insert_idx)
-            self.last_msg_date = msg_local_time
-            
-            # if this is the first inserted message,
-            #  initialize also the the top date
-            if self.top_msg_date is None:
+
+            # If we insert on bottom, compare the date with last msg date
+            if insert_idx == 0:
+                if self.last_msg_date is not None \
+                   and msg_local_time[:10] != self.last_msg_date[:10]:
+                    self.insert_date_label(date = msg_local_time[5:10], insert_idx = insert_idx)
+                self.last_msg_date = msg_local_time
+                # case of first inserted message, initialize also the the top date
+                if self.top_msg_date is None:
+                    self.top_msg_date = msg_local_time
+
+            # If we insert on top, compare the date with top msg date
+            if insert_idx != 0:
+                if self.top_msg_date is not None \
+                   and msg_local_time[:10] != self.top_msg_date[:10]:
+                    self.insert_date_label(date = self.top_msg_date[5:10], insert_idx = insert_idx)
+                    
+                    #main message must be inserted above the date label
+                    insert_idx += 1
                 self.top_msg_date = msg_local_time
         
         # main message label
@@ -221,13 +227,6 @@ class ChatClient(Screen):
         if isTyping:
             self.typing_widget = label
             
-        # Insert a label with the date if day of new message is different from next message
-        if insert_idx != 0 and msg_time != None:
-            msg_local_time = convert_utc_to_local(msg_time)
-            if self.top_msg_date is not None \
-               and msg_local_time[:10] != self.top_msg_date[:10]:
-                self.insert_date_label(date = self.top_msg_date[5:10], insert_idx = insert_idx)
-            self.top_msg_date = msg_local_time
     
     #============= typing status ===========================
     # Typing status is done by storing the current state of typing status
