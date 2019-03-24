@@ -28,7 +28,12 @@ class CryptUtil():
         # default_backend() is in fact the only backend existing in cryptography library
         # see: https://cryptography.io/en/latest/hazmat/backends/
         # so there is no risk of different default_backend() between users
-        private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
+        
+        # We can choose here which elliptic curve is used
+        # SECP384R1 is somewhat standard (supported in most browsers for example)
+        # SECP256K1 is the curve used in Bitcoin network
+        
+        private_key = ec.generate_private_key(ec.SECP256K1(), default_backend())
         public_key = private_key.public_key()
         return public_key, private_key
     
