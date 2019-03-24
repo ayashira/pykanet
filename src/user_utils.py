@@ -81,9 +81,9 @@ class CryptUtil():
             The private key is encrypted with the given password
         '''
         
-        # TODO : BestAvailableEncryption is not guaranteed to be the same over time or between users
-        #        We should specify a fixed symmetric cipher instead
-        
+        # Note : BestAvailableEncryption is not guaranteed to be the same algorithm over time or between users
+        # This is not a problem since the chosen algorithm is also encoded in the PEM format
+        # It seems best (at least for now) to leave this choice to the library
         serialized_private = random_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
