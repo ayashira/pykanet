@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import sys
 import argparse
 import os
@@ -40,7 +38,6 @@ from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
 from kivy.app import App
-from kivy.uix.screenmanager import NoTransition
 from apps.desktop_client import DesktopClient
 
 # currently needed to set localhost

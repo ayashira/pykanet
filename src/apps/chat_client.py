@@ -75,20 +75,18 @@ class ChatClient(Screen):
         self.top_date = None
         self.bottom_date = None
         
-        #current content
+        # current content
         self.content = []
         
         self.network_interface = NetworkInterface(client = self)
-        message = NetworkMessage(self.chat_address, "ENTER", "")
-        self.network_interface.send(message)
+        self.network_interface.send(self.chat_address, "ENTER", "")
     
     def send_message(self, *args):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
             self.isTyping = False
-            message = NetworkMessage(self.chat_address, "APPEND", msg)
-            self.network_interface.send(message)
+            self.network_interface.send(self.chat_address, "APPEND", msg)
             self.ids["textbox"].text = ""
     
     def receive_message(self, message):
@@ -151,7 +149,7 @@ class ChatClient(Screen):
                     self.insert_date_label(date = self.top_date[5:10], insert_pos = 'top')
                 break
         
-        #schedule initialization of the next batch of messages
+        # schedule initialization of the next batch of messages
         Clock.schedule_once(self.init_displayed_content)
     
     def insert_date_label(self, date, insert_pos='bottom'):
@@ -232,5 +230,4 @@ class ChatClient(Screen):
         # if the user was not already typing, send a TYPING message to the server
         if not self.isTyping:
             self.isTyping = True
-            message = NetworkMessage(self.chat_address, "IS_TYPING", "")
-            self.network_interface.send(message)
+            self.network_interface.send(self.chat_address, "IS_TYPING", "")

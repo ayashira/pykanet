@@ -1,5 +1,3 @@
-# Server node implementing a turned-based game
-
 from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager
@@ -9,6 +7,9 @@ import random
 from apps.turnbasedgame_list import TurnBasedGameList
 
 class TurnBasedGameServer():
+    '''
+        turned-based game server implementation
+    '''
     
     def __init__(self, network_path):
         # game state
@@ -120,7 +121,7 @@ class TurnBasedGameServer():
             self.clients[0].send_message(message)
             message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
             self.clients[self.current_player_id].send_message(message)
-            # pass the usernames on to client
+            # send usernames to client
             message = NetworkMessage(self.network_path, "SET_USER_NAMES", usernames)
             self.clients[self.current_player_id].send_message(message)
             
