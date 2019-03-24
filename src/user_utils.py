@@ -14,11 +14,16 @@ from cryptography.hazmat.primitives import serialization
 # note: used only in the unit tests to generate random strings
 import random
 
+from serialization_utils import Serialize
+
 class CryptUtil():
     '''
         Wrapper for Elliptic curve cryptography
         This class uses the "cryptography" python library.
     '''
+    
+    # version number of cryptography utility
+    CRYPT_VERSION = 0
     
     def generate_key():
         '''
@@ -37,27 +42,48 @@ class CryptUtil():
         public_key = private_key.public_key()
         return public_key, private_key
     
-    def sign_message(private_key, message):
+    def sign_bytes(private_key, byte_data):
         '''
-            Sign a message with a private key
+            Sign an array of bytes with a private key
+            Return an array of bytes
         '''
         
-        data = message.encode('utf-8')
-        signature = private_key.sign(data,ec.ECDSA(hashes.SHA256()))
+        signature = private_key.sign(byte_data,ec.ECDSA(hashes.SHA256()))
         return signature
         
-    def check_sign(public_key, message, signature):
+    def check_sign_bytes(public_key, byte_data, signature):
         '''
-            Check the signature of a message with a public key
+            Check the signature of a raw array of bytes with a public key
         '''
         
-        data = message.encode('utf-8')
         try:
-            public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
+            public_key.verify(signature, byte_data, ec.ECDSA(hashes.SHA256()))
         except:
+            # verify raises an exception when the signature is invalid
             return False
         return True
-
+    
+    def sign(private_key, data):
+        '''
+            Sign a python data structure with a private key
+            Data is converted to an array of bytes with Serialization
+            Return an array of bytes
+        '''
+        
+        # Serialize return a byte array
+        # Must be converted to bytes for hashing
+        byte_data = bytes(Serialize.to_bytes(data))
+        return CryptUtil.sign_bytes(private_key, byte_data)
+    
+    def check_sign(public_key, data, signature):
+        '''
+            Check the signature of a python data structure with a public key
+            Data is converted to an array of bytes with Serialization
+            Return True if the signature is valid
+        '''
+        byte_data = bytes(Serialize.to_bytes(data))
+        return CryptUtil.check_sign_bytes(public_key, byte_data, signature)
+    
     def serialize_public(public_key):
         '''
             Return an ascii-encoded string of the public key in the PEM format
@@ -86,7 +112,7 @@ class CryptUtil():
             The private key is encrypted with the given password
         '''
         
-        # Note : BestAvailableEncryption is not guaranteed to be the same algorithm over time or between users
+        # Note : BestAvailableEncryption not guaranteed to be the same algorithm over time or between users
         # This is not a problem since the chosen algorithm is also encoded in the PEM format
         # It seems best (at least for now) to leave this choice to the library
         serialized_private = random_private_key.private_bytes(
@@ -126,36 +152,32 @@ class MainUser():
 
 # unit tests
 if __name__ == '__main__':
-    # 1.generate random public, private keys and a random message
-    #   generate a second random public, private key
-    # 2.sign the random message with the first private key
-    #   check that signature is correct with first public key
-    # 3.sign that the random message with second private key
-    #   check that signature is NOT correct with first public key
     loop_nb = 1000
     fail_nb = 0
     for i in range(loop_nb):
+        # check signature of random message with random private/public keys
         random_public_key, random_private_key = CryptUtil.generate_key()
-        serialized_public_key = CryptUtil.serialize_public(random_public_key)
-        serialized_private_key = CryptUtil.serialize_private(random_private_key, "testpassword")
-        
-        #if i <= 10:
-        #    print(serialized_public_key)
-        #    print(serialized_private_key)
-        
-        random_public_key = CryptUtil.load_public(serialized_public_key)
-        random_private_key = CryptUtil.load_private(serialized_private_key, "testpassword")
-        
-        random_message = str(random.randint(1,1000000000))
-        sign = CryptUtil.sign_message(random_private_key, random_message)
+        random_message = [random.randint(1,1000000000), str(random.randint(1,1000000000))]
+        sign = CryptUtil.sign(random_private_key, random_message)
         if not CryptUtil.check_sign(random_public_key, random_message, sign):
             print("FAIL: Signature could not be checked with correct key.")
             fail_nb += 1
         
+        # check again with serialized/deserialized keys
+        serialized_public_key = CryptUtil.serialize_public(random_public_key)
+        loaded_public_key = CryptUtil.load_public(serialized_public_key)
+        serialized_private_key = CryptUtil.serialize_private(random_private_key, "testpassword")
+        loaded_private_key = CryptUtil.load_private(serialized_private_key, "testpassword")
+        sign = CryptUtil.sign(loaded_private_key, random_message)
+        if not CryptUtil.check_sign(loaded_public_key, random_message, sign):
+            print("FAIL: Signature could not be checked after serialization of keys.")
+            fail_nb += 1
+        
+        # check that a different public key fails
         random_public_key2, random_private_key2 = CryptUtil.generate_key() 
-        sign2 = CryptUtil.sign_message(random_private_key2, random_message)
+        sign2 = CryptUtil.sign(random_private_key2, random_message)
         if CryptUtil.check_sign(random_public_key, random_message, sign2):
             print("FAIL: Signature checked with incorrect key")
             fail_nb += 1
     
-    print("Ttoal number of fails: ", fail_nb ,"/", loop_nb)
+    print("Signature checks. Total number of fails: ", fail_nb ,"/", loop_nb)
