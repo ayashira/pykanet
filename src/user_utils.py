@@ -1,5 +1,5 @@
 '''
-    Classes to mnage users and user authentification
+    Classes to manage users and user authentification
     
     User authentification uses Elliptic Curve cryptography.
     cryptography python library needs to be installed.
@@ -20,6 +20,13 @@ class CryptUtil():
     '''
         Wrapper for Elliptic curve cryptography
         This class uses the "cryptography" python library.
+        
+        Elliptic curve used:
+          SECP256K1
+        Public key serialization:
+          PEM format https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail
+        Private key serialization:
+          PEM-PKCS8 format https://en.wikipedia.org/wiki/PKCS_8
     '''
     
     # version number of cryptography utility
