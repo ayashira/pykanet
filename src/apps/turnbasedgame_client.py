@@ -74,8 +74,7 @@ class TurnBasedGameClient(Screen):
         self.player_id = 0
         
         self.network_interface = NetworkInterface(client = self)
-        message = NetworkMessage(self.target_address, "ENTER", "")
-        self.network_interface.send(message)
+        self.network_interface.send(self.target_address, "ENTER", "")
 
         self.user_name = ""
         self.opp_user_name = ""
@@ -152,8 +151,7 @@ class TurnBasedGameClient(Screen):
                 return
             
             self.play_turn = False
-            message = NetworkMessage(self.target_address, "MOVE", move)
-            self.network_interface.send(message)
+            self.network_interface.send(self.target_address, "MOVE", move)
     
     def update_display(self):
         # update all the buttons (at least for now and for usual board games, this is not too heavy)

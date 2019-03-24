@@ -87,8 +87,7 @@ class WikiClient(Screen):
         msg = self.ids["textbox"].text
         
         if msg and self.network_interface:
-            message = NetworkMessage(self.target_address, "WRITE", msg)
-            self.network_interface.send(message)
+            self.network_interface.send(self.target_address, "WRITE", msg)
     
     def receive_message(self, message):
         if message.command == "READ_RESULT":
@@ -102,8 +101,7 @@ class WikiClient(Screen):
             self.update_text(self.target_address + " not existing yet.")
     
     def read_address(self, read_target_address):
-        message = NetworkMessage(read_target_address, "READ", "")
-        self.network_interface.send(message)
+        self.network_interface.send(read_target_address, "READ", "")
     
     def update_text(self, msg):
         self.ids["label"].set_wiki_text(msg, text_color= "000000")
@@ -114,8 +112,7 @@ class WikiClient(Screen):
     
     def save_edit(self):
         msg = self.ids["textbox"].text
-        message = NetworkMessage(self.target_address, "WRITE", msg)
-        self.network_interface.send(message)
+        self.network_interface.send(self.target_address, "WRITE", msg)
     
         # remove the current content of the label to show that we are waiting the server response
         self.ids["label"].text = ""
