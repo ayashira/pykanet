@@ -8,7 +8,7 @@ from kivy.lang import Builder
 
 from widgets.custom_layouts import ScrollableVBoxLayout
 from widgets.custom_labels import TitledLabel, FitTextRoundedLabel
-from widgets.shift_enter_textinput import ShiftEnterTextInput
+from widgets.custom_textinputs import ShiftEnterTextInput
 
 from kivy.properties import StringProperty
 

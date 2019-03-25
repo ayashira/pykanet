@@ -1,3 +1,12 @@
+'''
+    Custom text inputs to define kivy interfaces more easily.
+   
+    ShiftEnterTextInput:
+        - multiple line textinput
+        - Support of SHIFT+ENTER to create a newline
+        - 'on_key_pressed' event when a key is pressed
+'''
+
 from kivy.uix.textinput import TextInput
 
 class ShiftEnterTextInput(TextInput):
