@@ -26,12 +26,20 @@ class VFitTextInput(TextInput):
     '''
     pass
 
+Builder.load_string('''
+<ShiftEnterTextInput>:
+    size_hint_y: None
+    height: self.minimum_height if self.parent is None \
+        else min(self.minimum_height, self.parent.size[1]/2)
+''')
 
 class ShiftEnterTextInput(TextInput):
     '''
         TextInput on multiple line with special support of ENTER and SHIFT+ENTER:
         Enter key to validate text (triggers on_text_validate event)
         Shift+Enter key to insert a new line
+        
+        Height is fitted to text, up to half of the parent height.
         
         'on_key_pressed' is a custom event triggered when a key is pressed
     '''

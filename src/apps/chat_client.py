@@ -45,7 +45,6 @@ Builder.load_string('''
             id:msg_view
         ShiftEnterTextInput:
             id:textbox
-            size_hint_y: .1
 ''')
 
 class ChatClient(Screen):
