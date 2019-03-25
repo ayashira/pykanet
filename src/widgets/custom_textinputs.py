@@ -1,6 +1,9 @@
 '''
     Custom text inputs to define kivy interfaces more easily.
-   
+    
+    VFitTextInput:
+        - vertical size fit to minimum_height
+    
     ShiftEnterTextInput:
         - multiple line textinput
         - Support of SHIFT+ENTER to create a newline
@@ -8,6 +11,21 @@
 '''
 
 from kivy.uix.textinput import TextInput
+from kivy.lang import Builder
+
+Builder.load_string('''
+<VFitTextInput>:
+    size_hint_y: None
+    height: self.minimum_height
+''')
+
+class VFitTextInput(TextInput):
+    '''
+        TextInput with vertical size set to minimum
+        This avoids vertically too small text inputs when the interface is small.
+    '''
+    pass
+
 
 class ShiftEnterTextInput(TextInput):
     '''

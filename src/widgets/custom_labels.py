@@ -1,6 +1,10 @@
 '''
     Custom labels to define kivy interfaces more easily
-   
+    
+    FitTextLabel:
+        - label size fit to test
+        - no background or link support
+    
     LinkLabel:
         - clickable links
         - text should be set with set_text(text, text_color)
@@ -54,6 +58,21 @@ def format_wiki_syntax(text_str):
     
     return text_str
 
+
+Builder.load_string('''
+<FitTextLabel>:
+    size_hint: None, None
+    size: self.texture_size
+''')
+
+class FitTextLabel(Label):
+    '''
+        Label with size fitted to text (for short text labels).
+        No background or link support .
+    '''
+    pass
+
+    
 Builder.load_string('''
 <LinkLabel>:
     markup: True

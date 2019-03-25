@@ -8,6 +8,8 @@ from kivy.lang import Builder
 
 from kivy.properties import ObjectProperty
 
+from widgets.custom_labels import FitTextLabel
+
 from user_utils import MainUser
 
 Builder.load_string('''
@@ -26,7 +28,7 @@ Builder.load_string('''
             size_hint_y: .3
             Label:
                 text: "Username"
-            TextInput:
+            VFitTextInput:
                 id:username_input
                 multiline: False
                 focus: True
@@ -38,7 +40,7 @@ Builder.load_string('''
             size_hint_y: .3
             Label:
                 text: "Password"
-            TextInput:
+            VFitTextInput:
                 id: password_input
                 multiline: False
                 password: True
