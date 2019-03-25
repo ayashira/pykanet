@@ -42,10 +42,12 @@ class Serialize():
     DATA_LIST_TYPE = 3
     DATA_TUPLE_TYPE = 4
     DATA_DICT_TYPE = 5
+    DATA_BYTES_TYPE = 6
     
     # dictionary of supported types
     types_list = {"<class 'str'>":DATA_STR_TYPE, "<class 'int'>":DATA_INT_TYPE, "<class 'bool'>":DATA_BOOL_TYPE,
-                  "<class 'list'>":DATA_LIST_TYPE, "<class 'tuple'>":DATA_TUPLE_TYPE, "<class 'dict'>":DATA_DICT_TYPE
+                  "<class 'list'>":DATA_LIST_TYPE, "<class 'tuple'>":DATA_TUPLE_TYPE, "<class 'dict'>":DATA_DICT_TYPE,
+                  "<class 'bytes'>":DATA_BYTES_TYPE
     }
     
     def new_buffer():
@@ -80,6 +82,9 @@ class Serialize():
             buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bool:
             value_bytes = bytearray(b'1') if val else bytearray(b'0')
+            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
+        elif type(val) is bytes:
+            value_bytes = bytearray(val)
             buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         buffer += (len(value_bytes)).to_bytes(Serialize.SIZE_PREFIX_LENGTH, byteorder='big')
         buffer += value_bytes
@@ -127,6 +132,8 @@ class Serialize():
             if data_length != 1:
                 raise BooleanConversionException
             val = True if buffer[start_idx:start_idx+data_length] == bytearray(b'1') else False
+        elif data_type == Serialize.DATA_BYTES_TYPE:
+            val = bytes(buffer[start_idx:start_idx+data_length])            
         else:
             raise UnknownTypeException
         
@@ -227,6 +234,11 @@ if __name__ == '__main__':
     test_identity(True)
     test_identity(False)
     
+    #bytes
+    test_identity(bytes(b'test'))
+    test_identity(bytes(b''))
+    test_identity(bytes(b'8543jgfd'))
+    
     # list of same elements
     test_identity([])
     test_identity([""])
@@ -266,7 +278,7 @@ if __name__ == '__main__':
     test_identity({24: [-3, 4, 5], "aa":[4, 5, (-6, 6), (-7, -8), {34:56, 78:79} ]})
     
     # horrible structure
-    test_identity([[[[  ], {1:(2,(2,((2,), (2,(2,[[[]]]))))), 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {-2:{-1:{-2:{-3:[]}}}} ])
+    test_identity([[[[  ], {1:(2,(2,((2,), (2,(2,[[[]]]))))), 3:[[{"a":[[[{1:{1:{1:[[[{}]]]}}}]]]}]]} ], [[True, 12, "a", [], {}, {1:{}}]] ], {-2:{-1:{-2:{-3:[bytes(b'test_of_bytes_type')]}}}} ])
     
     # ======== Test faulty length ====================
     # serialize, delete one character, serialize, and check that result is None
