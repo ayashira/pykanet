@@ -73,23 +73,19 @@ class Serialize():
                 Serialize.write_value(buffer, val[key])
             return
         
-        # basic types
+        # basic types (direct non-recursive serialization is possible)
         if type(val) is str:
             value_bytes = val.encode('utf-8')
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is int:
             # use one more byte than the length obtained with bit_length because of using signed numbers
             value_bytes = val.to_bytes(1+( (val.bit_length() + 7) // 8), byteorder='big', signed=True)
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bool:
             value_bytes = bytearray(b'1') if val else bytearray(b'0')
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bytes:
             value_bytes = bytearray(val)
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bytearray:
             value_bytes = val
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
+        buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         buffer += (len(value_bytes)).to_bytes(Serialize.SIZE_PREFIX_LENGTH, byteorder='big')
         buffer += value_bytes
     
