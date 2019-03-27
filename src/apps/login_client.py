@@ -77,7 +77,7 @@ class LoginClient(Screen):
     '''
     
     # login addresses are of the form "/login/username"
-    login_address = "/login/"
+    login_root_address = "/login/"
     
     def __init__(self, **kwargs):
         self.register_event_type('on_login_finished')
@@ -115,16 +115,40 @@ class LoginClient(Screen):
         self.password = self.ids["password_input"].text
         
         if self.is_register:
-            #TODO            
-            pass
-        else:
-            # TODO: check that the username and password are valid
+            # create a pair of private/public keys
+            MainUser.create_keys()
             
-            # set the username for network messages
-            MainUser.set_user(self.username)
-        
+            #export the keys to a binary format
+            user_public_key = MainUser.export_public_key()
+            user_private_key = MainUser.export_private_key(self.password)
+
+            #ask the server to create the new user
+            user_address = LoginClient.login_root_address + self.username
+            self.network_interface.send(user_address, "CREATE", [self.username, user_public_key, user_private_key])
+            
+        else:
+            # read user login data
+            # Password check is done on client side, when trying to decrypt the private key
+            #  received from the server.
+            user_address = LoginClient.login_root_address + self.username
+            self.network_interface.send(user_address, "READ_USER_LOGIN_DATA", "")
+
+    def receive_message(self, message):
+        if message.command == "USER_LOGIN_DATA":
+            username, creation_time, public_key, private_key = message.content
+            MainUser.set_user(username)
+            MainUser.import_public_key(public_key)
+            
+            # try to decrypt the private key with the given password
+            try:
+                MainUser.import_private_key(private_key, self.password)
+            except:
+                # incorrect password
+                print("incorrect password")
+                return
+                
             # signal that user logging is finished
             self.dispatch('on_login_finished')
-    
+            
     def on_login_finished(self):
         pass

@@ -20,14 +20,31 @@ class LoginServer():
     # called when a message is received from a client
     def receive_message(self, sender_client, message):
         if message.command == "CREATE":
-            # TODO create a new user if not already existing
-            pass
-        elif message.command == "READ_PUBLIC_KEY":
-            # TODO read the public key of an existing user
-            pass
-        elif message.command == "READ_PRIVATE_KEY":
-            # TODO read the private key of an existing user
-            pass
+            # check that the new user if not already existing
+            if FileManager.file_exists(message.network_path):
+                # TODO, error message to client
+                print("already existing")
+                return
+            
+            username, user_public_key, user_private_key = message.content
+            creation_time = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            
+            FileManager.file_write(message.network_path, [username, creation_time, user_public_key, user_private_key])
+            
+            #TODO "user created" reply
+            print("created", username)
+            
+        elif message.command == "READ_USER_LOGIN_DATA":
+            # check that the user exists
+            if not FileManager.file_exists(message.network_path):
+                # TODO, error message to client
+                print("not existing: ", message.network_path)
+                return
+
+            # read all the information of a user
+            message.content = FileManager.file_read(message.network_path)
+            message.command = "USER_LOGIN_DATA"
+            sender_client.send_message(message)
     
     # called when a client connection is lost
     def connection_lost(self, lost_client):
