@@ -31,7 +31,6 @@ class ServerServices():
                 # for "login" nodes, we use only one login server for all login addresses
                 login_root_address = "/login/"
                 if not login_root_address in self.services_dict.keys():
-                    print("Login server created")
                     self.services_dict[login_root_address] = LoginServer(login_root_address)
                 
                 client.message_receiver_callback = self.services_dict[login_root_address].receive_message

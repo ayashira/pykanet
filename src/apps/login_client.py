@@ -2,7 +2,7 @@
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
-
+from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 
@@ -188,6 +188,13 @@ class LoginClient(Screen):
             self.ids["password_input"].text = ""
             self.ids["password_input"].disabled = True
             self.ids["username_input"].focus = True
+        elif message.command == "USER_CREATED":
+            username = message.content
+            popup = Popup(title='User creation',
+              content=Label(text='User ' + username + ' created!'),
+              size_hint=(None, None), size=(200, 200))
+            popup.bind(on_dismiss=self.goto_desktop)
+            popup.open()
         elif message.command == "USER_LOGIN_DATA":
             username, creation_time, public_key, private_key = message.content
             MainUser.set_user(username)
@@ -202,9 +209,14 @@ class LoginClient(Screen):
                 self.ids["password_input"].text = ""
                 self.ids["password_input"].focus = True
                 return
-                
+            
             # signal that user logging is finished
             self.dispatch('on_login_finished')
-            
+
+    # called when successful user creation popup is closed 
+    def goto_desktop(self, instance):
+        # signal that user logging is finished
+        self.dispatch('on_login_finished')
+    
     def on_login_finished(self):
         pass

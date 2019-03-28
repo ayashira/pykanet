@@ -32,9 +32,10 @@ class LoginServer():
             
             FileManager.file_write(message.network_path, [username, creation_time, user_public_key, user_private_key])
             
-            #TODO "user created" reply
-            print("created", username)
-            
+            message.command = "USER_CREATED"
+            message.content = username
+            sender_client.send_message(message)
+        
         elif message.command == "READ_USER_LOGIN_DATA":
             # check that the user exists
             if not FileManager.file_exists(message.network_path):
