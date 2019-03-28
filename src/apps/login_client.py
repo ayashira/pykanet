@@ -141,11 +141,7 @@ class LoginClient(Screen):
             self.ids["confirm_input"].disabled = False
             self.ids["confirm_input"].focus = True
         else:
-            # read user login data
-            # Password check is done on client side, when trying to decrypt the private key
-            # received from the server.
-            user_address = LoginClient.login_root_address + self.username
-            self.network_interface.send(user_address, "READ_USER_LOGIN_DATA", "")
+            self.start_network_login()
     
     def password_confirmed(self):
         if not self.is_register:
@@ -172,7 +168,14 @@ class LoginClient(Screen):
         # ask the server to create the new user
         user_address = LoginClient.login_root_address + self.username
         self.network_interface.send(user_address, "CREATE", [self.username, user_public_key, user_private_key])
-    
+
+    def start_network_login(self):
+        # read user login data
+        # Password check is done on client side, when trying to decrypt the private key
+        # received from the server.
+        user_address = LoginClient.login_root_address + self.username
+        self.network_interface.send(user_address, "READ_USER_LOGIN_DATA", "")
+        
     def receive_message(self, message):
         if message.command == "USER_ALREADY_EXISTS":
             self.ids["status_label"].text = "User already exists"
@@ -193,7 +196,7 @@ class LoginClient(Screen):
             popup = Popup(title='User creation',
               content=Label(text='User ' + username + ' created!'),
               size_hint=(None, None), size=(200, 200))
-            popup.bind(on_dismiss=self.goto_desktop)
+            popup.bind(on_dismiss=self.user_creation_finished)
             popup.open()
         elif message.command == "USER_LOGIN_DATA":
             username, creation_time, public_key, private_key = message.content
@@ -214,9 +217,9 @@ class LoginClient(Screen):
             self.dispatch('on_login_finished')
 
     # called when successful user creation popup is closed 
-    def goto_desktop(self, instance):
-        # signal that user logging is finished
-        self.dispatch('on_login_finished')
+    def user_creation_finished(self, instance):
+        # start the login process with the newly created username/password
+        self.start_network_login()
     
     def on_login_finished(self):
         pass
