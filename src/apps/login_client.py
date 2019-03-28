@@ -51,7 +51,7 @@ Builder.load_string('''
                 focus: True
                 on_text_validate:
                     root.username_validated()
-
+        
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: .3
@@ -66,6 +66,20 @@ Builder.load_string('''
                 disabled: True
                 on_text_validate: root.password_validated()
         
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            Label:
+                text: "Confirm Password"
+                size_hint_y: None
+                height: self.texture_size[1]
+            VFitTextInput:
+                id: confirm_input
+                multiline: False
+                password: True
+                disabled: True
+                on_text_validate: root.password_confirmed()
+        
         FitTextLabel:
             id: status_label
             text: ""
@@ -78,7 +92,7 @@ Builder.load_string('''
 class LoginClient(Screen):
     '''
         Login screen
-        When login is finished, 'on_login_finished' custom event is triggered 
+        When login is finished, 'on_login_finished' custom event is triggered.
     '''
     
     # login addresses are of the form "/login/username"
@@ -95,53 +109,79 @@ class LoginClient(Screen):
     def init_inputs(self):
         self.ids["username_input"].text = ""
         self.ids["password_input"].text = ""
+        self.ids["confirm_input"].text = ""
         self.ids["username_input"].disabled = False
         self.ids["password_input"].disabled = True
+        self.ids["confirm_input"].disabled = True
         self.ids["username_input"].focus = True        
     
     def login_start(self):
         self.ids["login_button"].disabled = True
         self.ids["register_button"].disabled = False
+        self.ids["status_label"].text = ""
         self.init_inputs()
         self.is_register = False
         
     def register_start(self):
         self.ids["login_button"].disabled = False
         self.ids["register_button"].disabled = True
+        self.ids["status_label"].text = ""
         self.init_inputs()
         self.is_register = True
     
     def username_validated(self):
         self.username = self.ids["username_input"].text
         self.ids["password_input"].disabled = False
-        self.ids["password_input"].focus = True        
-
+        self.ids["password_input"].focus = True
+    
     def password_validated(self):
         self.password = self.ids["password_input"].text
         
         if self.is_register:
-            # create a pair of private/public keys
-            MainUser.create_keys()
-            
-            # Export the keys to a binary format.
-            # Private key is encrypted with user password.
-            user_public_key = MainUser.export_public_key()
-            user_private_key = MainUser.export_private_key(self.password)
-
-            # ask the server to create the new user
-            user_address = LoginClient.login_root_address + self.username
-            self.network_interface.send(user_address, "CREATE", [self.username, user_public_key, user_private_key])
-            
+            self.ids["confirm_input"].disabled = False
+            self.ids["confirm_input"].focus = True
         else:
             # read user login data
             # Password check is done on client side, when trying to decrypt the private key
             # received from the server.
             user_address = LoginClient.login_root_address + self.username
             self.network_interface.send(user_address, "READ_USER_LOGIN_DATA", "")
-
+    
+    def password_confirmed(self):
+        if not self.is_register:
+            return
+        
+        #check that the confirmed password is the same as the password
+        if self.ids["confirm_input"].text != self.password:
+            self.ids["status_label"].text = "Passwords are different."
+            self.ids["password_input"].text = ""
+            self.ids["password_input"].disabled = False
+            self.ids["password_input"].focus = True
+            self.ids["confirm_input"].text = ""
+            self.ids["confirm_input"].disabled = True
+            return
+            
+        # create a pair of private/public keys
+        MainUser.create_keys()
+        
+        # Export the keys to a binary format.
+        # Private key is encrypted with user password.
+        user_public_key = MainUser.export_public_key()
+        user_private_key = MainUser.export_private_key(self.password)
+        
+        # ask the server to create the new user
+        user_address = LoginClient.login_root_address + self.username
+        self.network_interface.send(user_address, "CREATE", [self.username, user_public_key, user_private_key])
+    
     def receive_message(self, message):
         if message.command == "USER_ALREADY_EXISTS":
             self.ids["status_label"].text = "User already exists"
+            self.ids["password_input"].text = ""
+            self.ids["confirm_input"].text = ""
+            self.ids["username_input"].disabled = False
+            self.ids["password_input"].disabled = True
+            self.ids["confirm_input"].disabled = True
+            self.ids["username_input"].focus = True        
             self.ids["username_input"].focus = True
         elif message.command == "USER_NOT_EXISTING":
             self.ids["status_label"].text = "User not existing"
