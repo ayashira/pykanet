@@ -130,7 +130,16 @@ class LoginClient(Screen):
         self.is_register = True
     
     def username_validated(self):
+        if self.is_register:
+            if len(self.ids["username_input"].text) < 4:
+                self.ids["status_label"].text = "Username: 4 characters needed."
+                return
+            if not self.ids["username_input"].text.isalnum():
+                self.ids["status_label"].text = "Username: letters and numbers only."
+                return
+        
         self.username = self.ids["username_input"].text
+        self.ids["status_label"].text = ""
         self.ids["password_input"].disabled = False
         self.ids["password_input"].focus = True
     
