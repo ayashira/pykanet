@@ -138,6 +138,11 @@ class LoginClient(Screen):
         self.password = self.ids["password_input"].text
         
         if self.is_register:
+            if len(self.ids["password_input"].text) < 8:
+                self.ids["status_label"].text = "Password: 8 characters needed."
+                return
+            
+            self.ids["status_label"].text = ""
             self.ids["confirm_input"].disabled = False
             self.ids["confirm_input"].focus = True
         else:
@@ -156,7 +161,9 @@ class LoginClient(Screen):
             self.ids["confirm_input"].text = ""
             self.ids["confirm_input"].disabled = True
             return
-            
+        
+        self.ids["status_label"].text = ""
+        
         # create a pair of private/public keys
         MainUser.create_keys()
         
