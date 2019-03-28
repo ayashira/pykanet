@@ -122,7 +122,7 @@ class CryptUtil():
         # Note : BestAvailableEncryption not guaranteed to be the same algorithm over time or between users
         # This is not a problem since the chosen algorithm is also encoded in the PEM format
         # It seems best (at least for now) to leave this choice to the library
-        serialized_private = random_private_key.private_bytes(
+        serialized_private = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.BestAvailableEncryption(password.encode('utf-8'))
@@ -152,10 +152,26 @@ class MainUser():
     
     def set_user(username):
         MainUser.username = username
-        
+    
     def set_keys(public_key, private_key):
         MainUser.public_key = public_key
         MainUser.private_key = private_key
+    
+    def create_keys():
+        MainUser.public_key, MainUser.private_key = CryptUtil.generate_key()
+    
+    def export_public_key():
+        return CryptUtil.serialize_public(MainUser.public_key)
+    
+    def export_private_key(password):
+        return CryptUtil.serialize_private(MainUser.private_key, password)
+    
+    def import_public_key(serialized_public_key):
+        MainUser.public_key = CryptUtil.load_public(serialized_public_key)
+    
+    def import_private_key(serialized_private_key, password):
+        MainUser.private_key = CryptUtil.load_private(serialized_private_key, password)
+
 
 # unit tests
 if __name__ == '__main__':

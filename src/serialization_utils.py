@@ -43,11 +43,12 @@ class Serialize():
     DATA_TUPLE_TYPE = 4
     DATA_DICT_TYPE = 5
     DATA_BYTES_TYPE = 6
+    DATA_BYTEARRAY_TYPE = 7
     
     # dictionary of supported types
     types_list = {"<class 'str'>":DATA_STR_TYPE, "<class 'int'>":DATA_INT_TYPE, "<class 'bool'>":DATA_BOOL_TYPE,
                   "<class 'list'>":DATA_LIST_TYPE, "<class 'tuple'>":DATA_TUPLE_TYPE, "<class 'dict'>":DATA_DICT_TYPE,
-                  "<class 'bytes'>":DATA_BYTES_TYPE
+                  "<class 'bytes'>":DATA_BYTES_TYPE, "<class 'bytearray'>":DATA_BYTEARRAY_TYPE
     }
     
     def new_buffer():
@@ -72,20 +73,22 @@ class Serialize():
                 Serialize.write_value(buffer, val[key])
             return
         
-        # basic types
+        # basic types (direct non-recursive serialization is possible)
         if type(val) is str:
             value_bytes = val.encode('utf-8')
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is int:
             # use one more byte than the length obtained with bit_length because of using signed numbers
             value_bytes = val.to_bytes(1+( (val.bit_length() + 7) // 8), byteorder='big', signed=True)
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bool:
             value_bytes = bytearray(b'1') if val else bytearray(b'0')
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         elif type(val) is bytes:
             value_bytes = bytearray(val)
-            buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
+        elif type(val) is bytearray:
+            value_bytes = val
+        else:
+            raise UnknownTypeException
+        
+        buffer += Serialize.types_list[str(type(val))].to_bytes(Serialize.TYPE_PREFIX_LENGTH, byteorder='big')
         buffer += (len(value_bytes)).to_bytes(Serialize.SIZE_PREFIX_LENGTH, byteorder='big')
         buffer += value_bytes
     
@@ -133,7 +136,9 @@ class Serialize():
                 raise BooleanConversionException
             val = True if buffer[start_idx:start_idx+data_length] == bytearray(b'1') else False
         elif data_type == Serialize.DATA_BYTES_TYPE:
-            val = bytes(buffer[start_idx:start_idx+data_length])            
+            val = bytes(buffer[start_idx:start_idx+data_length])
+        elif data_type == Serialize.DATA_BYTEARRAY_TYPE:
+            val = buffer[start_idx:start_idx+data_length]
         else:
             raise UnknownTypeException
         
@@ -235,9 +240,16 @@ if __name__ == '__main__':
     test_identity(False)
     
     #bytes
-    test_identity(bytes(b'test'))
-    test_identity(bytes(b''))
-    test_identity(bytes(b'8543jgfd'))
+    test_identity(b'test')
+    test_identity(b'')
+    test_identity(b'8543jgfd')
+    test_identity(b'\n\0\r\t\\test 1234567890 abcdefz')
+   
+    #byte array
+    test_identity(bytearray(b'test'))
+    test_identity(bytearray(b''))
+    test_identity(bytearray(b'fajskfhskdff fds sf \n\0fds\0'))
+    test_identity(bytearray(b'\n\0\r\t\\test 1234567890 abcdefz'))
     
     # list of same elements
     test_identity([])
@@ -325,16 +337,29 @@ if __name__ == '__main__':
     else:
         print("FAIL. BufferTooLongException was not raised.")
     
-    # test of unknown type
+    #test of unknown type in to_bytes()
+    class UnknownTypeClass:
+        pass
+    
+    s = UnknownTypeClass()
+    try:
+        a = Serialize.to_bytes_unguarded(s)
+    except UnknownTypeException:
+        # in this test, this is the normal case
+        pass
+    else:
+        print("FAIL. UnknownTypeException was not raised in to_bytes().")
+    
+    # test of unknown type in from_bytes()
     s = Serialize.to_bytes("1")
-    s[Serialize.LENGTH_SIZE + Serialize.VERSION_LENGTH] = 9
+    s[Serialize.LENGTH_SIZE + Serialize.VERSION_LENGTH] = 20
     try:
         a = Serialize.from_bytes_unguarded(s)
     except UnknownTypeException:
         # in this test, this is the normal case
         pass
     else:
-        print("FAIL. UnknownTypeException was not raised.")
+        print("FAIL. UnknownTypeException was not raised in from_bytes().")
     
     # wrong serial version
     s = Serialize.to_bytes("1")

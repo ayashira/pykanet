@@ -8,7 +8,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.lang import Builder
 
-from kivy.properties import BooleanProperty
+from kivy.properties import BooleanProperty, StringProperty
 
 from apps.login_client import LoginClient
 from apps.chat_client import ChatClient
@@ -58,7 +58,10 @@ class StartScreen(Screen):
 
 # currently, we close manually the connection of network_interface when a screen is left
 # this design is not good. Should be improved later.
-    
+
+# TODO: we are using an import directly in KV code.
+# Another way of initializing username_label would be better.
+
 Builder.load_string('''
 <DesktopClient>:
     BoxLayout:
@@ -78,6 +81,11 @@ Builder.load_string('''
                     screen_manager.current = "startscreen"
             Label:
                 id: nothing_label
+            Label:
+                id: username_label
+                text: root.username
+                size_hint_x: .3
+                pos_hint: {'right': 1}
             
         ScreenManager:
             id: screen_manager
@@ -88,6 +96,8 @@ Builder.load_string('''
                 on_login_finished:
                     self.manager.current = "startscreen"
                     root.is_logged = True
+                    from user_utils import MainUser
+                    root.username = MainUser.username
             
             StartScreen:
                 name: "startscreen"
@@ -133,3 +143,4 @@ Builder.load_string('''
 class DesktopClient(Screen):
     
     is_logged = BooleanProperty(False)
+    username = StringProperty("")

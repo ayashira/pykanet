@@ -1,6 +1,7 @@
 
 from network_message import NetworkMessage
 
+from apps.login_server import LoginServer
 from apps.chat_server import ChatServer
 from apps.wiki_server import WikiServer
 from apps.turnbasedgame_server import TurnBasedGameServer
@@ -26,7 +27,15 @@ class ServerServices():
         if not client.message_receiver_callback:
             # message_receiver not defined yet
             # define it depending on the address in the first message
-            if message.network_path.startswith("/chat/"):
+            if message.network_path.startswith("/login/"):
+                # for "login" nodes, we use only one login server for all login addresses
+                login_root_address = "/login/"
+                if not login_root_address in self.services_dict.keys():
+                    self.services_dict[login_root_address] = LoginServer(login_root_address)
+                
+                client.message_receiver_callback = self.services_dict[login_root_address].receive_message
+                client.connection_lost_callback = self.services_dict[login_root_address].connection_lost
+            elif message.network_path.startswith("/chat/"):
                 # if the service for this address is not existing yet, it will be created by setdefault
                 client.message_receiver_callback = self.services_dict.setdefault(message.network_path, ChatServer(message.network_path)).receive_message
                 client.connection_lost_callback = self.services_dict[message.network_path].connection_lost
