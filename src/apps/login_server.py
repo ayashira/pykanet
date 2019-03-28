@@ -22,8 +22,9 @@ class LoginServer():
         if message.command == "CREATE":
             # check that the new user if not already existing
             if FileManager.file_exists(message.network_path):
-                # TODO, error message to client
-                print("already existing")
+                message.command = "USER_ALREADY_EXISTS"
+                message.content = ""
+                sender_client.send_message(message)
                 return
             
             username, user_public_key, user_private_key = message.content
@@ -37,13 +38,12 @@ class LoginServer():
         elif message.command == "READ_USER_LOGIN_DATA":
             # check that the user exists
             if not FileManager.file_exists(message.network_path):
-                # TODO, error message to client
-                print("not existing: ", message.network_path)
-                return
-
-            # read all the information of a user
-            message.content = FileManager.file_read(message.network_path)
-            message.command = "USER_LOGIN_DATA"
+                message.command = "USER_NOT_EXISTING"
+                message.content = ""
+            else:
+                # read all the information of a user
+                message.command = "USER_LOGIN_DATA"
+                message.content = FileManager.file_read(message.network_path)
             sender_client.send_message(message)
     
     # called when a client connection is lost

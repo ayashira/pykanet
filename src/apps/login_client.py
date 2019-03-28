@@ -65,7 +65,12 @@ Builder.load_string('''
                 password: True
                 disabled: True
                 on_text_validate: root.password_validated()
-                
+        
+        FitTextLabel:
+            id: status_label
+            text: ""
+            pos_hint: {'center_x': 0.5}
+        
         BoxLayout:
         
 ''')
@@ -118,23 +123,32 @@ class LoginClient(Screen):
             # create a pair of private/public keys
             MainUser.create_keys()
             
-            #export the keys to a binary format
+            # Export the keys to a binary format.
+            # Private key is encrypted with user password.
             user_public_key = MainUser.export_public_key()
             user_private_key = MainUser.export_private_key(self.password)
 
-            #ask the server to create the new user
+            # ask the server to create the new user
             user_address = LoginClient.login_root_address + self.username
             self.network_interface.send(user_address, "CREATE", [self.username, user_public_key, user_private_key])
             
         else:
             # read user login data
             # Password check is done on client side, when trying to decrypt the private key
-            #  received from the server.
+            # received from the server.
             user_address = LoginClient.login_root_address + self.username
             self.network_interface.send(user_address, "READ_USER_LOGIN_DATA", "")
 
     def receive_message(self, message):
-        if message.command == "USER_LOGIN_DATA":
+        if message.command == "USER_ALREADY_EXISTS":
+            self.ids["status_label"].text = "User already exists"
+            self.ids["username_input"].focus = True
+        elif message.command == "USER_NOT_EXISTING":
+            self.ids["status_label"].text = "User not existing"
+            self.ids["password_input"].text = ""
+            self.ids["password_input"].disabled = True
+            self.ids["username_input"].focus = True
+        elif message.command == "USER_LOGIN_DATA":
             username, creation_time, public_key, private_key = message.content
             MainUser.set_user(username)
             MainUser.import_public_key(public_key)
@@ -144,7 +158,9 @@ class LoginClient(Screen):
                 MainUser.import_private_key(private_key, self.password)
             except:
                 # incorrect password
-                print("incorrect password")
+                self.ids["status_label"].text = "Incorrect password"
+                self.ids["password_input"].text = ""
+                self.ids["password_input"].focus = True
                 return
                 
             # signal that user logging is finished
