@@ -39,10 +39,10 @@ class ChatServer():
         new_client.send_message(message)
         
         # send a notification to the new client with the list of currently connected users
-        new_client_greetings = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), new_client.username]
+        new_client_greetings = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')]
         if len(self.clients) > 0:
             for client in self.clients:
-                new_client_greetings.append(client.username) # + " "     
+                new_client_greetings.append(client.username)
         message = NetworkMessage(self.network_path, "NOTIFICATION_CLIENT_LIST", new_client_greetings)
         new_client.send_message(message)
         

@@ -6,7 +6,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, BooleanProperty
 
 from widgets.custom_labels import FitTextLabel
 from widgets.custom_textinputs import VFitTextInput
@@ -68,21 +68,24 @@ Builder.load_string('''
         
         BoxLayout:
             orientation: "horizontal"
-            size_hint_y: None
+            size_hint_y: .2
             Label:
                 text: "Confirm Password"
                 size_hint_y: None
                 height: self.texture_size[1]
+                opacity: 1 if root.is_register else 0
             VFitTextInput:
                 id: confirm_input
                 multiline: False
                 password: True
                 disabled: True
+                opacity: 1 if root.is_register else 0
                 on_text_validate: root.password_confirmed()
         
         FitTextLabel:
             id: status_label
             text: ""
+            size_hint_y: .2
             pos_hint: {'center_x': 0.5}
         
         BoxLayout:
@@ -94,6 +97,8 @@ class LoginClient(Screen):
         Login screen
         When login is finished, 'on_login_finished' custom event is triggered.
     '''
+    
+    is_register = BooleanProperty(False)
     
     # login addresses are of the form "/login/username"
     login_root_address = "/login/"

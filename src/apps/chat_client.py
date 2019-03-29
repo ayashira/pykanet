@@ -108,17 +108,18 @@ class ChatClient(Screen):
             text_color_str = "ff0000"
             self.print_message("A new guest is here \^_^/ : " + item[1], text_color_str, msg_time=item[0])
         elif message.command == "NOTIFICATION_CLIENT_LIST":
-            # we receive a list [time, username, otheruser1, otheruser2, ...]
+            # we receive a list [time, otheruser1, otheruser2, ...]
             # red for notifications
             text_color_str = "ff0000"
             text = ""
-            if len(message.content) > 2:
+            if len(message.content) > 1:
                 text += "Currently connected guests: "
-                for item in message.content[2:]:
-                    text += item + " "
+                for i, item in enumerate(message.content[1:]):
+                    if i>0:
+                        text += ", "
+                    text += item
             else:
                 text += "No other guest currently connected."
-            text += "\nYou are guest : " + message.content[1]
             self.print_message(text, text_color_str, msg_time=message.content[0])
         elif message.command == "NOTIFICATION_CLIENT_LEFT":
             # red for notifications
