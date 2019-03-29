@@ -23,9 +23,9 @@ Builder.load_string('''
         size: root.size
         spacing: 20
         padding: 20
-
+        
         Label:
-            text: "Main Menu. This screen will become the app 'desktop'."
+            text: "Home"
         Button:
             text: "Main Chat"
             on_release:
@@ -37,7 +37,7 @@ Builder.load_string('''
                 root.manager.current = "wikiscreen"
         
         Button:
-            text: "Tic Tac Toe !"
+            text: "Tic Tac Toe"
             on_release:
                 root.manager.current = "tictactoescreen"
         
@@ -45,7 +45,7 @@ Builder.load_string('''
             text: "Connect Four"
             on_release:
                 root.manager.current = "connectfourscreen"
-                
+        
         Button:
             text: "Reversi"
             on_release:
@@ -76,7 +76,9 @@ Builder.load_string('''
                 id: home_button
                 text: "Home"
                 size_hint_x: .3
+                padding_x: 5
                 disabled: not root.is_logged
+                opacity: 1 if root.is_logged and screen_manager.current != "startscreen" else 0
                 on_release:
                     screen_manager.current = "startscreen"
             Label:
@@ -85,7 +87,8 @@ Builder.load_string('''
                 id: username_label
                 text: root.username
                 size_hint_x: .3
-                pos_hint: {'right': 1}
+                pos_hint: {'right': 0.9}
+                opacity: 1 if root.is_logged else 0
             
         ScreenManager:
             id: screen_manager
