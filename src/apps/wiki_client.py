@@ -82,13 +82,7 @@ class WikiClient(Screen):
         
         self.network_interface = NetworkInterface(client = self)
         self.read_address(self.target_address)
-    
-    def send_message(self, *args):
-        msg = self.ids["textbox"].text
         
-        if msg and self.network_interface:
-            self.network_interface.send(self.target_address, "WRITE", msg)
-    
     def receive_message(self, message):
         if message.command == "READ_RESULT":
             self.current_content = message.content
@@ -111,9 +105,12 @@ class WikiClient(Screen):
         self.ids["textbox"].text = self.current_content
     
     def save_edit(self):
-        msg = self.ids["textbox"].text
-        self.network_interface.send(self.target_address, "WRITE", msg)
-    
+        page_content = self.ids["textbox"].text
+        
+        # TODO : real comment from the user in the interface
+        change_comment = ""
+        self.network_interface.send(self.target_address, "WRITE", [page_content, change_comment])
+        
         # remove the current content of the label to show that we are waiting the server response
         self.ids["label"].text = ""
     
