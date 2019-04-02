@@ -1,7 +1,8 @@
 from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager
-import datetime
+
+from date_utils import DateUtil
 
 class LoginServer():
     '''
@@ -28,7 +29,7 @@ class LoginServer():
                 return
             
             username, user_public_key, user_private_key = message.content
-            creation_time = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            creation_time = DateUtil.utcnow()
             
             FileManager.file_write(message.network_path, [username, creation_time, user_public_key, user_private_key])
             

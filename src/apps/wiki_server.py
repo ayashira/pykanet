@@ -1,7 +1,8 @@
 from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager
-import datetime
+
+from date_utils import DateUtil
 
 class FileChangeLog():
     '''
@@ -15,7 +16,7 @@ class FileChangeLog():
     
     def add_log(self, username, comment):
         idx = len(self.changelog)
-        timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = DateUtil.utcnow()
         new_log = [idx, timestamp, username, comment]
         self.changelog.append(new_log)
     

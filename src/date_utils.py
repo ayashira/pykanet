@@ -11,6 +11,10 @@ class DateUtil():
         especially conversion from utc time to local time. 
     '''
     
+    def utcnow():
+        '''Return the current utc time in a string format'''
+        return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    
     def convert_utc_to_local(utc_time):
         from_zone = tz.tzutc()
         to_zone = tz.tzlocal()

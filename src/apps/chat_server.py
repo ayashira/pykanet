@@ -1,7 +1,8 @@
 from twisted.internet import task
 from network_message import NetworkMessage
 from file_manager import FileManager
-import datetime
+
+from date_utils import DateUtil
 
 class ChatServer():
     '''
@@ -28,7 +29,7 @@ class ChatServer():
     # add a new client to the list of connected clients
     def add_client(self, new_client):
         # send a message to existing clients
-        greetings = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), new_client.username]
+        greetings = [DateUtil.utcnow(), new_client.username]
         message = NetworkMessage(self.network_path, "NOTIFICATION_NEW_CLIENT", greetings)
         for client in self.clients:
             client.send_message(message)
@@ -39,7 +40,7 @@ class ChatServer():
         new_client.send_message(message)
         
         # send a notification to the new client with the list of currently connected users
-        new_client_greetings = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')]
+        new_client_greetings = [DateUtil.utcnow()]
         if len(self.clients) > 0:
             for client in self.clients:
                 new_client_greetings.append(client.username)
@@ -63,7 +64,7 @@ class ChatServer():
             return
         
         # forward the time, username and message to all connected clients
-        message.content = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), sender_client.username, message.content]
+        message.content = [DateUtil.utcnow(), sender_client.username, message.content]
         
         for client in self.clients:
             client.send_message(message)
@@ -92,7 +93,7 @@ class ChatServer():
             return
         
         # message to other clients
-        notification_to_send = [datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), lost_client.username]
+        notification_to_send = [DateUtil.utcnow(), lost_client.username]
         message = NetworkMessage(self.network_path, "NOTIFICATION_CLIENT_LEFT", notification_to_send)
         
         for client in self.clients:
