@@ -14,26 +14,8 @@ from kivy.properties import StringProperty
 
 from kivy.clock import Clock
 
-from datetime import datetime
-from dateutil import tz
-
 from user_utils import MainUser
-
-def convert_utc_to_local(utc_time):
-    from_zone = tz.tzutc()
-    to_zone = tz.tzlocal()
-    utc = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S')
-    utc = utc.replace(tzinfo=from_zone)
-    local = utc.astimezone(to_zone)
-    return local.strftime('%Y-%m-%d, %H:%M:%S')
-
-def convert_utc_to_local_HM(utc_time):
-    from_zone = tz.tzutc()
-    to_zone = tz.tzlocal()
-    utc = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S')
-    utc = utc.replace(tzinfo=from_zone)
-    local = utc.astimezone(to_zone)
-    return local.strftime('%H:%M')
+from date_utils import DateUtil
     
 Builder.load_string('''
 <ChatClient>:
@@ -163,7 +145,7 @@ class ChatClient(Screen):
         
         # Insert a date label when the date between two messages is different
         if msg_time != None:
-            msg_local_time = convert_utc_to_local(msg_time)
+            msg_local_time = DateUtil.convert_utc_to_local(msg_time)
             
             # case of first inserted message, initialize both top and last date
             if self.top_date is None or self.bottom_date is None:
@@ -200,7 +182,7 @@ class ChatClient(Screen):
                 label.title_to_right()
             elif username is not None:
                 title_txt =  username + "  " 
-            title_txt += "[size=12]" + convert_utc_to_local_HM(msg_time) + " [/size]"
+            title_txt += "[size=12]" + DateUtil.convert_utc_to_local_HM(msg_time) + " [/size]"
             label.set_title_text(title_txt)
         
         self.ids["msg_view"].add(label, insert_pos, halign)
