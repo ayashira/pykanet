@@ -9,6 +9,8 @@ from kivy.lang import Builder
 
 from widgets.custom_labels import ScrollableLabel
 
+from date_utils import DateUtil
+
 Builder.load_string('''
 <WikiClient>:
     BoxLayout:
@@ -98,7 +100,7 @@ class WikiClient(Screen):
             result_str = ""
             for item in message.content[::-1]:
                 idx, timestamp, username, comment = item
-                result_str += timestamp + " " + username + " " + comment + "\n"
+                result_str += DateUtil.convert_utc_to_local(timestamp) + " " + username + " " + comment + "\n"
             self.update_text(result_str)
         elif message.command == "WRITE_DONE":
             # read the address again after writing
