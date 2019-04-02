@@ -46,6 +46,13 @@ Builder.load_string('''
                     root.is_edit = False
                     root.save_edit()
         
+            Button:
+                id: history_button
+                text: "History"
+                disabled: root.is_edit
+                on_release:
+                    root.show_history()
+
         ScreenManager:
             id: screen_manager
             Screen:
@@ -87,6 +94,12 @@ class WikiClient(Screen):
         if message.command == "READ_RESULT":
             self.current_content = message.content
             self.update_text(self.current_content)
+        elif message.command == "READ_LOG_RESULT":
+            result_str = ""
+            for item in message.content[::-1]:
+                idx, timestamp, username, comment = item
+                result_str += timestamp + " " + username + " " + comment + "\n"
+            self.update_text(result_str)
         elif message.command == "WRITE_DONE":
             # read the address again after writing
             self.read_address(self.target_address)
@@ -96,6 +109,9 @@ class WikiClient(Screen):
     
     def read_address(self, read_target_address):
         self.network_interface.send(read_target_address, "READ", "")
+    
+    def read_address_changelog(self, read_target_address):
+        self.network_interface.send(read_target_address, "READ_LOG", "")
     
     def update_text(self, msg):
         self.ids["label"].set_wiki_text(msg, text_color= "000000")
@@ -117,3 +133,6 @@ class WikiClient(Screen):
     def cancel_edit(self):
         #TODO : confirmation popup
         pass
+    
+    def show_history(self):
+        self.read_address_changelog(self.target_address)

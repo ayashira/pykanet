@@ -74,6 +74,20 @@ class WikiServer():
             # send a message indicating that writing is done
             message = NetworkMessage(message.network_path, "WRITE_DONE", "")
             sender_client.send_message(message)
+        
+        elif message.command == "READ_LOG":
+            if FileManager.file_exists(message.network_path):
+                filelog = FileChangeLog(message.network_path)
+                if filelog != []:
+                    message.command = "READ_LOG_RESULT"
+                    message.content = filelog.changelog
+                    sender_client.send_message(message)
+                else:
+                    # TODO : error case not supposed to happen (log should exist when the page exists)
+                    pass
+            else:
+                # specific message when the page does not exist yet
+                pass
     
     # called when a client connection is lost
     def connection_lost(self, lost_client):
