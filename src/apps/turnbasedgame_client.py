@@ -192,18 +192,14 @@ class TurnBasedGameClient(Screen):
             # the server send the time where the move is received
             # opponent timer freezes
             if self.is_allotted_time:
-
                 self.opp_cb.cancel()
                 self.cb()
                 if opp_time is not "":
                     opp_time = float(opp_time)
                     self.opp_allotted_time = opp_time
 
-                self.ids["user_timer_label"].text = \
-                    str(int(self.allotted_time // 60)).zfill(2) + " : " + str(int(self.allotted_time % 60)).zfill(2)
-
-                self.ids["opp_timer_label"].text = \
-                    str(int(self.opp_allotted_time // 60)).zfill(2) + " : " + str(int(self.opp_allotted_time % 60)).zfill(2)
+                self.ids["user_timer_label"].text = self.format_time(self.allotted_time)
+                self.ids["opp_timer_label"].text = self.format_time(self.opp_allotted_time)
 
             self.ids["state_label"].text = "Your turn"
             self.play_turn = True
@@ -214,18 +210,14 @@ class TurnBasedGameClient(Screen):
             # opponent timer counts on clienct server.
             # user timer freezes
             if self.is_allotted_time:
-
                 self.cb.cancel()
                 self.opp_cb()
                 if time is not "":
                     time = float(time)
                     self.allotted_time = time
 
-                self.ids["opp_timer_label"].text = \
-                    str(int(self.opp_allotted_time // 60)).zfill(2) + " : " + str(int(self.opp_allotted_time % 60)).zfill(2)
-
-                self.ids["user_timer_label"].text = \
-                    str(int(self.allotted_time // 60)).zfill(2) + " : " + str(int(self.allotted_time % 60)).zfill(2)
+                self.ids["opp_timer_label"].text = self.format_time(self.opp_allotted_time)
+                self.ids["user_timer_label"].text = self.format_time(self.allotted_time) 
 
             self.ids["state_label"].text = "Opponent turn"
             self.draw_inactive_frame()
@@ -275,6 +267,9 @@ class TurnBasedGameClient(Screen):
             for j in range(self.target_game.cols()):
                 self.button_list[i*rows+j].text = self.target_game.get_label(i, j)
     
+    def format_time(self, remaining_time):
+        return str(int(remaining_time // 60)).zfill(2) + " : " + str(int(remaining_time % 60)).zfill(2)
+    
     def on_countdown(self, *args):
          if not self.is_allotted_time:
              pass
@@ -283,10 +278,8 @@ class TurnBasedGameClient(Screen):
          else:
              self.network_interface.send(self.target_address, "TIMEOUT", "")
              self.allotted_time = 0
-         self.ids["user_timer_label"].text = \
-             str(int(self.allotted_time//60)).zfill(2) +" : " + str(int(self.allotted_time%60)).zfill(2)
-
-
+         self.ids["user_timer_label"].text = self.format_time(self.allotted_time)
+    
     def on_opp_countdown(self, *args):
         if not self.is_allotted_time:
                 pass
@@ -295,10 +288,8 @@ class TurnBasedGameClient(Screen):
         else:
             self.opp_allotted_time = 0
 
-        self.ids["opp_timer_label"].text = \
-            str(int(self.opp_allotted_time // 60)).zfill(2) + " : " + str(int(self.opp_allotted_time % 60)).zfill(2)
-
-
+        self.ids["opp_timer_label"].text = self.format_time(self.opp_allotted_time)
+    
     def draw_active_frame(self):
         self.ids["user_frame"].canvas.before.children[0] = Color(1, 1, 1, 1)
         self.ids["opp_user_frame"].canvas.before.children[0] = Color(0, 135/255, 173/255, 1)
@@ -306,8 +297,8 @@ class TurnBasedGameClient(Screen):
         self.ids["user_timer_label"].color = (0/255, 95/255, 133/255, 1)
         self.ids["opp_user_label"].color = (69/255, 173/255, 213/255, 1)
         self.ids["opp_timer_label"].color = (69/255, 173/255, 213/255, 1)
-
-
+    
+    
     def init_user_frame(self):
         self.ids["user_label"].text = " "
         self.ids["user_timer_label"].text = " "
