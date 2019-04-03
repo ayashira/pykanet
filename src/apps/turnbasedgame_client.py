@@ -179,7 +179,11 @@ class TurnBasedGameClient(Screen):
     def set_timer(self):
         # setting timer(for timeout)
         if 'allotted_time' not in dir(self.target_game):
-            self.is_allotted_time = False
+            # use 1 min by default
+            self.is_allotted_time = True
+            limit_time = 1
+            self.allotted_time = limit_time * 60.0
+            self.opp_allotted_time = limit_time * 60.0            
         else:
             limit_time = self.target_game.allotted_time()
             if limit_time == -1:
