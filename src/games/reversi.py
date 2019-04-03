@@ -37,7 +37,7 @@ class Reversi():
     # for set allotted time
     def allotted_time(self):
         # the unit of the time is minute
-        return 20
+        return 1
 
     # for display: label for cell at coordinates (x, y)
     def get_label(self, x, y):

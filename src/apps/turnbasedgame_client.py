@@ -271,18 +271,18 @@ class TurnBasedGameClient(Screen):
         return str(int(remaining_time // 60)).zfill(2) + " : " + str(int(remaining_time % 60)).zfill(2)
     
     def on_countdown(self, *args):
-         if not self.is_allotted_time:
-             pass
-         if self.allotted_time > 0:
-             self.allotted_time -= 1.0
-         else:
-             self.network_interface.send(self.target_address, "TIMEOUT", "")
-             self.allotted_time = 0
-         self.ids["user_timer_label"].text = self.format_time(self.allotted_time)
+        if not self.is_allotted_time:
+            pass
+        if self.allotted_time > 0:
+            self.allotted_time -= 1.0
+        else:
+            self.network_interface.send(self.target_address, "TIMEOUT", "")
+            self.allotted_time = 0
+        self.ids["user_timer_label"].text = self.format_time(self.allotted_time)
     
     def on_opp_countdown(self, *args):
         if not self.is_allotted_time:
-                pass
+            pass
         if self.opp_allotted_time > 0:
             self.opp_allotted_time -= 1.0
         else:
