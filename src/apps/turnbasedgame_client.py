@@ -134,11 +134,23 @@ class TurnBasedGameClient(Screen):
         self.opp_user_name = ""
         self.init_user_frame()
         self.set_timer()
+
         # game state
         self.play_turn = False
         self.player_id = 0
         self.network_interface = NetworkInterface(client = self)
         self.network_interface.send(self.target_address, "ENTER", "")
+
+        # prepare timers
+        self.cb = Clock.create_trigger(self.on_countdown, 1, interval=True)
+        self.cb.cancel()
+        self.opp_cb = Clock.create_trigger(self.on_opp_countdown, 1, interval=True)
+        self.opp_cb.cancel()
+    
+    def on_leave(self):
+        # cancel the Clock ticks
+        self.cb.cancel()
+        self.opp_cb.cancel()        
     
     def create_grid(self):
         # remove all existing buttons (current client on_enter() can be called multiple times)
@@ -178,9 +190,6 @@ class TurnBasedGameClient(Screen):
                 # Note: the unit of allotted time is minute.
                 self.allotted_time = limit_time * 60.0
                 self.opp_allotted_time = limit_time * 60.0
-                # set trigger timer
-                self.cb = Clock.create_trigger(self.on_countdown, 1, interval=True)
-                self.opp_cb = Clock.create_trigger(self.on_opp_countdown, 1, interval=True)
     
     def receive_message(self, message):
         if message.command == "SET_PLAYER_ID":
@@ -276,6 +285,7 @@ class TurnBasedGameClient(Screen):
         if self.allotted_time > 0:
             self.allotted_time -= 1.0
         else:
+            self.cb.cancel()
             self.network_interface.send(self.target_address, "TIMEOUT", "")
             self.allotted_time = 0
         self.ids["user_timer_label"].text = self.format_time(self.allotted_time)
@@ -286,6 +296,7 @@ class TurnBasedGameClient(Screen):
         if self.opp_allotted_time > 0:
             self.opp_allotted_time -= 1.0
         else:
+            self.opp_cb.cancel()
             self.opp_allotted_time = 0
 
         self.ids["opp_timer_label"].text = self.format_time(self.opp_allotted_time)
