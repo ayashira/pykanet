@@ -9,6 +9,8 @@ from kivy.lang import Builder
 
 from widgets.custom_labels import ScrollableLabel
 
+from date_utils import DateUtil
+
 Builder.load_string('''
 <WikiClient>:
     BoxLayout:
@@ -46,6 +48,13 @@ Builder.load_string('''
                     root.is_edit = False
                     root.save_edit()
         
+            Button:
+                id: history_button
+                text: "History"
+                disabled: root.is_edit
+                on_release:
+                    root.show_history()
+
         ScreenManager:
             id: screen_manager
             Screen:
@@ -82,17 +91,17 @@ class WikiClient(Screen):
         
         self.network_interface = NetworkInterface(client = self)
         self.read_address(self.target_address)
-    
-    def send_message(self, *args):
-        msg = self.ids["textbox"].text
         
-        if msg and self.network_interface:
-            self.network_interface.send(self.target_address, "WRITE", msg)
-    
     def receive_message(self, message):
         if message.command == "READ_RESULT":
             self.current_content = message.content
             self.update_text(self.current_content)
+        elif message.command == "READ_LOG_RESULT":
+            result_str = ""
+            for item in message.content[::-1]:
+                idx, timestamp, username, comment = item
+                result_str += DateUtil.convert_utc_to_local(timestamp) + " " + username + " " + comment + "\n"
+            self.update_text(result_str)
         elif message.command == "WRITE_DONE":
             # read the address again after writing
             self.read_address(self.target_address)
@@ -103,6 +112,9 @@ class WikiClient(Screen):
     def read_address(self, read_target_address):
         self.network_interface.send(read_target_address, "READ", "")
     
+    def read_address_changelog(self, read_target_address):
+        self.network_interface.send(read_target_address, "READ_LOG", "")
+    
     def update_text(self, msg):
         self.ids["label"].set_wiki_text(msg, text_color= "000000")
     
@@ -111,12 +123,18 @@ class WikiClient(Screen):
         self.ids["textbox"].text = self.current_content
     
     def save_edit(self):
-        msg = self.ids["textbox"].text
-        self.network_interface.send(self.target_address, "WRITE", msg)
-    
+        page_content = self.ids["textbox"].text
+        
+        # TODO : real comment from the user in the interface
+        change_comment = ""
+        self.network_interface.send(self.target_address, "WRITE", [page_content, change_comment])
+        
         # remove the current content of the label to show that we are waiting the server response
         self.ids["label"].text = ""
     
     def cancel_edit(self):
         #TODO : confirmation popup
         pass
+    
+    def show_history(self):
+        self.read_address_changelog(self.target_address)
