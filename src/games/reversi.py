@@ -19,7 +19,10 @@ class Reversi():
         # set the initial state(Othello opening)
         pos = (self.rows()//2-1, self.rows()//2)
         for p1, p2 in itertools.product(pos, pos):
-            self.board[p1][p2] = ((p1-pos[0])^(p2-pos[0]))+1
+            if p1 == p2:
+                self.board[p1][p2] = 1
+            else:
+                self.board[p1][p2] = 2
     
     def rows(self):
         return self._rows
@@ -30,7 +33,12 @@ class Reversi():
     # for display : width and height of a cell when displaying the game
     def cell_size(self):
         return 40, 40
-    
+
+    # for set allotted time
+    def allotted_time(self):
+        # the unit of the time is minute
+        return 20
+
     # for display: label for cell at coordinates (x, y)
     def get_label(self, x, y):
         s = self.board[x][y]
