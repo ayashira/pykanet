@@ -14,7 +14,6 @@ from apps.turnbasedgame_list import TurnBasedGameList
 
 from kivy.clock import Clock
 
-from time import localtime, strftime
 from kivy.graphics import Color
 from kivy.properties import NumericProperty
 
@@ -38,13 +37,7 @@ Builder.load_string('''
             height: self.minimum_height
             width: self.minimum_width
             pos_hint:{'top':1, 'left': 1}
-
-            Label:
-                id: clock_label
-                size_hint: None, None
-                pos_hint: {'top':1, 'center_x':0.5}
-                size: self.texture_size
-
+            
             BoxLayout:
                 orientation: "horizontal"
                 size_hint: None, None
@@ -146,10 +139,7 @@ class TurnBasedGameClient(Screen):
         self.player_id = 0
         self.network_interface = NetworkInterface(client = self)
         self.network_interface.send(self.target_address, "ENTER", "")
-
-
-
-
+    
     def create_grid(self):
         # remove all existing buttons (current client on_enter() can be called multiple times)
         self.ids["board_grid"].clear_widgets()
@@ -175,10 +165,6 @@ class TurnBasedGameClient(Screen):
                 self.button_list.append(button)
 
     def set_timer(self):
-        # setting clock
-        self.ids["clock_label"].text = strftime("%H:%M", localtime())
-        Clock.schedule_interval(self.update_time, 1)
-
         # setting timer(for timeout)
         if 'allotted_time' not in dir(self.target_game):
             self.is_allotted_time = False
@@ -195,8 +181,6 @@ class TurnBasedGameClient(Screen):
                 # set trigger timer
                 self.cb = Clock.create_trigger(self.on_countdown, 1, interval=True)
                 self.opp_cb = Clock.create_trigger(self.on_opp_countdown, 1, interval=True)
-
-
     
     def receive_message(self, message):
         if message.command == "SET_PLAYER_ID":
@@ -290,12 +274,7 @@ class TurnBasedGameClient(Screen):
         for i in range(rows):
             for j in range(self.target_game.cols()):
                 self.button_list[i*rows+j].text = self.target_game.get_label(i, j)
-
-    def update_time(self, *args):
-        time_now  = strftime("%H:%M", localtime())
-        self.ids["clock_label"].text = time_now
-
-
+    
     def on_countdown(self, *args):
          if not self.is_allotted_time:
              pass
