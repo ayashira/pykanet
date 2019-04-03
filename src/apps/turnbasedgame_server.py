@@ -91,7 +91,8 @@ class TurnBasedGameServer():
                 pass
         if message.command == "TIMEOUT":
             command = "GAME_FINISHED"
-            message = NetworkMessage(self.network_path, command, self.opp_player_id)
+            winner = self.opp_player_id + 1
+            message = NetworkMessage(self.network_path, command, winner)
             for client in self.clients:
                 client.send_message(message)
                 # end the connection
