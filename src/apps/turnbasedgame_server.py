@@ -42,11 +42,10 @@ class TurnBasedGameServer():
                 self.add_client(sender_client)
             else:
                 sender_client.lose_connection()
-            return
         
-        if message.command == "MOVE":
+        elif message.command == "MOVE":
             if sender_client == self.clients[self.current_player_id]:
-                move = message.content
+                [time, move] = message.content
                 if not self.target_game.is_valid_play(move, player = self.current_player_id + 1):
                     # move not valid, don't do anything. TODO : request a move again
                     return
@@ -55,6 +54,7 @@ class TurnBasedGameServer():
                 self.target_game.play(move, player = self.current_player_id + 1)
                 if self.current_player_id == 0:
                     command = "PLAYER1_MOVE"
+
                 else:
                     command = "PLAYER2_MOVE"
                 
@@ -81,14 +81,24 @@ class TurnBasedGameServer():
                 self.opp_player_id = 0 if self.current_player_id == 1 else 1
                 
                 # request next move
-                message = NetworkMessage(self.network_path, "REQUEST_MOVE", "")
+                message = NetworkMessage(self.network_path, "REQUEST_MOVE", time)
                 self.clients[self.current_player_id].send_message(message)
-                message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", "")
+                message = NetworkMessage(self.network_path, "WAIT_OPP_MOVE", time)
                 self.clients[self.opp_player_id].send_message(message)
             else:
                 # someone other than current player tried to play
+                # TODO: error handling
                 pass
-     
+        
+        elif message.command == "TIMEOUT":
+            command = "GAME_FINISHED"
+            winner = self.opp_player_id + 1
+            message = NetworkMessage(self.network_path, command, winner)
+            for client in self.clients:
+                client.send_message(message)
+                client.lose_connection()
+            self.game_ended = True
+    
     # add a new client to the list of connected clients
     def add_client(self, new_client):
         self.clients.append(new_client)
