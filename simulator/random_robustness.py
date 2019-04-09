@@ -14,16 +14,17 @@ import numpy as np
 def random_control(nb_nodes, redundancy_val, max_nodes=None):
     table = [0]*nb_nodes
     controled_nodes = 0
-    while(True):
-        # choose a random node not already controlled
-        # note: this is slow when already a lot of nodes are controlled
-        # faster algorithm ?
-        r = None
-        while r == None or table[r]==1: 
-            r = random.randint(0,nb_nodes-1)
+    
+    shuffled_table = [0]*nb_nodes
+    for i in range(nb_nodes):
+        shuffled_table[i] = i
+    random.shuffle(shuffled_table)
+    
+    for i in range(nb_nodes):
+        r = shuffled_table[i]
         
         # Take control of this node
-        table[r] = 1
+        table[ r ] = 1
         controled_nodes += 1
         
         # Check the number of consecutive controlled nodes from index r
@@ -47,6 +48,9 @@ def random_control(nb_nodes, redundancy_val, max_nodes=None):
         
         if max_nodes != None and controled_nodes > max_nodes:
             return controled_nodes
+    
+    return nb_nodes
+
 
 # Average number of nodes needed to take control
 # using nb_simul simulations.
@@ -101,7 +105,7 @@ def plot_control_prob(nb_nodes, redundancy_max, percent_controled_list, nb_simul
         for redundancy_val in range(1, redundancy_max+1):
             x[redundancy_val-1] = redundancy_val
             result[redundancy_val-1] = control_prob(nb_nodes, redundancy_val, percent_controled, nb_simul)
-            print("Percent controlled:", percent_controled, ", Redundancy:", redundancy_val, "... Finished")
+            print("Percent controlled:", percent_controled, ", Redundancy:", redundancy_val, "... Finished", flush=True)
         plt.semilogy(x, result, label=str(int(percent_controled*100)) + "% control")
     
     plt.legend(loc='upper right')
@@ -144,7 +148,7 @@ def plot_needed_control(nb_nodes_list, redundancy_max, threshold_prob, nb_simul,
         for redundancy_val in range(1, redundancy_max+1):
             x[redundancy_val-1] = redundancy_val
             result[redundancy_val-1] = needed_control(nb_nodes, redundancy_val, threshold_prob, nb_simul)
-            print("Nodes:", nb_nodes, ", Redundancy:", redundancy_val, "... Finished")
+            print("Nodes:", nb_nodes, ", Redundancy:", redundancy_val, "... Finished", flush=True)
         plt.plot(x, result, label=str(nb_nodes) + " nodes")
     
     plt.legend(loc='upper left')
@@ -159,8 +163,10 @@ def plot_needed_control(nb_nodes_list, redundancy_max, threshold_prob, nb_simul,
 
 
 if __name__ == '__main__':
-    plot_needed_control([100, 1000, 10000], 40, 0.01, 600, "needed_control1.png")
+    # roughly 25 min. on single CPU
+    plot_needed_control([100, 1000, 10000], 60, 0.01, 1000, "needed_control1.png")
     
     plot_control_prob(1000, 10, [0.1], 100000, "control_prob1.png")
     
-    plot_control_prob(1000, 22, [0.1, 0.2, 0.3, 0.4, 0.5], 10000, "control_prob2.png")
+    # roughly 1h20min. on single CPU
+    plot_control_prob(1000, 22, [0.1, 0.2, 0.3, 0.4, 0.5], 30000, "control_prob2.png")
