@@ -3,6 +3,7 @@
 
 import random
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 
 #run one simulation of taking control of nodes until full control of at least one address
@@ -54,7 +55,7 @@ def simulate_control(nb_nodes, redundancy_val, nb_simul):
 
 #graph showing the average number of nodes needed to take control in function of the redundancy factor
 #for a given fixed number of nodes in the network
-def plot_graph_fixednbnodes(nb_nodes, redundancy_max, nb_simul):
+def plot_graph_fixednbnodes(nb_nodes, redundancy_max, nb_simul, filename=None):
     x = [0]*redundancy_max
     result = [0]*redundancy_max
     for redundancy_val in range(1, redundancy_max+1):
@@ -62,7 +63,11 @@ def plot_graph_fixednbnodes(nb_nodes, redundancy_max, nb_simul):
         result[redundancy_val-1] = simulate_control(nb_nodes, redundancy_val, nb_simul)
     plt.figure()
     plt.plot(x, result)
-    plt.show()
+    if filename:
+        plt.savefig(filename)
+    else:
+        plt.show()
+
 
 #Probability of controlling one address when we control a given percentage of the network
 def control_prob(nb_nodes, redundancy_val, percent_controled, nb_simul):
@@ -75,15 +80,36 @@ def control_prob(nb_nodes, redundancy_val, percent_controled, nb_simul):
 
 #graph of the probability of controlling one address in function of the redundancy factor
 #for a fixed given percentage of the network controlled by the attacker, in a network with a fixed number of nodes
-def plot_control_prob(nb_nodes, redundancy_max, percent_controled, nb_simul):
-    x = [0]*redundancy_max
-    result = [0]*redundancy_max
-    for redundancy_val in range(1, redundancy_max+1):
-        x[redundancy_val-1] = redundancy_val
-        result[redundancy_val-1] = control_prob(nb_nodes, redundancy_val, percent_controled, nb_simul)
+def plot_control_prob(nb_nodes, redundancy_max, percent_controled_list, nb_simul, filename = None):
+    print("Parameters:")
+    print("Nodes: ", nb_nodes)
+    print("Redundancy max: ", redundancy_max) 
+    print("Control percent: ", percent_controled_list) 
+    print("Nb simulations: ", nb_simul)
+
     plt.figure()
-    plt.semilogy(x, result)
-    plt.show()   
+    ax = plt.figure().gca()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    
+    for percent_controled in percent_controled_list:
+        x = [0]*redundancy_max
+        result = [0]*redundancy_max
+        for redundancy_val in range(1, redundancy_max+1):
+            x[redundancy_val-1] = redundancy_val
+            result[redundancy_val-1] = control_prob(nb_nodes, redundancy_val, percent_controled, nb_simul)
+            print("Percent controlled:", percent_controled, ", Redundancy:", redundancy_val, "... Finished")
+        plt.semilogy(x, result, label=str(int(percent_controled*100)) + "% control")
+    
+    plt.legend(loc='upper right')
+    plt.xlabel("R, redundancy factor")    
+    plt.ylabel("successful attack probability")
+    plt.title("Probability of successful attack in network of " + str(nb_nodes) + " nodes")
+    
+    if filename:
+        plt.savefig(filename)
+    else:
+        plt.show()
+
 
 #Proportion of the network that we need to control in order to take control of one address
 #with a probability above some threshold
@@ -97,56 +123,41 @@ def needed_control(nb_nodes, redundancy_val, threshold_prob, nb_simul):
 #graph of the proportion of network needed by the attacker
 #to take control with some given probability threshold
 #in function of the redundancy factor, for a network with a fixed number of nodes
-def plot_needed_control(nb_nodes, redundancy_max, threshold_prob, nb_simul):
-    x = [0]*redundancy_max
-    result = [0]*redundancy_max
-    for redundancy_val in range(1, redundancy_max+1):
-        x[redundancy_val-1] = redundancy_val
-        result[redundancy_val-1] = needed_control(nb_nodes, redundancy_val, threshold_prob, nb_simul)
+def plot_needed_control(nb_nodes_list, redundancy_max, threshold_prob, nb_simul, filename = None):
+    print("Parameters:")
+    print("Nodes: ", nb_nodes_list)
+    print("Redundancy max: ", redundancy_max) 
+    print("Attack success threshold: ", threshold_prob) 
+    print("Nb simulations: ", nb_simul)
+    
     plt.figure()
-    plt.plot(x, result)
-    plt.show()       
+    ax = plt.figure().gca()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    
+    
+    for nb_nodes in nb_nodes_list:
+        x = [0]*redundancy_max
+        result = [0]*redundancy_max
+        for redundancy_val in range(1, redundancy_max+1):
+            x[redundancy_val-1] = redundancy_val
+            result[redundancy_val-1] = needed_control(nb_nodes, redundancy_val, threshold_prob, nb_simul)
+            print("Nodes:", nb_nodes, ", Redundancy:", redundancy_val, "... Finished")
+        plt.plot(x, result, label=str(nb_nodes) + " nodes")
+    
+    plt.legend(loc='upper left')
+    plt.xlabel("R, redundancy factor")    
+    plt.ylabel("needed network proportion")
+    plt.title("Proportion of network needed for " + str(threshold_prob*100) + "% attack success")
+    
+    if filename:
+        plt.savefig(filename)
+    else:
+        plt.show()
 
-#draw some interesting plots
-#TODO : axis legend, graph title...
 
-#number of average nodes needed by attacker to have a successful attack in function of the redundancy factor
-#in a network of 100, 1.000, 10.000, 100.000 nodes
-plot_graph_fixednbnodes(100, 50, 500)
-plot_graph_fixednbnodes(1000, 50, 500)
-plot_graph_fixednbnodes(10000, 50, 30)
-plot_graph_fixednbnodes(100000, 30, 10)
-
-#probability of taking control when the attacker controls half of the nodes
-#in a network of 100, 1000, 10000 nodes
-#last number is the number of simulations for each redundancy factor
-#last number = number of simulations for each point
-plot_control_prob(100, 20, 0.5, 100000)
-plot_control_prob(1000, 20, 0.5, 100000)
-plot_control_prob(10000, 20, 0.1, 10000)
-
-#probability of taking control when the attacker controls 1000 nodes in a network of 1M nodes
-#last number = 1000 simulations per point (meaning we cannot show probabilities lower than 10^-3) 
-plot_control_prob(1000000, 20, 0.001, 1000)
-
-#same plot using 10000 simulations (meaning we cannot show probabilities lower than 10^-4) 
-plot_control_prob(1000000, 20, 0.001, 10000)
-
-#proportion of the network needed by an attacker to control at least one address with 1% probability
-#in a network of 100 nodes
-plot_needed_control(100, 50, 0.01, 1000)
-
-#same with 90% probability
-plot_needed_control(100, 30, 0.9, 1000)
-
-#90% success of attack in network of 1000 nodes
-plot_needed_control(1000, 30, 0.9, 1000)
-
-#90% success of attack in network of 10000 nodes
-plot_needed_control(10000, 30, 0.9, 200)
-
-#1% success in network of 10000 nodes
-plot_needed_control(10000, 30, 0.01, 200)
-
-#1% success in network of 100.000 nodes
-plot_needed_control(100000, 30, 0.01, 1000)
+if __name__ == '__main__':
+    plot_needed_control([100, 1000, 10000], 40, 0.01, 600, "needed_control1.png")
+    
+    plot_control_prob(1000, 10, [0.1], 100000, "control_prob1.png")
+    
+    plot_control_prob(1000, 22, [0.1, 0.2, 0.3, 0.4, 0.5], 10000, "control_prob2.png")
